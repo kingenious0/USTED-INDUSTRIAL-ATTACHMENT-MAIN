@@ -2,98 +2,192 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
   <title>{% block title %}U-IAP — Workplace Experience Learning Portal{% endblock %}</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
   {% block extra_head %}{% endblock %}
 </head>
-<body>
+<body class="app-body">
 
-  <!-- Top Institutional Navigation Bar -->
-  <nav class="navbar" role="navigation" aria-label="Main Navigation">
-    <div class="nav-container">
-      <a href="{{ url_for('main.index') }}" class="brand-link" title="USTED Industrial Attachment Portal">
-        <div class="brand-crest">
-          <img src="{{ url_for('static', filename='img/crest.svg') }}" alt="USTED Crest" width="36" height="36"/>
+  <!-- Mobile Top Bar (< 1024px) -->
+  <header class="mobile-topbar" role="banner">
+    <button type="button" class="sidebar-toggle-btn" id="sidebarToggle" aria-label="Open Navigation Sidebar" aria-expanded="false">
+      <span class="hamburger-icon" aria-hidden="true">&#9776;</span>
+    </button>
+    <a href="{{ url_for('main.index') }}" class="mobile-brand-link">
+      <img src="{{ url_for('static', filename='img/crest.svg') }}" alt="AAMUSTED Crest" width="30" height="30" class="mobile-crest"/>
+      <div class="mobile-brand-text">
+        <span class="mobile-brand-title">U-IAP PORTAL</span>
+        <span class="mobile-brand-sub">AAMUSTED</span>
+      </div>
+    </a>
+    <div class="mobile-topbar-right">
+      {% if current_user.is_authenticated %}
+        <span class="mobile-user-role role-pill role-{{ current_user.role }}">
+          {{ current_user.role.split('_')[0] }}
+        </span>
+      {% else %}
+        <a href="{{ url_for('auth.login') }}" class="btn btn-secondary btn-sm" style="padding: 0.25rem 0.6rem; font-size: 0.78rem;">Sign In</a>
+      {% endif %}
+    </div>
+  </header>
+
+  <!-- Sidebar Backdrop (for Mobile Drawer) -->
+  <div class="sidebar-backdrop" id="sidebarBackdrop" aria-hidden="true"></div>
+
+  <!-- Institutional Left Sidebar Navigation -->
+  <aside class="app-sidebar" id="appSidebar" role="navigation" aria-label="Main Sidebar Navigation">
+    <div class="sidebar-header">
+      <a href="{{ url_for('main.index') }}" class="sidebar-brand">
+        <div class="sidebar-crest-box">
+          <img src="{{ url_for('static', filename='img/crest.svg') }}" alt="AAMUSTED Crest" width="40" height="40"/>
         </div>
-        <div class="brand-text-group">
-          <span class="brand-title">U-IAP PORTAL</span>
-          <span class="brand-sub">AAMUSTED &bull; Industrial Liaison</span>
+        <div class="sidebar-brand-text">
+          <span class="sidebar-brand-title">U-IAP PORTAL</span>
+          <span class="sidebar-brand-sub">AAMUSTED &bull; Liaison Unit</span>
         </div>
       </a>
-
-      <!-- Mobile Hamburger Toggle Button (< 1024px) -->
-      <button class="nav-toggle" id="navToggle" type="button" aria-label="Toggle navigation menu" aria-expanded="false">
-        <span aria-hidden="true">&#9776;</span>
+      <button type="button" class="sidebar-close-btn" id="sidebarClose" aria-label="Close navigation sidebar">
+        &times;
       </button>
+    </div>
 
-      <!-- Navigation Links & User Menu -->
-      <div class="nav-menu" id="navMenu">
-        {% if current_user.is_authenticated %}
-          {% if current_user.is_student %}
-            <a href="{{ url_for('student.dashboard') }}">Student Workspace</a>
-          {% elif current_user.is_liaison %}
-            <a href="{{ url_for('liaison.dashboard') }}">Liaison Dashboard</a>
-            <a href="{{ url_for('liaison.student_lookup') }}">Verify Student</a>
-            <a href="{{ url_for('liaison.attachments_list') }}">Attachments</a>
-            <a href="{{ url_for('liaison.acceptance_queue') }}">Acceptance Queue</a>
-            {% if current_user.is_admin %}
-              <a href="{{ url_for('admin.dashboard') }}">Admin / Audits</a>
-              <a href="{{ url_for('admin.settings') }}">Settings</a>
-            {% endif %}
-          {% elif current_user.is_supervisor %}
-            <a href="{{ url_for('supervisor.dashboard') }}">Assigned Students</a>
-          {% endif %}
+    <!-- Active User Profile Card -->
+    {% if current_user.is_authenticated %}
+      <div class="sidebar-user-card">
+        <div class="sidebar-user-avatar">
+          {{ current_user.full_name[:1] }}
+        </div>
+        <div class="sidebar-user-info">
+          <span class="sidebar-user-name" title="{{ current_user.full_name }}">{{ current_user.full_name }}</span>
+          <span class="role-pill role-{{ current_user.role }}">{{ current_user.role.replace('_', ' ') }}</span>
+        </div>
+      </div>
+    {% endif %}
 
-          <div class="user-badge">
-            <span>{{ current_user.full_name }}</span>
-            <span class="role-pill role-{{ current_user.role }}">{{ current_user.role.replace('_', ' ') }}</span>
-          </div>
-
-          <a href="{{ url_for('auth.logout') }}" class="btn btn-outline btn-sm nav-logout-btn" style="color:#FFFFFF; border-color:rgba(255,255,255,0.35);">
-            Log Out
+    <!-- Sidebar Navigation Links -->
+    <nav class="sidebar-nav">
+      {% if current_user.is_authenticated %}
+        {% if current_user.is_student %}
+          <div class="nav-section-label">STUDENT WORKSPACE</div>
+          <a href="{{ url_for('student.dashboard') }}" class="sidebar-nav-item {% if request.endpoint == 'student.dashboard' %}active{% endif %}">
+            <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" width="18" height="18"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+            <span>My Dashboard</span>
           </a>
-        {% else %}
-          <a href="{{ url_for('auth.login') }}" class="btn btn-secondary btn-sm" style="color:#FFFFFF;">
-            Portal Login
+          {% if current_user.student_master and current_user.student_master.attachments.count() > 0 %}
+            {% set student_att = current_user.student_master.attachments.first() %}
+            <a href="{{ url_for('student.view_attachment', attachment_id=student_att.id) }}" class="sidebar-nav-item {% if request.endpoint == 'student.view_attachment' %}active{% endif %}">
+              <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" width="18" height="18"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+              <span>Attachment Overview</span>
+            </a>
+            {% if student_att.can_log_activities() %}
+              <a href="{{ url_for('student.activities', attachment_id=student_att.id) }}" class="sidebar-nav-item {% if request.endpoint == 'student.activities' %}active{% endif %}">
+                <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" width="18" height="18"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+                <span>eLogSheet Workspace</span>
+              </a>
+            {% endif %}
+            <a href="{{ url_for('student.upload_acceptance', attachment_id=student_att.id) }}" class="sidebar-nav-item {% if request.endpoint == 'student.upload_acceptance' %}active{% endif %}">
+              <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" width="18" height="18"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+              <span>Acceptance Upload</span>
+            </a>
+          {% endif %}
+        {% elif current_user.is_liaison %}
+          <div class="nav-section-label">LIAISON OPERATIONS</div>
+          <a href="{{ url_for('liaison.dashboard') }}" class="sidebar-nav-item {% if request.endpoint == 'liaison.dashboard' %}active{% endif %}">
+            <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" width="18" height="18"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"/></svg>
+            <span>Operations Dashboard</span>
+          </a>
+          <a href="{{ url_for('liaison.student_lookup') }}" class="sidebar-nav-item {% if request.endpoint in ['liaison.student_lookup', 'liaison.verify_and_create_attachment'] %}active{% endif %}">
+            <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" width="18" height="18"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"/></svg>
+            <span>Verify Student Intake</span>
+          </a>
+          <a href="{{ url_for('liaison.attachments_list') }}" class="sidebar-nav-item {% if request.endpoint in ['liaison.attachments_list', 'liaison.view_attachment_detail'] %}active{% endif %}">
+            <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" width="18" height="18"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+            <span>Attachments Roster</span>
+          </a>
+          <a href="{{ url_for('liaison.acceptance_queue') }}" class="sidebar-nav-item {% if request.endpoint in ['liaison.acceptance_queue', 'liaison.review_acceptance'] %}active{% endif %}">
+            <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" width="18" height="18"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
+            <span>Acceptance Queue</span>
+          </a>
+          {% if current_user.is_admin %}
+            <div class="nav-section-label">ADMINISTRATION</div>
+            <a href="{{ url_for('admin.dashboard') }}" class="sidebar-nav-item {% if request.endpoint == 'admin.dashboard' %}active{% endif %}">
+              <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" width="18" height="18"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+              <span>Security & Audit Trail</span>
+            </a>
+            <a href="{{ url_for('admin.settings') }}" class="sidebar-nav-item {% if request.endpoint == 'admin.settings' %}active{% endif %}">
+              <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" width="18" height="18"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+              <span>System Policies</span>
+            </a>
+          {% endif %}
+        {% elif current_user.is_supervisor %}
+          <div class="nav-section-label">ACADEMIC SUPERVISION</div>
+          <a href="{{ url_for('supervisor.dashboard') }}" class="sidebar-nav-item {% if request.endpoint in ['supervisor.dashboard', 'supervisor.student_detail'] %}active{% endif %}">
+            <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" width="18" height="18"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+            <span>Assigned Students</span>
           </a>
         {% endif %}
-      </div>
-    </div>
-  </nav>
-
-  <!-- Main Body Content (Strict 7xl viewport constraint) -->
-  <main class="main-wrapper">
-    <!-- Flash Alerts Container -->
-    {% with messages = get_flashed_messages(with_categories=true) %}
-      {% if messages %}
-        <div class="flash-container">
-          {% for category, message in messages %}
-            <div class="flash-alert {{ category }}" role="alert">
-              <span>{{ message }}</span>
-              <button type="button" class="alert-close" style="background:none; border:none; font-size:1.2rem; cursor:pointer; color:inherit;" aria-label="Dismiss alert">&times;</button>
-            </div>
-          {% endfor %}
-        </div>
+      {% else %}
+        <div class="nav-section-label">PUBLIC PORTAL</div>
+        <a href="{{ url_for('main.index') }}" class="sidebar-nav-item {% if request.endpoint == 'main.index' %}active{% endif %}">
+          <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" width="18" height="18"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+          <span>Portal Home</span>
+        </a>
+        <a href="{{ url_for('auth.login') }}" class="sidebar-nav-item {% if request.endpoint == 'auth.login' %}active{% endif %}">
+          <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" width="18" height="18"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/></svg>
+          <span>Staff & Student Login</span>
+        </a>
       {% endif %}
-    {% endwith %}
+    </nav>
 
-    {% block content %}{% endblock %}
-  </main>
-
-  <!-- Institutional Footer -->
-  <footer class="footer">
-    <div class="footer-container">
-      <div>
-        <strong>Akenten Appiah-Menka University of Skills Training and Entrepreneurial Development (AAMUSTED)</strong><br/>
-        <span>Industrial Liaison & Workplace Experience Learning (WEL) Unit</span>
-      </div>
-      <div style="text-align: right;">
-        <span>U-IAP Operational Portal</span><br/>
-        <span>&copy; {{ current_year }} AAMUSTED. All rights reserved.</span>
+    <!-- Sidebar Footer / Logout -->
+    <div class="sidebar-footer">
+      {% if current_user.is_authenticated %}
+        <a href="{{ url_for('auth.logout') }}" class="sidebar-logout-btn">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="18" height="18"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+          <span>Log Out</span>
+        </a>
+      {% endif %}
+      <div class="sidebar-inst-tag">
+        <span>AAMUSTED &bull; U-IAP v1.0</span>
       </div>
     </div>
-  </footer>
+  </aside>
+
+  <!-- Main Viewport Shell -->
+  <div class="app-main-layout">
+    <main class="main-wrapper" id="mainContent">
+      <!-- Flash Alerts Container -->
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          <div class="flash-container">
+            {% for category, message in messages %}
+              <div class="flash-alert {{ category }}" role="alert">
+                <span>{{ message }}</span>
+                <button type="button" class="alert-close" style="background:none; border:none; font-size:1.2rem; cursor:pointer; color:inherit;" aria-label="Dismiss alert">&times;</button>
+              </div>
+            {% endfor %}
+          </div>
+        {% endif %}
+      {% endwith %}
+
+      {% block content %}{% endblock %}
+    </main>
+
+    <!-- Institutional Footer -->
+    <footer class="footer">
+      <div class="footer-container">
+        <div>
+          <strong>Akenten Appiah-Menka University of Skills Training and Entrepreneurial Development (AAMUSTED)</strong><br/>
+          <span>Industrial Liaison & Workplace Experience Learning (WEL) Unit</span>
+        </div>
+        <div class="footer-right">
+          <span>U-IAP Operational Portal</span><br/>
+          <span>&copy; {{ current_year }} AAMUSTED. All rights reserved.</span>
+        </div>
+      </div>
+    </footer>
+  </div>
 
   <script src="{{ url_for('static', filename='js/main.js') }}"></script>
   {% block extra_scripts %}{% endblock %}

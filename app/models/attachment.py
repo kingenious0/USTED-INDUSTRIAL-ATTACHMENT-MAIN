@@ -5,8 +5,10 @@ from app.extensions import db
 class AttachmentStatus:
     INITIATED = 'initiated'
     LETTER_GENERATED = 'letter_generated'
+    LETTER_ISSUED = 'letter_issued'
     ACCEPTANCE_PENDING = 'acceptance_pending'
     ACCEPTANCE_UPLOADED = 'acceptance_uploaded'
+    PENDING_VERIFICATION = 'pending_verification'
     ACCEPTANCE_APPROVED = 'acceptance_approved'
     ACCEPTANCE_FLAGGED = 'acceptance_flagged'
     LOGGING_ACTIVE = 'logging_active'
@@ -78,12 +80,28 @@ class AttachmentRecord(db.Model):
     def latest_letter(self):
         return self.letters[0] if self.letters else None
 
+    @property
+    def introductory_letters(self):
+        return self.letters
+
+    @property
+    def is_letter_issued(self) -> bool:
+        return self.status in (AttachmentStatus.LETTER_ISSUED, AttachmentStatus.LETTER_GENERATED)
+
+    @property
+    def is_pending_verification(self) -> bool:
+        return self.status in (AttachmentStatus.PENDING_VERIFICATION, AttachmentStatus.ACCEPTANCE_UPLOADED)
+
+    @property
+    def is_logging_active(self) -> bool:
+        return self.status in (AttachmentStatus.LOGGING_ACTIVE, AttachmentStatus.ACCEPTANCE_APPROVED)
+
     def can_log_activities(self, require_approval: bool = False) -> bool:
         """
         Determines whether the student can enter daily activities.
-        If require_approval is True (PRD OQ-04 Option A):
-            Requires acceptance form to be approved.
-        If False (PRD OQ-04 Option B):
+        If require_approval is True:
+            Requires acceptance form to be approved / logging active.
+        If False:
             Requires acceptance form to be uploaded or logging status to be active.
         """
         if require_approval:
@@ -95,6 +113,7 @@ class AttachmentRecord(db.Model):
         # Option B: Asynchronous review allowed
         return self.status in (
             AttachmentStatus.ACCEPTANCE_UPLOADED,
+            AttachmentStatus.PENDING_VERIFICATION,
             AttachmentStatus.ACCEPTANCE_APPROVED,
             AttachmentStatus.LOGGING_ACTIVE,
             AttachmentStatus.COMPLETED

@@ -84,10 +84,123 @@
     </div>
   </div>
 {% else %}
-  <!-- Active Attachment Dashboard -->
+  <!-- Pipeline 3: Active Banner when Logging is Enabled -->
+  {% if can_log %}
+    <div class="card" style="background: linear-gradient(135deg, var(--color-primary-dark), var(--color-primary)); color: #FFFFFF; padding: 1.5rem; border-radius: var(--radius-lg); margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; border-left: 6px solid var(--color-accent-gold); box-shadow: var(--shadow-md);">
+      <div>
+        <span class="badge" style="background: rgba(217,119,6,0.3); color: var(--color-accent-gold-subtle); border: 1px solid rgba(217,119,6,0.5); font-weight: 700; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.05em; padding: 0.25rem 0.6rem; border-radius: 4px; display: inline-block; margin-bottom: 0.5rem;">
+          Verified &bull; Workplace Experience Learning Active
+        </span>
+        <h2 style="font-size: 1.35rem; font-weight: 700; color: #FFFFFF; margin: 0;">
+          Attachment Active: {{ active_attachment.target_organization or 'Host Enterprise' }}
+        </h2>
+        <p style="font-size: 0.88rem; color: #FDF2F5; margin: 0.35rem 0 0 0;">
+          Academic Year: {{ active_attachment.academic_year }} &bull; {{ active_attachment.duration_weeks }} Weeks Duration &bull; eLogSheet Workspace Unlocked
+        </p>
+      </div>
+      <a href="{{ url_for('student.activities', attachment_id=active_attachment.id) }}" class="btn btn-gold" style="font-weight: 700; padding: 0.75rem 1.6rem; font-size: 0.95rem; box-shadow: 0 4px 14px rgba(0,0,0,0.3);">
+        Open Weekly Activity Workspace &rarr;
+      </a>
+    </div>
+  {% elif active_attachment.latest_acceptance and active_attachment.latest_acceptance.is_pending %}
+    <!-- Pipeline 2 State: Pending Verification Banner -->
+    <div class="card" style="background: var(--color-warning-subtle); border-left: 4px solid var(--color-warning); padding: 1.25rem 1.5rem; margin-bottom: 1.5rem; border: 1px solid #FDE68A;">
+      <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem;">
+        <div>
+          <span class="badge badge-warning" style="margin-bottom: 0.35rem;">Status: Pending Verification</span>
+          <h4 style="color: #92400E; margin: 0; font-size: 1.1rem; font-weight: 700;">Acceptance Form Under Liaison Verification</h4>
+          <p style="font-size: 0.85rem; color: #78350F; margin: 0.35rem 0 0 0;">
+            Endorsed Acceptance Form for <strong>{{ active_attachment.latest_acceptance.organization_name }}</strong> submitted on {{ active_attachment.latest_acceptance.created_at.strftime('%d %b, %Y at %H:%M') }}. Liaison officers will verify the supervisor signature and wet-ink stamp.
+          </p>
+        </div>
+        <a href="{{ url_for('student.view_uploaded_scan', attachment_id=active_attachment.id, acceptance_id=active_attachment.latest_acceptance.id) }}" target="_blank" class="btn btn-outline btn-sm">
+          View Uploaded Scan
+        </a>
+      </div>
+    </div>
+  {% elif not can_log %}
+    <!-- Pipeline 2 State: Upload Completed Acceptance Form Card -->
+    <div class="card" style="border-top: 4px solid var(--color-primary); margin-bottom: 1.5rem;">
+      <div class="card-header" style="border-bottom: 1px solid var(--color-border); padding-bottom: 0.75rem;">
+        <div>
+          <span class="badge badge-primary" style="margin-bottom: 0.3rem;">Required Checkpoint</span>
+          <h3 class="card-title" style="color: var(--color-primary-dark); font-size: 1.15rem; margin: 0;">Upload Completed Acceptance Form</h3>
+          <p class="form-hint" style="margin-top: 0.2rem;">Upload the endorsed form with workplace supervisor signature and official wet-ink stamp to activate your logbook.</p>
+        </div>
+        <a href="{{ url_for('student.download_blank_acceptance_form', attachment_id=active_attachment.id) }}" class="btn btn-outline btn-sm">
+          Download Blank Form (PDF)
+        </a>
+      </div>
+
+      <form method="POST" action="{{ url_for('student.upload_acceptance') }}" enctype="multipart/form-data" style="margin-top: 1rem;">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+        <input type="hidden" name="attachment_id" value="{{ active_attachment.id }}"/>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem;">
+          <div class="form-group">
+            <label class="form-label" for="host_organization_name">Host Organization Name <span style="color:var(--color-danger)">*</span></label>
+            <input type="text" id="host_organization_name" name="host_organization_name" class="form-control" required
+                   placeholder="e.g. Electricity Company of Ghana" value="{{ active_attachment.target_organization or '' }}">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="industry_location">Industry Location / Town <span style="color:var(--color-danger)">*</span></label>
+            <input type="text" id="industry_location" name="industry_location" class="form-control" required
+                   placeholder="e.g. Adum, Kumasi" value="{{ active_attachment.organization_address or '' }}">
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem;">
+          <div class="form-group">
+            <label class="form-label" for="gps_address">GPS Address / Digital Address</label>
+            <input type="text" id="gps_address" name="gps_address" class="form-control"
+                   placeholder="e.g. AK-039-2345">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="sector_type">Sector Type <span style="color:var(--color-danger)">*</span></label>
+            <select id="sector_type" name="sector_type" class="form-control" required>
+              <option value="Private" selected>Private Enterprise</option>
+              <option value="Statutory">Public / Statutory Corporation</option>
+              <option value="NGO">Non-Governmental Organization (NGO)</option>
+              <option value="Education">Educational Institution</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem;">
+          <div class="form-group">
+            <label class="form-label" for="workplace_supervisor_name">Workplace Supervisor Name <span style="color:var(--color-danger)">*</span></label>
+            <input type="text" id="workplace_supervisor_name" name="workplace_supervisor_name" class="form-control" required
+                   placeholder="e.g. Ing. Kwame Mensah">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="workplace_supervisor_phone">Workplace Supervisor Phone <span style="color:var(--color-danger)">*</span></label>
+            <input type="tel" id="workplace_supervisor_phone" name="workplace_supervisor_phone" class="form-control" required
+                   placeholder="e.g. 0244123456">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="acceptance_scan">Endorsed Acceptance Form Scan <span style="color:var(--color-danger)">*</span></label>
+          <input type="file" id="acceptance_scan" name="acceptance_scan" class="form-control" required accept=".pdf,.png,.jpg,.jpeg">
+          <p class="form-hint">Accepted formats: PDF, PNG, JPG (Maximum file size: 5 MB). Ensure the company's official wet-ink stamp is clearly visible.</p>
+        </div>
+
+        <div style="text-align: right; margin-top: 1.25rem;">
+          <button type="submit" class="btn btn-primary" style="padding: 0.65rem 1.6rem; font-weight: 600;">
+            Submit Completed Acceptance Form
+          </button>
+        </div>
+      </form>
+    </div>
+  {% endif %}
+
+  <!-- Active Attachment Summary Card -->
   <div class="card" style="border-top: 4px solid var(--color-accent-gold);">
     <div class="card-header">
-      <h3 class="card-title">Current Attachment Details (Academic Year: {{ active_attachment.academic_year }})</h3>
+      <h3 class="card-title">Attachment Particulars (Academic Year: {{ active_attachment.academic_year }})</h3>
       <a href="{{ url_for('student.view_attachment', attachment_id=active_attachment.id) }}" class="btn btn-outline btn-sm">View Full Attachment</a>
     </div>
 

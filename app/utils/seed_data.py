@@ -48,6 +48,15 @@ SAMPLE_STUDENTS = [
         'current_level': 300,
         'phone': '0243567890',
         'email': 'emmanuel.frimpong@st.usted.edu.gh'
+    },
+    {
+        'index_number': '5230100452',
+        'full_name': 'Elliot Paakow Entsiwah',
+        'programme': 'B.Sc. Information Technology Education',
+        'department': 'Information Technology Education',
+        'current_level': 300,
+        'phone': '0240001122',
+        'email': 'elliot.entsiwah@st.usted.edu.gh'
     }
 ]
 
@@ -104,6 +113,14 @@ def seed_database():
             'role': UserRole.STUDENT,
             'password': 'password123',
             'student_master': created_students.get('USTED/2024/002')
+        },
+        {
+            'username': '5230100452',
+            'email': 'elliot.entsiwah@st.usted.edu.gh',
+            'full_name': 'Elliot Paakow Entsiwah',
+            'role': UserRole.STUDENT,
+            'password': 'password123',
+            'student_master': created_students.get('5230100452')
         }
     ]
 

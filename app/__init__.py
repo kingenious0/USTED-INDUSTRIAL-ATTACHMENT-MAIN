@@ -97,6 +97,7 @@ def create_app(config_name: str = None) -> Flask:
     from app.routes.supervisor import supervisor_bp
     from app.routes.admin import admin_bp
     from app.routes.api_v1 import api_v1_bp
+    from app.activities import activities_bp
 
     app.register_blueprint(auth_bp, url_prefix='/auth')
     app.register_blueprint(main_bp)
@@ -105,6 +106,7 @@ def create_app(config_name: str = None) -> Flask:
     app.register_blueprint(supervisor_bp, url_prefix='/supervisor')
     app.register_blueprint(admin_bp, url_prefix='/admin')
     app.register_blueprint(api_v1_bp, url_prefix='/api/v1')
+    app.register_blueprint(activities_bp, url_prefix='/activities')
 
     # Register Error Handlers
     @app.errorhandler(403)

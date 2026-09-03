@@ -4,6 +4,7 @@ from app.extensions import db
 
 class AcceptanceStatus:
     PENDING_REVIEW = 'pending_review'
+    PENDING_VERIFICATION = 'pending_verification'
     APPROVED = 'approved'
     FLAGGED_BLURRY = 'flagged_blurry'
     FLAGGED_INCOMPLETE = 'flagged_incomplete'
@@ -49,6 +50,10 @@ class AcceptanceRecord(db.Model):
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
 
     attachment = db.relationship('AttachmentRecord', back_populates='acceptance_records')
+
+    @property
+    def is_pending(self):
+        return self.status in (AcceptanceStatus.PENDING_REVIEW, AcceptanceStatus.PENDING_VERIFICATION)
 
     @property
     def is_approved(self):

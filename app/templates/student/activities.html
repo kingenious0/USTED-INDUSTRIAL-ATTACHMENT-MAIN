@@ -68,17 +68,29 @@
   </div>
 {% endif %}
 
+<!-- Weekday Navigation Pills (Pipeline 3) -->
+<div class="weekday-pills-bar" style="margin-bottom: 1.25rem; display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; background: #FFFFFF; padding: 0.65rem 1rem; border-radius: var(--radius); border: 1px solid var(--color-border); box-shadow: var(--shadow-sm);">
+  <span style="font-size: 0.8rem; font-weight: 700; color: var(--color-text-muted); text-transform: uppercase; margin-right: 0.25rem;">Weekday Jump:</span>
+  <button type="button" class="weekday-pill active" data-day="all">All Weekdays</button>
+  <button type="button" class="weekday-pill" data-day="Monday">Mon</button>
+  <button type="button" class="weekday-pill" data-day="Tuesday">Tue</button>
+  <button type="button" class="weekday-pill" data-day="Wednesday">Wed</button>
+  <button type="button" class="weekday-pill" data-day="Thursday">Thu</button>
+  <button type="button" class="weekday-pill" data-day="Friday">Fri</button>
+</div>
+
 <!-- Monday - Friday Activity Entries -->
 <div style="display: flex; flex-direction: column; gap: 1.25rem;">
   {% for day_name in ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'] %}
     {% set entry = selected_week.get_entry_for_day(day_name) %}
-    <div class="card" style="margin-bottom: 0; border-top: 3px solid {% if selected_week.is_locked %}var(--border){% else %}var(--primary){% endif %};">
-      <div class="card-header" style="background: #F8FAFC; margin: -1.5rem -1.5rem 1rem -1.5rem; padding: 0.85rem 1.5rem; border-top-left-radius: var(--radius); border-top-right-radius: var(--radius);">
+    <div class="card daily-card" data-day="{{ day_name }}" style="margin-bottom: 0; border-top: 3px solid {% if selected_week.is_locked %}var(--color-border){% else %}var(--color-primary){% endif %};">
+      <div class="card-header" style="background: var(--color-surface-bg); margin: -1.5rem -1.5rem 1rem -1.5rem; padding: 0.85rem 1.5rem; border-top-left-radius: var(--radius); border-top-right-radius: var(--radius); border-bottom: 1px solid var(--color-border);">
         <div style="display: flex; align-items: center; gap: 0.75rem;">
-          <h3 style="font-size: 1.05rem; font-weight: 700; color: var(--primary);">{{ day_name }}</h3>
-          <span style="font-size: 0.85rem; color: var(--text-muted);">{{ entry.date.strftime('%d %B, %Y') }}</span>
+          <h3 style="font-size: 1.05rem; font-weight: 700; color: var(--color-primary-dark); margin: 0;">{{ day_name }}</h3>
+          <span style="font-size: 0.85rem; color: var(--color-text-muted);">{{ entry.date.strftime('%d %B, %Y') }}</span>
         </div>
-        <div>
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+          <span class="autosave-badge badge badge-secondary" style="display: none; font-size: 0.75rem;">Draft saved</span>
           {% if selected_week.is_locked %}
             <span class="badge badge-secondary">Locked</span>
           {% else %}
@@ -88,7 +100,7 @@
       </div>
 
       {% if not selected_week.is_locked %}
-        <form method="POST" action="{{ url_for('student.update_daily_entry', entry_id=entry.id) }}">
+        <form method="POST" action="{{ url_for('student.update_daily_entry', entry_id=entry.id) }}" class="daily-activity-form" data-entry-id="{{ entry.id }}">
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
           
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 0.75rem;">
@@ -103,22 +115,23 @@
           </div>
 
           <div class="form-group">
-            <label class="form-label">Key Tasks & Learning Outcomes (Expandable)</label>
+            <label class="form-label">Key Tasks &amp; Activities Performed (Expandable)</label>
             <textarea name="key_tasks" class="form-control textarea-expandable" placeholder="Describe the specific engineering, technical, or administrative tasks performed and outcomes achieved...">{{ entry.key_tasks or '' }}</textarea>
           </div>
 
           <div class="form-group">
-            <label class="form-label">Skills Demonstrated & Competencies Acquired</label>
+            <label class="form-label">Key Learning Outcomes &amp; Skills Demonstrated</label>
             <textarea name="skills_demonstrated" class="form-control textarea-expandable" placeholder="List software, technical skills, safety protocols, tools, or machinery applied...">{{ entry.skills_demonstrated or '' }}</textarea>
           </div>
 
           <div class="form-group" style="margin-bottom: 0.75rem;">
-            <label class="form-label">Optional Remarks / Observations</label>
+            <label class="form-label">Optional Remarks / Supervisor Observations</label>
             <input type="text" name="remarks" class="form-control" value="{{ entry.remarks or '' }}" placeholder="Challenges encountered, supervisor feedback, or reflections">
           </div>
 
-          <div style="text-align: right;">
-            <button type="submit" class="btn btn-primary btn-sm">Save {{ day_name }} Entry</button>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.75rem;">
+            <span class="autosave-badge badge badge-secondary" style="display: none; font-size: 0.75rem;">Draft saved</span>
+            <button type="submit" class="btn btn-primary btn-sm" style="margin-left: auto;">Save {{ day_name }} Entry</button>
           </div>
         </form>
       {% else %}

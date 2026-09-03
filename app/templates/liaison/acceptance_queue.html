@@ -37,9 +37,20 @@
             <td>{{ item.location }}<br/><small style="color:var(--color-text-muted);">{{ item.telephone }}</small></td>
             <td><small style="color:var(--color-text-muted);">{{ item.created_at.strftime('%d/%m/%Y %H:%M') }}</small></td>
             <td>
-              <a href="{{ url_for('liaison.review_acceptance', acceptance_id=item.id) }}" class="btn btn-secondary btn-sm">
-                Review & Verify &rarr;
-              </a>
+              <div style="display: flex; gap: 0.4rem; flex-wrap: wrap; align-items: center;">
+                <a href="{{ url_for('liaison.view_scan', acceptance_id=item.id) }}" target="_blank" class="btn btn-outline btn-sm" style="padding: 0.35rem 0.65rem; font-size: 0.8rem;">
+                  View Scan
+                </a>
+                <form method="POST" action="{{ url_for('liaison.verify_and_activate_acceptance', acceptance_id=item.id) }}" style="display: inline; margin: 0;">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                  <button type="submit" class="btn btn-primary btn-sm" style="padding: 0.35rem 0.75rem; font-size: 0.8rem; font-weight: 600;">
+                    Verify Acceptance &amp; Activate Attachment
+                  </button>
+                </form>
+                <a href="{{ url_for('liaison.review_acceptance', acceptance_id=item.id) }}" class="btn btn-secondary btn-sm" style="padding: 0.35rem 0.65rem; font-size: 0.8rem;">
+                  Detailed Review &rarr;
+                </a>
+              </div>
             </td>
           </tr>
         {% else %}

@@ -46,6 +46,8 @@ def dashboard():
 
 
 @liaison_bp.route('/students/lookup', methods=['GET', 'POST'])
+@liaison_bp.route('/student-lookup', methods=['GET', 'POST'])
+@liaison_bp.route('/student/lookup', methods=['GET', 'POST'])
 @login_required
 @liaison_required
 def student_lookup():
@@ -64,11 +66,12 @@ def student_lookup():
 
 
 @liaison_bp.route('/verify-and-create/<int:student_id>', methods=['GET', 'POST'])
+@liaison_bp.route('/verify-student/<int:student_id>', methods=['GET', 'POST'])
 @login_required
 @liaison_required
 def verify_and_create_attachment(student_id: int):
     """
-    Mandatory Physical Liaison Office Checkpoint (PRD Section 15).
+    Mandatory Physical Liaison Office Checkpoint (PRD Section 15 & Pipeline 1).
     Liaison Officer confirms student identity and initiates attachment record.
     """
     student = StudentMaster.query.get_or_404(student_id)
@@ -100,7 +103,7 @@ def verify_and_create_attachment(student_id: int):
             organization_address=org_address
         )
 
-        # Immediately generate Introductory Letter (PRD Section 16)
+        # Immediately generate Introductory Letter (PRD Section 16 & Pipeline 1)
         letter, _ = AttachmentService.generate_or_reprint_letter(
             attachment_id=attachment.id,
             user_id=current_user.id,
@@ -108,6 +111,10 @@ def verify_and_create_attachment(student_id: int):
             addressee_org=target_org,
             config=current_app.config
         )
+
+        # Set status to LETTER_ISSUED per pipeline directive
+        attachment.status = AttachmentStatus.LETTER_ISSUED
+        db.session.commit()
 
         flash(f'Student physically verified! Attachment record #{attachment.id} created and Introductory Letter ({letter.reference_number}) generated.', 'success')
         return redirect(url_for('liaison.view_attachment_detail', attachment_id=attachment.id))
@@ -123,6 +130,21 @@ def verify_and_create_attachment(student_id: int):
         default_academic_year=default_acad_year,
         default_commencement=default_commence
     )
+
+
+@liaison_bp.route('/initiate-attachment', methods=['POST'])
+@login_required
+@liaison_required
+def initiate_attachment():
+    """
+    Dedicated POST endpoint for initiating attachment per PRD Pipeline 1.
+    """
+    student_id = request.form.get('student_id', type=int)
+    if not student_id:
+        index_no = request.form.get('index_number', '').strip()
+        student = StudentMaster.query.filter_by(index_number=index_no).first_or_404()
+        student_id = student.id
+    return verify_and_create_attachment(student_id)
 
 
 @liaison_bp.route('/attachments')
@@ -199,23 +221,50 @@ def assign_supervisor(attachment_id: int):
 
 
 @liaison_bp.route('/acceptance/queue')
+@liaison_bp.route('/acceptance-queue')
 @login_required
 @liaison_required
 def acceptance_queue():
-    """Queue of uploaded Acceptance Forms awaiting official review."""
-    pending_items = AcceptanceRecord.query.filter_by(
-        status=AcceptanceStatus.PENDING_REVIEW
+    """Queue of uploaded Acceptance Forms awaiting official review per PRD Pipeline 2."""
+    pending_items = AcceptanceRecord.query.filter(
+        AcceptanceRecord.status.in_([AcceptanceStatus.PENDING_REVIEW, AcceptanceStatus.PENDING_VERIFICATION])
     ).order_by(AcceptanceRecord.created_at.asc()).all()
 
     reviewed_items = AcceptanceRecord.query.filter(
-        AcceptanceRecord.status != AcceptanceStatus.PENDING_REVIEW
-    ).order_by(AcceptanceRecord.reviewed_at.desc()).limit(15).all()
+        ~AcceptanceRecord.status.in_([AcceptanceStatus.PENDING_REVIEW, AcceptanceStatus.PENDING_VERIFICATION])
+    ).order_by(AcceptanceRecord.reviewed_at.desc()).limit(20).all()
 
     return render_template(
         'liaison/acceptance_queue.html',
         pending_items=pending_items,
         reviewed_items=reviewed_items
     )
+
+
+@liaison_bp.route('/acceptance/verify-and-activate/<int:acceptance_id>', methods=['POST'])
+@login_required
+@liaison_required
+def verify_and_activate_acceptance(acceptance_id: int):
+    """
+    Direct institutional action: Verify Acceptance & Activate Attachment (Pipeline 2).
+    """
+    acceptance = AcceptanceRecord.query.get_or_404(acceptance_id)
+    notes = request.form.get('review_notes', 'Verified official workplace supervisor endorsement and company wet-ink stamp.').strip()
+
+    AttachmentService.review_acceptance(
+        acceptance_id=acceptance.id,
+        reviewer_id=current_user.id,
+        status=AcceptanceStatus.APPROVED,
+        review_notes=notes,
+        has_signature=True,
+        has_stamp=True
+    )
+    # Ensure attachment status is explicitly LOGGING_ACTIVE
+    acceptance.attachment.status = AttachmentStatus.LOGGING_ACTIVE
+    db.session.commit()
+
+    flash(f'Acceptance form for {acceptance.attachment.student.full_name} verified successfully! Attachment #{acceptance.attachment.id} is now Active with weekly activity logging enabled.', 'success')
+    return redirect(url_for('liaison.acceptance_queue'))
 
 
 @liaison_bp.route('/acceptance/review/<int:acceptance_id>', methods=['GET', 'POST'])
@@ -262,6 +311,7 @@ def review_acceptance(acceptance_id: int):
 
 
 @liaison_bp.route('/acceptance/scan/<int:acceptance_id>')
+@liaison_bp.route('/acceptance/<int:acceptance_id>/scan')
 @login_required
 @liaison_required
 def view_scan(acceptance_id: int):

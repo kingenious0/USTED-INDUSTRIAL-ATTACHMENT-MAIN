@@ -4,6 +4,7 @@ from flask import (
 )
 from flask_login import login_required, current_user
 import io
+from app.extensions import db
 from app.models.attachment import AttachmentRecord, AttachmentStatus
 from app.models.activity import WeeklyActivity, DailyActivity
 from app.models.acceptance import AcceptanceRecord
@@ -104,28 +105,45 @@ def download_blank_acceptance_form(attachment_id: int):
     )
 
 
+@student_bp.route('/upload-acceptance', methods=['POST'])
+@student_bp.route('/upload-acceptance/<int:attachment_id>', methods=['GET', 'POST'])
 @student_bp.route('/attachment/<int:attachment_id>/acceptance/upload', methods=['GET', 'POST'])
 @login_required
 @student_required
-def upload_acceptance(attachment_id: int):
-    attachment = _get_student_attachment_or_404(attachment_id)
+def upload_acceptance(attachment_id: int = None):
+    """
+    Ingests completed and stamped Acceptance Form scan (PRD Pipeline 2).
+    """
+    if attachment_id is None:
+        attachment_id = request.form.get('attachment_id', type=int)
+
+    if attachment_id:
+        attachment = _get_student_attachment_or_404(attachment_id)
+    elif current_user.student_master and current_user.student_master.attachments.count() > 0:
+        attachment = current_user.student_master.attachments.order_by(AttachmentRecord.created_at.desc()).first()
+    else:
+        flash('No active attachment found to upload acceptance for.', 'danger')
+        return redirect(url_for('student.dashboard'))
 
     if request.method == 'POST':
-        file_obj = request.files.get('acceptance_scan')
+        file_obj = request.files.get('acceptance_scan') or request.files.get('acceptance_file')
         if not file_obj or file_obj.filename == '':
             flash('Please select a scanned document (PDF, PNG, JPG, or JPEG) to upload.', 'danger')
             return render_template('student/upload_acceptance.html', attachment=attachment)
 
+        supervisor_phone = (request.form.get('workplace_supervisor_phone') or request.form.get('telephone') or '').strip()
+        supervisor_name = (request.form.get('workplace_supervisor_name') or request.form.get('contact_person') or '').strip()
+
         org_data = {
-            'organization_name': request.form.get('organization_name', ''),
-            'organization_type': request.form.get('organization_type', ''),
-            'location': request.form.get('location', ''),
-            'postal_address': request.form.get('postal_address', ''),
-            'telephone': request.form.get('telephone', ''),
-            'email': request.form.get('email', ''),
-            'contact_person': request.form.get('contact_person', ''),
-            'workplace_supervisor_name': request.form.get('workplace_supervisor_name', ''),
-            'workplace_supervisor_phone': request.form.get('workplace_supervisor_phone', '')
+            'organization_name': (request.form.get('organization_name') or request.form.get('host_organization_name') or '').strip(),
+            'organization_type': (request.form.get('organization_type') or request.form.get('sector_type') or 'Private').strip(),
+            'location': (request.form.get('location') or request.form.get('industry_location') or '').strip(),
+            'postal_address': (request.form.get('postal_address') or request.form.get('gps_address') or '').strip(),
+            'telephone': supervisor_phone,
+            'email': request.form.get('email', '').strip(),
+            'contact_person': supervisor_name,
+            'workplace_supervisor_name': supervisor_name,
+            'workplace_supervisor_phone': supervisor_phone
         }
 
         # Validate required fields
@@ -134,6 +152,8 @@ def upload_acceptance(attachment_id: int):
             return render_template('student/upload_acceptance.html', attachment=attachment)
 
         try:
+            # 5MB maximum file size limit enforcement per PRD Pipeline 2
+            max_bytes = min(5 * 1024 * 1024, current_app.config.get('MAX_CONTENT_LENGTH', 10 * 1024 * 1024))
             AttachmentService.process_acceptance_upload(
                 attachment_id=attachment.id,
                 user_id=current_user.id,
@@ -142,10 +162,14 @@ def upload_acceptance(attachment_id: int):
                 storage_service=current_app.storage_service,
                 allowed_extensions=current_app.config['ALLOWED_EXTENSIONS'],
                 allowed_mimes=current_app.config['ALLOWED_MIME_TYPES'],
-                max_size=current_app.config['MAX_CONTENT_LENGTH']
+                max_size=max_bytes
             )
-            flash('Acceptance Form uploaded successfully! The Liaison Unit will review the official wet-ink stamp and endorsement.', 'success')
-            return redirect(url_for('student.view_attachment', attachment_id=attachment.id))
+            # Transition status to PENDING_VERIFICATION
+            attachment.status = AttachmentStatus.PENDING_VERIFICATION
+            db.session.commit()
+
+            flash('Acceptance Form uploaded successfully! Status updated to Pending Verification. The Liaison Unit will review the official wet-ink stamp and endorsement.', 'success')
+            return redirect(url_for('student.dashboard'))
         except ValueError as e:
             flash(str(e), 'danger')
         except Exception as e:
@@ -244,6 +268,7 @@ def update_daily_entry(entry_id: int):
 
 
 @student_bp.route('/activities/week/<int:week_id>/lock', methods=['POST'])
+@student_bp.route('/attachment/week/<int:week_id>/lock', methods=['POST'])
 @login_required
 @student_required
 def lock_week(week_id: int):
@@ -269,6 +294,7 @@ def lock_week(week_id: int):
 
 
 @student_bp.route('/activities/week/<int:week_id>/sheet')
+@student_bp.route('/attachment/week/<int:week_id>/download-sheet')
 @login_required
 @student_required
 def download_weekly_sheet(week_id: int):
