@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block title %}Academic Supervisor Workspace — U-IAP{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Academic Supervisor Workspace</h1>
+    <p class="page-subtitle">Assigned Student Workplace Experience Learning Monitoring (PRD Section 30)</p>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <h3 class="card-title">Assigned Students ({{ attachments|length }})</h3>
+  </div>
+
+  <div class="table-responsive">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Index Number</th>
+          <th>Student Name</th>
+          <th>Programme</th>
+          <th>Host Organization</th>
+          <th>Location / Contact</th>
+          <th>Status</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for att in attachments %}
+          <tr>
+            <td><strong>{{ att.student.index_number }}</strong></td>
+            <td>{{ att.student.full_name }}</td>
+            <td><small>{{ att.student.programme }} (Level {{ att.student.current_level }})</small></td>
+            <td><strong>{{ att.target_organization or 'To be confirmed' }}</strong></td>
+            <td>{{ att.organization_address or '—' }}</td>
+            <td><span class="badge badge-primary">{{ att.status.replace('_', ' ') }}</span></td>
+            <td>
+              <a href="{{ url_for('supervisor.view_assigned_student', attachment_id=att.id) }}" class="btn btn-outline btn-sm">
+                View Placement & Logbook
+              </a>
+            </td>
+          </tr>
+        {% else %}
+          <tr>
+            <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 2rem;">
+              No students are currently assigned to your supervision roster.
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

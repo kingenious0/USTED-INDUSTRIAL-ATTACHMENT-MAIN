@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block title %}Verify Student & Initiate Attachment — U-IAP{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <a href="{{ url_for('liaison.student_lookup') }}" style="font-size: 0.85rem; color: var(--text-muted);">&larr; Back to Student Search</a>
+    <h1 class="page-title" style="margin-top: 0.25rem;">Liaison Office Verification & Attachment Initiation</h1>
+    <p class="page-subtitle">Confirm student identity in-person and configure approved attachment parameters (PRD Section 15)</p>
+  </div>
+</div>
+
+<div style="max-width: 800px; margin: 0 auto;">
+  <!-- Verified Student Institutional Card -->
+  <div class="card" style="background: #F8FAFC; border-left: 4px solid var(--primary);">
+    <h3 style="font-size: 1.05rem; color: var(--primary); margin-bottom: 0.5rem;">Verified University Student Particulars</h3>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; font-size: 0.9rem;">
+      <div><strong>Full Name:</strong> {{ student.full_name }}</div>
+      <div><strong>Index Number:</strong> {{ student.index_number }}</div>
+      <div><strong>Programme:</strong> {{ student.programme }}</div>
+      <div><strong>Department:</strong> {{ student.department }}</div>
+      <div><strong>Current Level:</strong> Level {{ student.current_level }}</div>
+      <div><strong>Student Contact:</strong> {{ student.phone or 'N/A' }} | {{ student.email or 'N/A' }}</div>
+    </div>
+  </div>
+
+  <!-- Initiation Form -->
+  <div class="card" style="border-top: 4px solid var(--secondary);">
+    <form method="POST">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+
+      <h3 style="font-size: 1.1rem; color: var(--primary); margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border);">
+        Approved Workplace Experience Learning Parameters
+      </h3>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+        <div class="form-group">
+          <label class="form-label" for="academic_year">Academic Year <span style="color:var(--danger)">*</span></label>
+          <input type="text" id="academic_year" name="academic_year" class="form-control" required
+                 value="{{ default_academic_year }}" placeholder="e.g. 2025/2026">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="duration_weeks">Duration (Weeks) <span style="color:var(--danger)">*</span></label>
+          <input type="number" id="duration_weeks" name="duration_weeks" class="form-control" required min="4" max="24" value="8">
+          <p class="form-hint">Standard duration is typically 8 weeks.</p>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="commencement_date">Commencement Date <span style="color:var(--danger)">*</span></label>
+        <input type="date" id="commencement_date" name="commencement_date" class="form-control" required
+               value="{{ default_commencement }}">
+        <p class="form-hint">System will automatically align weekly sheets Monday through Friday.</p>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="target_organization">Addressee / Target Organization (Optional)</label>
+        <input type="text" id="target_organization" name="target_organization" class="form-control"
+               placeholder="e.g. The Managing Director, Electricity Company of Ghana (ECG), Kumasi">
+        <p class="form-hint">If specified, will be addressed directly on the generated Introductory Letter. Can be re-addressed if student requests reprint.</p>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="organization_address">Organization City / Town</label>
+        <input type="text" id="organization_address" name="organization_address" class="form-control" placeholder="e.g. Kumasi, Ashanti Region">
+      </div>
+
+      <div style="background: var(--info-bg); border-left: 3px solid var(--info); padding: 0.85rem; border-radius: 4px; font-size: 0.85rem; margin: 1.25rem 0;">
+        <strong>Automatic Document Engine Trigger:</strong><br/>
+        Initiating this attachment will immediately provision empty Monday–Friday activity sheets and generate the official <strong>Standardized Introductory Letter (PDF)</strong> with reference number for this student.
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 0.75rem;">
+        <a href="{{ url_for('liaison.student_lookup') }}" class="btn btn-outline">Cancel</a>
+        <button type="submit" class="btn btn-primary" style="padding: 0.6rem 1.5rem;">
+          Verify Student & Generate Letter
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

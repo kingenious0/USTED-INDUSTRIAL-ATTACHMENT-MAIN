@@ -1,0 +1,185 @@
+{% extends "base.html" %}
+
+{% block title %}Activity Logbook — Week {{ selected_week.week_number }} — U-IAP{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <a href="{{ url_for('student.view_attachment', attachment_id=attachment.id) }}" style="font-size: 0.85rem; color: var(--text-muted);">&larr; Back to Attachment Overview</a>
+    <h1 class="page-title" style="margin-top: 0.25rem;">Workplace Experience Learning Activity Logbook</h1>
+    <p class="page-subtitle">
+      Host Organization: <strong>{{ attachment.target_organization or 'To be confirmed' }}</strong> &bull;
+      Student: <strong>{{ attachment.student.full_name }} ({{ attachment.student.index_number }})</strong>
+    </p>
+  </div>
+  <div style="display: flex; gap: 0.5rem; align-items: center;">
+    <a href="{{ url_for('student.download_weekly_sheet', week_id=selected_week.id) }}" class="btn btn-outline btn-sm">
+      Download Weekly Sheet (PDF)
+    </a>
+    {% if not selected_week.is_locked %}
+      <button type="button" class="btn btn-primary btn-sm" onclick="openModal('lockModal')">
+        Lock Week {{ selected_week.week_number }}
+      </button>
+    {% else %}
+      <span class="badge badge-success" style="font-size: 0.85rem; padding: 0.4rem 0.8rem;">🔒 Locked (Read-Only)</span>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Week Navigation Tabs -->
+<div class="week-tabs">
+  {% for w in all_weeks %}
+    <a href="{{ url_for('student.activities', attachment_id=attachment.id, week=w.week_number) }}"
+       class="week-tab {% if w.id == selected_week.id %}active{% endif %} {% if w.is_locked %}locked{% endif %}">
+      Week {{ w.week_number }} {% if w.is_locked %}🔒{% endif %}
+    </a>
+  {% endfor %}
+</div>
+
+<!-- Week Status Banner -->
+{% if selected_week.is_locked %}
+  <div class="card" style="background: var(--success-bg); border-left: 4px solid var(--success); padding: 1rem 1.25rem; margin-bottom: 1.25rem;">
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+      <div>
+        <strong style="color: var(--success); font-size: 0.95rem;">Week {{ selected_week.week_number }} is Locked & Protected</strong>
+        <p style="font-size: 0.82rem; color: var(--text-muted); margin-top: 0.2rem;">
+          Locked on <strong>{{ selected_week.locked_at.strftime('%d %B, %Y at %H:%M UTC') }}</strong>. All entries are strictly read-only on the server.
+          Please download and print the <strong>Weekly Activity Sheet</strong> for physical supervisor evaluation, signature, and official wet-ink company stamp.
+        </p>
+      </div>
+      <a href="{{ url_for('student.download_weekly_sheet', week_id=selected_week.id) }}" class="btn btn-success btn-sm">
+        Print / Download Sheet (PDF)
+      </a>
+    </div>
+  </div>
+{% else %}
+  <div class="card" style="background: var(--warning-bg); border-left: 4px solid var(--warning); padding: 1rem 1.25rem; margin-bottom: 1.25rem;">
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+      <div>
+        <strong style="color: var(--warning); font-size: 0.95rem;">Week {{ selected_week.week_number }} is Currently Unlocked (Editable)</strong>
+        <p style="font-size: 0.82rem; color: var(--text-muted); margin-top: 0.2rem;">
+          Record your daily tasks and learning outcomes below without physical paper line constraints. Once Friday is concluded, click <strong>Lock Week</strong> to finalize.
+        </p>
+      </div>
+      <button type="button" class="btn btn-secondary btn-sm" onclick="openModal('lockModal')">
+        Lock Week {{ selected_week.week_number }}
+      </button>
+    </div>
+  </div>
+{% endif %}
+
+<!-- Monday - Friday Activity Entries (PRD Section 21 & 22) -->
+<div style="display: flex; flex-direction: column; gap: 1.25rem;">
+  {% for day_name in ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'] %}
+    {% set entry = selected_week.get_entry_for_day(day_name) %}
+    <div class="card" style="margin-bottom: 0; border-top: 3px solid {% if selected_week.is_locked %}var(--border){% else %}var(--primary){% endif %};">
+      <div class="card-header" style="background: #F8FAFC; margin: -1.5rem -1.5rem 1rem -1.5rem; padding: 0.85rem 1.5rem; border-top-left-radius: var(--radius); border-top-right-radius: var(--radius);">
+        <div style="display: flex; align-items: center; gap: 0.75rem;">
+          <h3 style="font-size: 1.05rem; font-weight: 700; color: var(--primary);">{{ day_name }}</h3>
+          <span style="font-size: 0.85rem; color: var(--text-muted);">{{ entry.date.strftime('%d %B, %Y') }}</span>
+        </div>
+        <div>
+          {% if selected_week.is_locked %}
+            <span class="badge badge-secondary">Locked</span>
+          {% else %}
+            <span class="badge badge-primary">Editable</span>
+          {% endif %}
+        </div>
+      </div>
+
+      {% if not selected_week.is_locked %}
+        <form method="POST" action="{{ url_for('student.update_daily_entry', entry_id=entry.id) }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+          
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 0.75rem;">
+            <div class="form-group" style="margin-bottom: 0;">
+              <label class="form-label" style="font-size: 0.82rem;">Start Time</label>
+              <input type="text" name="start_time" class="form-control" value="{{ entry.start_time or '08:00' }}" placeholder="08:00">
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+              <label class="form-label" style="font-size: 0.82rem;">End Time</label>
+              <input type="text" name="end_time" class="form-control" value="{{ entry.end_time or '17:00' }}" placeholder="17:00">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Key Tasks & Learning Outcomes (Expandable)</label>
+            <textarea name="key_tasks" class="form-control textarea-expandable" placeholder="Describe the specific engineering, technical, or administrative tasks performed and outcomes achieved...">{{ entry.key_tasks or '' }}</textarea>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Skills Demonstrated & Competencies Acquired</label>
+            <textarea name="skills_demonstrated" class="form-control textarea-expandable" placeholder="List software, technical skills, safety protocols, tools, or machinery applied...">{{ entry.skills_demonstrated or '' }}</textarea>
+          </div>
+
+          <div class="form-group" style="margin-bottom: 0.75rem;">
+            <label class="form-label">Optional Remarks / Observations</label>
+            <input type="text" name="remarks" class="form-control" value="{{ entry.remarks or '' }}" placeholder="Challenges encountered, supervisor feedback, or reflections">
+          </div>
+
+          <div style="text-align: right;">
+            <button type="submit" class="btn btn-primary btn-sm">Save {{ day_name }} Entry</button>
+          </div>
+        </form>
+      {% else %}
+        <!-- Read-Only View for Locked Entries -->
+        <div style="font-size: 0.9rem; display: flex; flex-direction: column; gap: 0.75rem;">
+          <div style="display: flex; gap: 2rem; color: var(--text-muted); font-size: 0.85rem;">
+            <span><strong>Working Hours:</strong> {{ entry.start_time or '—' }} to {{ entry.end_time or '—' }}</span>
+          </div>
+          <div>
+            <span style="font-weight: 600; color: var(--primary); display: block; font-size: 0.85rem;">Key Tasks & Learning Outcomes:</span>
+            <div style="background: #F8FAFC; padding: 0.75rem; border-radius: var(--radius); border: 1px solid var(--border); white-space: pre-wrap; margin-top: 0.25rem;">
+              {{ entry.key_tasks or 'No activity recorded for this date.' }}
+            </div>
+          </div>
+          {% if entry.skills_demonstrated %}
+            <div>
+              <span style="font-weight: 600; color: var(--primary); display: block; font-size: 0.85rem;">Skills Demonstrated:</span>
+              <div style="background: #F8FAFC; padding: 0.75rem; border-radius: var(--radius); border: 1px solid var(--border); white-space: pre-wrap; margin-top: 0.25rem;">
+                {{ entry.skills_demonstrated }}
+              </div>
+            </div>
+          {% endif %}
+          {% if entry.remarks %}
+            <div style="font-size: 0.85rem; color: var(--text-muted);">
+              <strong>Remarks:</strong> {{ entry.remarks }}
+            </div>
+          {% endif %}
+        </div>
+      {% endif %}
+    </div>
+  {% endfor %}
+</div>
+
+<!-- Lock Week Confirmation Modal (PRD Section 23: Student-Controlled Lock) -->
+<div id="lockModal" class="modal-backdrop">
+  <div class="modal-card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+      <h3 style="color: var(--danger); font-size: 1.2rem;">Confirm Weekly Lock</h3>
+      <button type="button" onclick="closeModal('lockModal')" style="background:none; border:none; font-size:1.4rem; cursor:pointer;">&times;</button>
+    </div>
+
+    <div style="font-size: 0.9rem; color: var(--text-main); margin-bottom: 1.25rem; line-height: 1.5;">
+      <p style="margin-bottom: 0.75rem;">
+        Are you sure you want to <strong>lock Week {{ selected_week.week_number }}</strong>?
+      </p>
+      <div style="background: var(--danger-bg); border-left: 4px solid var(--danger); padding: 0.75rem; border-radius: 4px; font-size: 0.85rem;">
+        <strong>Notice on Read-Only Protection:</strong><br/>
+        Once locked, the entries for Monday through Friday become strictly read-only on the server. You will no longer be able to edit or delete tasks for this week.
+      </div>
+      <p style="margin-top: 0.75rem; font-size: 0.85rem; color: var(--text-muted);">
+        After locking, download your official <strong>Weekly Activity Sheet (PDF)</strong> and present it to your workplace supervisor for physical review, comments, signature, and wet-ink company stamp.
+      </p>
+    </div>
+
+    <form method="POST" action="{{ url_for('student.lock_week', week_id=selected_week.id) }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+      <div style="display: flex; justify-content: flex-end; gap: 0.75rem;">
+        <button type="button" class="btn btn-outline" onclick="closeModal('lockModal')">Cancel</button>
+        <button type="submit" class="btn btn-danger">Confirm & Lock Week {{ selected_week.week_number }}</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

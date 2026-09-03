@@ -1,0 +1,193 @@
+{% extends "base.html" %}
+
+{% block title %}Student Attachment Workspace — U-IAP{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Student Attachment Workspace</h1>
+    <p class="page-subtitle">Workplace Experience Learning (WEL) Lifecycle Management</p>
+  </div>
+  {% if active_attachment %}
+    <span class="badge badge-primary">{{ active_attachment.status.replace('_', ' ') }}</span>
+  {% endif %}
+</div>
+
+<!-- Student Profile Information Card -->
+<div class="card" style="border-left: 4px solid var(--primary);">
+  <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+    <div>
+      <h2 style="color: var(--primary); font-size: 1.25rem; font-weight: 700;">{{ student.full_name }}</h2>
+      <div style="font-size: 0.88rem; color: var(--text-muted); margin-top: 0.25rem;">
+        <span><strong>Index Number:</strong> {{ student.index_number }}</span> &bull;
+        <span><strong>Programme:</strong> {{ student.programme }}</span> &bull;
+        <span><strong>Level:</strong> {{ student.current_level }}</span>
+      </div>
+    </div>
+    <div style="text-align: right;">
+      <span style="font-size: 0.8rem; color: var(--text-muted); display: block;">Department:</span>
+      <span style="font-weight: 600; color: var(--primary);">{{ student.department }}</span>
+    </div>
+  </div>
+</div>
+
+{% if not active_attachment %}
+  <!-- No Active Attachment Notice -->
+  <div class="card" style="text-align: center; padding: 3rem 1.5rem; background: #FAF5FF; border: 1px dashed #C084FC;">
+    <h3 style="color: #6B21A8; margin-bottom: 0.5rem;">No Active Attachment Record</h3>
+    <p style="color: var(--text-muted); max-width: 600px; margin: 0 auto 1.5rem auto; font-size: 0.95rem;">
+      Per university institutional procedure (PRD Section 15), student registration alone cannot initiate an attachment.
+      Please undertake your <strong>mandatory physical visit to the Industrial Liaison Unit</strong> for identity verification and attachment initiation.
+    </p>
+    <span class="badge badge-secondary" style="padding: 0.5rem 1rem; font-size: 0.85rem;">Mandatory Physical Liaison Office Visit Required</span>
+  </div>
+{% else %}
+  <!-- Active Attachment Dashboard -->
+  <div class="card" style="border-top: 4px solid var(--secondary);">
+    <div class="card-header">
+      <h3 class="card-title">Current Attachment Details (Academic Year: {{ active_attachment.academic_year }})</h3>
+      <a href="{{ url_for('student.view_attachment', attachment_id=active_attachment.id) }}" class="btn btn-outline btn-sm">View Full Attachment</a>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; font-size: 0.9rem;">
+      <div style="background: #F8FAFC; padding: 0.85rem; border-radius: var(--radius); border: 1px solid var(--border);">
+        <span style="color: var(--text-muted); font-size: 0.8rem; display: block;">Host Organization:</span>
+        <strong style="color: var(--primary);">{{ active_attachment.target_organization or 'To be confirmed by Acceptance Form' }}</strong>
+      </div>
+
+      <div style="background: #F8FAFC; padding: 0.85rem; border-radius: var(--radius); border: 1px solid var(--border);">
+        <span style="color: var(--text-muted); font-size: 0.8rem; display: block;">Period & Duration:</span>
+        <strong>{{ active_attachment.duration_weeks }} Weeks</strong><br/>
+        <small style="color: var(--text-muted);">{{ active_attachment.commencement_date.strftime('%d %b, %Y') }} to {{ active_attachment.end_date.strftime('%d %b, %Y') }}</small>
+      </div>
+
+      <div style="background: #F8FAFC; padding: 0.85rem; border-radius: var(--radius); border: 1px solid var(--border);">
+        <span style="color: var(--text-muted); font-size: 0.8rem; display: block;">Acceptance Form:</span>
+        {% if active_attachment.latest_acceptance %}
+          <span class="badge {% if active_attachment.latest_acceptance.is_approved %}badge-success{% elif active_attachment.latest_acceptance.is_flagged %}badge-danger{% else %}badge-warning{% endif %}">
+            {{ active_attachment.latest_acceptance.status.replace('_', ' ') }}
+          </span>
+        {% else %}
+          <span class="badge badge-secondary">Pending Upload</span>
+        {% endif %}
+      </div>
+
+      <div style="background: #F8FAFC; padding: 0.85rem; border-radius: var(--radius); border: 1px solid var(--border);">
+        <span style="color: var(--text-muted); font-size: 0.8rem; display: block;">Activity Logging:</span>
+        {% if can_log %}
+          <span class="badge badge-success">Active / Enabled</span>
+        {% else %}
+          <span class="badge badge-warning">Locked Until Acceptance Upload</span>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Workflow Action Grid -->
+    <h4 style="font-size: 0.95rem; font-weight: 600; color: var(--primary); margin-bottom: 0.75rem;">Step-by-Step Attachment Actions:</h4>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem;">
+      <!-- Step 1: Letter -->
+      <div style="border: 1px solid var(--border); border-radius: var(--radius); padding: 1rem; display: flex; flex-direction: column; justify-content: space-between;">
+        <div>
+          <span class="badge badge-secondary" style="margin-bottom: 0.5rem;">Step 1</span>
+          <h5 style="color: var(--primary); font-size: 0.95rem;">Introductory Letter</h5>
+          <p style="font-size: 0.82rem; color: var(--text-muted); margin: 0.25rem 0 1rem 0;">Official letter addressed to employer for placement.</p>
+        </div>
+        <a href="{{ url_for('student.download_letter', attachment_id=active_attachment.id) }}" class="btn btn-outline btn-sm">
+          Download Official Letter (PDF)
+        </a>
+      </div>
+
+      <!-- Step 2: Blank Acceptance Form -->
+      <div style="border: 1px solid var(--border); border-radius: var(--radius); padding: 1rem; display: flex; flex-direction: column; justify-content: space-between;">
+        <div>
+          <span class="badge badge-secondary" style="margin-bottom: 0.5rem;">Step 2</span>
+          <h5 style="color: var(--primary); font-size: 0.95rem;">Physical Acceptance Form</h5>
+          <p style="font-size: 0.82rem; color: var(--text-muted); margin: 0.25rem 0 1rem 0;">Standard physical form for wet-ink company endorsement.</p>
+        </div>
+        <a href="{{ url_for('student.download_blank_acceptance_form', attachment_id=active_attachment.id) }}" class="btn btn-outline btn-sm">
+          Download Blank Form (PDF)
+        </a>
+      </div>
+
+      <!-- Step 3: Upload Scan -->
+      <div style="border: 1px solid var(--border); border-radius: var(--radius); padding: 1rem; display: flex; flex-direction: column; justify-content: space-between;">
+        <div>
+          <span class="badge badge-secondary" style="margin-bottom: 0.5rem;">Step 3</span>
+          <h5 style="color: var(--primary); font-size: 0.95rem;">Upload Completed Scan</h5>
+          <p style="font-size: 0.82rem; color: var(--text-muted); margin: 0.25rem 0 1rem 0;">Upload clear photograph or scan of endorsed form.</p>
+        </div>
+        <a href="{{ url_for('student.upload_acceptance', attachment_id=active_attachment.id) }}" class="btn btn-primary btn-sm">
+          {% if active_attachment.latest_acceptance %}Update / Re-Upload Scan{% else %}Upload Form Scan{% endif %}
+        </a>
+      </div>
+
+      <!-- Step 4: Activity Logger -->
+      <div style="border: 1px solid var(--border); border-radius: var(--radius); padding: 1rem; display: flex; flex-direction: column; justify-content: space-between;">
+        <div>
+          <span class="badge badge-secondary" style="margin-bottom: 0.5rem;">Step 4</span>
+          <h5 style="color: var(--primary); font-size: 0.95rem;">Monday–Friday Logbook</h5>
+          <p style="font-size: 0.82rem; color: var(--text-muted); margin: 0.25rem 0 1rem 0;">Log daily workplace activities and lock weekly sheets.</p>
+        </div>
+        {% if can_log %}
+          <a href="{{ url_for('student.activities', attachment_id=active_attachment.id) }}" class="btn btn-success btn-sm">
+            Open Activity Logger
+          </a>
+        {% else %}
+          <button class="btn btn-outline btn-sm" disabled title="Upload Acceptance Form to enable logger">
+            Logging Locked
+          </button>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- End of Attachment Deliverables Notice (PRD Section 27, 28) -->
+  <div class="card" style="background: #F8FAFC; border: 1px solid var(--border);">
+    <h4 style="font-size: 0.95rem; font-weight: 600; color: var(--primary); margin-bottom: 0.5rem;">End-of-Attachment Deliverables & Closeout</h4>
+    <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">
+      Once all weeks are completed and physically verified by your workplace supervisor:
+    </p>
+    <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+      <a href="{{ url_for('student.download_compiled_report', attachment_id=active_attachment.id) }}" class="btn btn-outline btn-sm">
+        Download Compiled WEL Logbook (PDF)
+      </a>
+    </div>
+    <div style="margin-top: 1rem; font-size: 0.82rem; color: var(--text-muted); border-top: 1px solid var(--border); padding-top: 0.75rem;">
+      <strong>Institutional Notice:</strong> The official 20-item Workplace Supervisor Assessment Form remains a confidential sealed physical document. Students must NOT submit assessment scores online. Technical report submission remains a separate physical academic requirement.
+    </div>
+  </div>
+{% endif %}
+
+<!-- Attachment History (PRD Section 13: Multiple Attachments Support) -->
+{% if attachments|length > 1 %}
+  <div class="card">
+    <h3 class="card-title" style="margin-bottom: 1rem;">Attachment History</h3>
+    <div class="table-responsive">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Academic Year</th>
+            <th>Organization</th>
+            <th>Duration</th>
+            <th>Status</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for att in attachments %}
+            <tr>
+              <td>#{{ att.id }}</td>
+              <td>{{ att.academic_year }}</td>
+              <td>{{ att.target_organization or 'N/A' }}</td>
+              <td>{{ att.duration_weeks }} Weeks</td>
+              <td><span class="badge badge-secondary">{{ att.status.replace('_', ' ') }}</span></td>
+              <td><a href="{{ url_for('student.view_attachment', attachment_id=att.id) }}" class="btn btn-outline btn-sm">View</a></td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+{% endif %}
+{% endblock %}

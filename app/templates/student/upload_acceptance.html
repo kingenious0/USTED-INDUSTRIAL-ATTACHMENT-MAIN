@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+
+{% block title %}Upload Acceptance Form — U-IAP{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <a href="{{ url_for('student.view_attachment', attachment_id=attachment.id) }}" style="font-size: 0.85rem; color: var(--text-muted);">&larr; Back to Attachment</a>
+    <h1 class="page-title" style="margin-top: 0.25rem;">Upload Completed Acceptance Form</h1>
+    <p class="page-subtitle">Submit scanned copy of physically stamped and signed WEL Acceptance Form</p>
+  </div>
+</div>
+
+<div style="max-width: 800px; margin: 0 auto;">
+  <!-- Physical Requirement Alert -->
+  <div class="flash-alert warning" style="margin-bottom: 1.5rem;">
+    <div>
+      <strong>Mandatory Institutional Requirement (PRD Rule 7):</strong><br/>
+      The uploaded scan must clearly show the <strong>official company wet-ink stamp</strong> and the <strong>workplace supervisor/authorized officer signature</strong>. Uploads without an official physical stamp or signature will be rejected by the Liaison Office.
+    </div>
+  </div>
+
+  <div class="card" style="box-shadow: var(--shadow-md); border-top: 4px solid var(--primary);">
+    <form method="POST" enctype="multipart/form-data">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+
+      <h3 style="font-size: 1.1rem; color: var(--primary); margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border);">
+        1. Host Organization Particulars
+      </h3>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+        <div class="form-group">
+          <label class="form-label" for="organization_name">Organization Name <span style="color:var(--danger)">*</span></label>
+          <input type="text" id="organization_name" name="organization_name" class="form-control" required
+                 value="{{ attachment.latest_acceptance.organization_name if attachment.latest_acceptance else (attachment.target_organization or '') }}"
+                 placeholder="e.g. Ghana Grid Company Ltd (GRIDCo)">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="organization_type">Nature of Business / Industry</label>
+          <input type="text" id="organization_type" name="organization_type" class="form-control"
+                 value="{{ attachment.latest_acceptance.organization_type if attachment.latest_acceptance else '' }}"
+                 placeholder="e.g. Telecommunications, Manufacturing, Construction">
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+        <div class="form-group">
+          <label class="form-label" for="location">Physical Location / Town / City <span style="color:var(--danger)">*</span></label>
+          <input type="text" id="location" name="location" class="form-control" required
+                 value="{{ attachment.latest_acceptance.location if attachment.latest_acceptance else (attachment.organization_address or '') }}"
+                 placeholder="e.g. Harper Road, Adum, Kumasi">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="postal_address">Postal Address</label>
+          <input type="text" id="postal_address" name="postal_address" class="form-control"
+                 value="{{ attachment.latest_acceptance.postal_address if attachment.latest_acceptance else '' }}"
+                 placeholder="e.g. P.O. Box 450, Kumasi">
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+        <div class="form-group">
+          <label class="form-label" for="telephone">Organization Telephone / Mobile <span style="color:var(--danger)">*</span></label>
+          <input type="text" id="telephone" name="telephone" class="form-control" required
+                 value="{{ attachment.latest_acceptance.telephone if attachment.latest_acceptance else '' }}"
+                 placeholder="e.g. 0322012345 / 0244123456">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="email">Organization Email Address</label>
+          <input type="email" id="email" name="email" class="form-control"
+                 value="{{ attachment.latest_acceptance.email if attachment.latest_acceptance else '' }}"
+                 placeholder="e.g. info@company.com">
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+        <div class="form-group">
+          <label class="form-label" for="workplace_supervisor_name">Workplace Supervisor Name</label>
+          <input type="text" id="workplace_supervisor_name" name="workplace_supervisor_name" class="form-control"
+                 value="{{ attachment.latest_acceptance.workplace_supervisor_name if attachment.latest_acceptance else '' }}"
+                 placeholder="e.g. Ing. Michael Appiah">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="workplace_supervisor_phone">Supervisor Phone Number</label>
+          <input type="text" id="workplace_supervisor_phone" name="workplace_supervisor_phone" class="form-control"
+                 value="{{ attachment.latest_acceptance.workplace_supervisor_phone if attachment.latest_acceptance else '' }}"
+                 placeholder="e.g. 0244987654">
+        </div>
+      </div>
+
+      <h3 style="font-size: 1.1rem; color: var(--primary); margin: 1.5rem 0 1rem 0; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border);">
+        2. Document File Upload
+      </h3>
+
+      <div class="form-group">
+        <label class="form-label" for="acceptance_scan">Select Scanned File or Photograph <span style="color:var(--danger)">*</span></label>
+        <input type="file" id="acceptance_scan" name="acceptance_scan" class="form-control" required accept=".pdf, .png, .jpg, .jpeg">
+        <p class="form-hint">Permitted formats: <strong>PDF, PNG, JPG, JPEG</strong>. Maximum file size: <strong>10 MB</strong>. Ensure all text, wet-ink stamp, and signature are legible.</p>
+      </div>
+
+      <div style="margin-top: 1.75rem; display: flex; justify-content: flex-end; gap: 0.75rem;">
+        <a href="{{ url_for('student.view_attachment', attachment_id=attachment.id) }}" class="btn btn-outline">Cancel</a>
+        <button type="submit" class="btn btn-primary" style="padding: 0.6rem 1.5rem;">
+          Upload & Submit for Liaison Review
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

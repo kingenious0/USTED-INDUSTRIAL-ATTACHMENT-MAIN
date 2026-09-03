@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block title %}Access Denied — 403 Forbidden — U-IAP{% endblock %}
+
+{% block content %}
+<div style="max-width: 600px; margin: 3rem auto; text-align: center;">
+  <div class="card" style="border-top: 5px solid var(--danger); padding: 2.5rem 1.5rem;">
+    <h1 style="color: var(--danger); font-size: 3rem; font-weight: 800; line-height: 1;">403</h1>
+    <h2 style="color: var(--primary); font-size: 1.3rem; margin: 0.75rem 0;">{{ custom_title or "Access Forbidden / Read-Only Protection" }}</h2>
+    <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 1.5rem;">
+      {{ custom_message or "You do not have authorization to view this record, or the requested action is prohibited (e.g. attempting to modify a locked week or accessing another student's record)." }}
+    </p>
+    <a href="{{ url_for('main.index') }}" class="btn btn-primary">Return to Portal Home</a>
+  </div>
+</div>
+{% endblock %}

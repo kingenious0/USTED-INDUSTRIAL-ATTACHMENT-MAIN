@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}U-IAP — Workplace Experience Learning Portal{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+
+  <!-- Top Navigation Bar -->
+  <nav class="navbar">
+    <div class="nav-container">
+      <a href="{{ url_for('main.index') }}" class="brand-link">
+        <span class="brand-badge">USTED</span>
+        <span>U-IAP PORTAL</span>
+      </a>
+
+      <ul class="nav-links">
+        {% if current_user.is_authenticated %}
+          {% if current_user.is_student %}
+            <li><a href="{{ url_for('student.dashboard') }}">Student Workspace</a></li>
+          {% elif current_user.is_liaison %}
+            <li><a href="{{ url_for('liaison.dashboard') }}">Liaison Dashboard</a></li>
+            <li><a href="{{ url_for('liaison.student_lookup') }}">Verify Student</a></li>
+            <li><a href="{{ url_for('liaison.attachments_list') }}">Attachments</a></li>
+            <li><a href="{{ url_for('liaison.acceptance_queue') }}">Acceptance Queue</a></li>
+            {% if current_user.is_admin %}
+              <li><a href="{{ url_for('admin.dashboard') }}">Admin / Audits</a></li>
+              <li><a href="{{ url_for('admin.settings') }}">Settings</a></li>
+            {% endif %}
+          {% elif current_user.is_supervisor %}
+            <li><a href="{{ url_for('supervisor.dashboard') }}">Assigned Students</a></li>
+          {% endif %}
+
+          <li class="user-badge">
+            <span>{{ current_user.full_name }}</span>
+            <span class="role-pill">{{ current_user.role.replace('_', ' ') }}</span>
+          </li>
+          <li><a href="{{ url_for('auth.logout') }}" class="btn btn-outline btn-sm" style="color:#FFF; border-color:rgba(255,255,255,0.3);">Log Out</a></li>
+        {% else %}
+          <li><a href="{{ url_for('auth.login') }}" class="btn btn-secondary btn-sm">Portal Login</a></li>
+        {% endif %}
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Main Body Content -->
+  <main class="main-wrapper">
+    <!-- Flash Messages Container -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="flash-container">
+          {% for category, message in messages %}
+            <div class="flash-alert {{ category }}">
+              <span>{{ message }}</span>
+              <button type="button" class="alert-close" style="background:none; border:none; font-size:1.1rem; cursor:pointer; color:inherit;">&times;</button>
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    {% block content %}{% endblock %}
+  </main>
+
+  <!-- Institutional Footer -->
+  <footer class="footer">
+    <div class="footer-container">
+      <div>
+        <strong>{{ university_name }}</strong><br/>
+        <span>Industrial Liaison & Workplace Experience Learning (WEL) Unit</span>
+      </div>
+      <div style="text-align: right;">
+        <span>U-IAP Version {{ app_version }} | Operational MVP</span><br/>
+        <span>&copy; {{ current_year }} USTED. All rights reserved.</span>
+      </div>
+    </div>
+  </footer>
+
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+  {% block extra_scripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block title %}System Audit Logs — U-IAP{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <a href="{{ url_for('admin.dashboard') }}" style="font-size: 0.85rem; color: var(--text-muted);">&larr; Back to Admin Dashboard</a>
+    <h1 class="page-title" style="margin-top: 0.25rem;">Institutional Audit Trail</h1>
+    <p class="page-subtitle">Detailed record of user authentications, attachment creation, letter generation, acceptance reviews, and weekly locking (PRD Section 31)</p>
+  </div>
+</div>
+
+<div class="card">
+  <!-- Filter by Action -->
+  <div style="display: flex; gap: 0.5rem; margin-bottom: 1.25rem; flex-wrap: wrap;">
+    <a href="{{ url_for('admin.audit_logs') }}" class="btn {% if not selected_action %}btn-primary{% else %}btn-outline{% endif %} btn-sm">All Actions</a>
+    {% for a in actions %}
+      <a href="{{ url_for('admin.audit_logs', action=a) }}" class="btn {% if selected_action == a %}btn-primary{% else %}btn-outline{% endif %} btn-sm">{{ a }}</a>
+    {% endfor %}
+  </div>
+
+  <div class="table-responsive">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Timestamp (UTC)</th>
+          <th>Actor</th>
+          <th>Role</th>
+          <th>Action</th>
+          <th>Target</th>
+          <th>IP Address</th>
+          <th>Details</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for log in logs %}
+          <tr>
+            <td>#{{ log.id }}</td>
+            <td><small>{{ log.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</small></td>
+            <td><strong>{{ log.actor_username or 'SYSTEM' }}</strong></td>
+            <td><span class="badge badge-secondary">{{ log.actor_role or 'system' }}</span></td>
+            <td><span class="badge badge-primary">{{ log.action }}</span></td>
+            <td>{{ log.target_type or '—' }}{% if log.target_id %} #{{ log.target_id }}{% endif %}</td>
+            <td><small style="color:var(--text-muted);">{{ log.ip_address or '—' }}</small></td>
+            <td><small style="color:var(--text-muted); font-family:monospace;">{{ log.details_json or '—' }}</small></td>
+          </tr>
+        {% else %}
+          <tr>
+            <td colspan="8" style="text-align: center; color: var(--text-muted); padding: 2rem;">No matching audit records found.</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

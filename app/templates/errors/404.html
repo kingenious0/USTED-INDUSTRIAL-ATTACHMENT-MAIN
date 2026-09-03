@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block title %}Page Not Found — 404 — U-IAP{% endblock %}
+
+{% block content %}
+<div style="max-width: 600px; margin: 3rem auto; text-align: center;">
+  <div class="card" style="border-top: 5px solid var(--secondary); padding: 2.5rem 1.5rem;">
+    <h1 style="color: var(--secondary); font-size: 3rem; font-weight: 800; line-height: 1;">404</h1>
+    <h2 style="color: var(--primary); font-size: 1.3rem; margin: 0.75rem 0;">Record or Resource Not Found</h2>
+    <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 1.5rem;">
+      The requested attachment record, document, or page does not exist or has been removed.
+    </p>
+    <a href="{{ url_for('main.index') }}" class="btn btn-primary">Return to Portal Home</a>
+  </div>
+</div>
+{% endblock %}

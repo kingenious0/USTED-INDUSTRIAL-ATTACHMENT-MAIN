@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+
+{% block title %}Liaison Office Dashboard — U-IAP{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Industrial Liaison Unit Dashboard</h1>
+    <p class="page-subtitle">Workplace Experience Learning (WEL) Administrative Operations</p>
+  </div>
+  <div>
+    <a href="{{ url_for('liaison.student_lookup') }}" class="btn btn-primary">
+      + In-Person Student Verification & Intake
+    </a>
+  </div>
+</div>
+
+<!-- Operational Metrics Grid -->
+<div class="metrics-grid">
+  <div class="metric-card primary">
+    <span class="metric-label">Total Attachments Initiated</span>
+    <span class="metric-value">{{ total_attachments }}</span>
+    <span style="font-size: 0.78rem; color: var(--text-muted);">Current academic period</span>
+  </div>
+
+  <div class="metric-card warning">
+    <span class="metric-label">Acceptance Reviews Pending</span>
+    <span class="metric-value">{{ pending_acceptance }}</span>
+    <a href="{{ url_for('liaison.acceptance_queue') }}" style="font-size: 0.8rem; font-weight: 600; color: var(--warning);">
+      Review Queue &rarr;
+    </a>
+  </div>
+
+  <div class="metric-card success">
+    <span class="metric-label">Students Currently Logging</span>
+    <span class="metric-value">{{ active_logging }}</span>
+    <span style="font-size: 0.78rem; color: var(--text-muted);">Active Mon–Fri activity</span>
+  </div>
+
+  <div class="metric-card highlight">
+    <span class="metric-label">Completed Attachments</span>
+    <span class="metric-value">{{ completed }}</span>
+    <span style="font-size: 0.78rem; color: var(--text-muted);">Ready for evaluation</span>
+  </div>
+</div>
+
+<div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem;">
+  <!-- Recent Attachments Roster -->
+  <div class="card">
+    <div class="card-header">
+      <h3 class="card-title">Recent Attachments</h3>
+      <a href="{{ url_for('liaison.attachments_list') }}" class="btn btn-outline btn-sm">View All Attachments</a>
+    </div>
+
+    <div class="table-responsive">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Index No.</th>
+            <th>Student Name</th>
+            <th>Programme</th>
+            <th>Status</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for att in recent_attachments %}
+            <tr>
+              <td><strong>{{ att.student.index_number }}</strong></td>
+              <td>{{ att.student.full_name }}</td>
+              <td><small>{{ att.student.programme }}</small></td>
+              <td><span class="badge badge-primary">{{ att.status.replace('_', ' ') }}</span></td>
+              <td>
+                <a href="{{ url_for('liaison.view_attachment_detail', attachment_id=att.id) }}" class="btn btn-outline btn-sm">
+                  Inspect
+                </a>
+              </td>
+            </tr>
+          {% else %}
+            <tr>
+              <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 1.5rem;">No attachments initiated yet.</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Pending Acceptance Form Reviews Queue -->
+  <div class="card" style="border-top: 4px solid var(--warning);">
+    <div class="card-header">
+      <h3 class="card-title">Acceptance Review Queue</h3>
+      <a href="{{ url_for('liaison.acceptance_queue') }}" class="btn btn-outline btn-sm">All ({{ pending_acceptance }})</a>
+    </div>
+
+    {% if pending_reviews %}
+      <div style="display: flex; flex-direction: column; gap: 0.85rem;">
+        {% for acc in pending_reviews %}
+          <div style="background: #F8FAFC; border: 1px solid var(--border); border-radius: var(--radius); padding: 0.85rem;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.35rem;">
+              <strong style="color: var(--primary); font-size: 0.9rem;">{{ acc.attachment.student.full_name }}</strong>
+              <small style="color: var(--text-muted);">{{ acc.created_at.strftime('%d/%m') }}</small>
+            </div>
+            <div style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 0.6rem;">
+              <span>Org: {{ acc.organization_name }}</span><br/>
+              <span>Index: {{ acc.attachment.student.index_number }}</span>
+            </div>
+            <a href="{{ url_for('liaison.review_acceptance', acceptance_id=acc.id) }}" class="btn btn-warning btn-sm" style="width: 100%;">
+              Review Scan & Stamp
+            </a>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div style="text-align: center; color: var(--text-muted); padding: 2rem 0; font-size: 0.88rem;">
+        No Acceptance Forms awaiting review.
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

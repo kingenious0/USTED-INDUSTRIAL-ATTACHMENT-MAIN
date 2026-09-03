@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block title %}Sign In — USTED Industrial Attachment Portal{% endblock %}
+
+{% block content %}
+<div style="max-width: 440px; margin: 2.5rem auto;">
+  <div class="card" style="box-shadow: var(--shadow-md); border-top: 4px solid var(--primary);">
+    <div style="text-align: center; margin-bottom: 1.5rem;">
+      <span class="badge badge-primary">USTED ILU</span>
+      <h2 style="color: var(--primary); font-size: 1.4rem; margin-top: 0.5rem;">Sign In to U-IAP</h2>
+      <p style="font-size: 0.85rem; color: var(--text-muted);">Industrial Attachment Management System</p>
+    </div>
+
+    <form method="POST" action="{{ url_for('auth.login') }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+
+      <div class="form-group">
+        <label class="form-label" for="username">Username or Staff/Student ID</label>
+        <input type="text" id="username" name="username" class="form-control" required autofocus placeholder="e.g. liaison1 or student1">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="password">Password</label>
+        <input type="password" id="password" name="password" class="form-control" required placeholder="Enter your password">
+      </div>
+
+      <div class="form-group" style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1.5rem;">
+        <input type="checkbox" id="remember" name="remember" style="cursor: pointer;">
+        <label for="remember" style="font-size: 0.85rem; color: var(--text-muted); cursor: pointer; user-select: none;">Remember this device</label>
+      </div>
+
+      <button type="submit" class="btn btn-primary" style="width: 100%; padding: 0.65rem; font-size: 0.95rem;">
+        Authenticate
+      </button>
+    </form>
+
+    <!-- Quick Fill for Demo -->
+    <div style="margin-top: 1.5rem; padding-top: 1rem; border-top: 1px dashed var(--border); font-size: 0.8rem; color: var(--text-muted); text-align: center;">
+      <span>Quick Demo Login:</span>
+      <div style="display: flex; gap: 0.4rem; justify-content: center; margin-top: 0.5rem; flex-wrap: wrap;">
+        <button type="button" class="btn btn-outline btn-sm" onclick="setDemo('liaison1', 'password123')">Liaison Officer</button>
+        <button type="button" class="btn btn-outline btn-sm" onclick="setDemo('student1', 'password123')">Student (Level 300)</button>
+        <button type="button" class="btn btn-outline btn-sm" onclick="setDemo('admin1', 'password123')">Liaison Head</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  function setDemo(user, pass) {
+    document.getElementById('username').value = user;
+    document.getElementById('password').value = pass;
+  }
+</script>
+{% endblock %}

@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block title %}System Administration — U-IAP{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Unit Administration & Audit Center</h1>
+    <p class="page-subtitle">System metrics, institutional audit logs, and operational workflow configuration</p>
+  </div>
+  <div style="display: flex; gap: 0.5rem;">
+    <a href="{{ url_for('admin.audit_logs') }}" class="btn btn-outline btn-sm">Full Audit Logs</a>
+    <a href="{{ url_for('admin.settings') }}" class="btn btn-primary btn-sm">Workflow Settings</a>
+  </div>
+</div>
+
+<div class="metrics-grid">
+  <div class="metric-card primary">
+    <span class="metric-label">Registered Portal Users</span>
+    <span class="metric-value">{{ total_users }}</span>
+    <span style="font-size: 0.78rem; color: var(--text-muted);">Staff, students, and supervisors</span>
+  </div>
+
+  <div class="metric-card highlight">
+    <span class="metric-label">Total Attachment Records</span>
+    <span class="metric-value">{{ total_attachments }}</span>
+    <span style="font-size: 0.78rem; color: var(--text-muted);">Cumulative lifecycle records</span>
+  </div>
+
+  <div class="metric-card success">
+    <span class="metric-label">System Audit Events Recorded</span>
+    <span class="metric-value">{{ total_audits }}</span>
+    <span style="font-size: 0.78rem; color: var(--text-muted);">Security and workflow trail</span>
+  </div>
+</div>
+
+<!-- Recent Audit Trail Inspection (PRD Section 31) -->
+<div class="card">
+  <div class="card-header">
+    <h3 class="card-title">Recent System Audit Events</h3>
+    <a href="{{ url_for('admin.audit_logs') }}" class="btn btn-outline btn-sm">View All Logs &rarr;</a>
+  </div>
+
+  <div class="table-responsive">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Timestamp (UTC)</th>
+          <th>Actor</th>
+          <th>Role</th>
+          <th>Action</th>
+          <th>Target</th>
+          <th>IP Address</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for log in recent_audits %}
+          <tr>
+            <td><small>{{ log.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</small></td>
+            <td><strong>{{ log.actor_username or 'SYSTEM' }}</strong></td>
+            <td><span class="badge badge-secondary">{{ log.actor_role or 'system' }}</span></td>
+            <td><span class="badge badge-primary">{{ log.action }}</span></td>
+            <td>{{ log.target_type or '—' }}{% if log.target_id %} #{{ log.target_id }}{% endif %}</td>
+            <td><small style="color:var(--text-muted);">{{ log.ip_address or '—' }}</small></td>
+          </tr>
+        {% else %}
+          <tr>
+            <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 1.5rem;">No audit records logged yet.</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

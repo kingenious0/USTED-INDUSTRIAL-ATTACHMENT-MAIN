@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block title %}Acceptance Form Review Queue — U-IAP{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Acceptance Form Review Queue</h1>
+    <p class="page-subtitle">Verify host employer endorsement, physical supervisor signature, and official wet-ink stamp (PRD Section 19 & 43)</p>
+  </div>
+</div>
+
+<!-- Pending Queue -->
+<div class="card" style="border-top: 4px solid var(--warning);">
+  <div class="card-header">
+    <h3 class="card-title">Pending Institutional Verification ({{ pending_items|length }})</h3>
+  </div>
+
+  <div class="table-responsive">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Student Name</th>
+          <th>Index Number</th>
+          <th>Host Organization</th>
+          <th>Location / Phone</th>
+          <th>Upload Date</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in pending_items %}
+          <tr>
+            <td><strong>{{ item.attachment.student.full_name }}</strong></td>
+            <td>{{ item.attachment.student.index_number }}</td>
+            <td><strong>{{ item.organization_name }}</strong></td>
+            <td>{{ item.location }}<br/><small style="color:var(--text-muted);">{{ item.telephone }}</small></td>
+            <td>{{ item.created_at.strftime('%d/%m/%Y %H:%M') }}</td>
+            <td>
+              <a href="{{ url_for('liaison.review_acceptance', acceptance_id=item.id) }}" class="btn btn-warning btn-sm">
+                Review & Verify &rarr;
+              </a>
+            </td>
+          </tr>
+        {% else %}
+          <tr>
+            <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 2rem;">
+              No Acceptance Forms currently awaiting verification.
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Recently Reviewed Queue -->
+{% if reviewed_items %}
+  <div class="card">
+    <div class="card-header">
+      <h3 class="card-title">Recently Reviewed Submissions</h3>
+    </div>
+    <div class="table-responsive">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Student</th>
+            <th>Organization</th>
+            <th>Decision Status</th>
+            <th>Reviewed By</th>
+            <th>Date</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in reviewed_items %}
+            <tr>
+              <td>{{ r.attachment.student.full_name }}</td>
+              <td>{{ r.organization_name }}</td>
+              <td>
+                <span class="badge {% if r.is_approved %}badge-success{% elif r.is_flagged %}badge-danger{% else %}badge-secondary{% endif %}">
+                  {{ r.status.replace('_', ' ') }}
+                </span>
+              </td>
+              <td>{{ r.reviewed_by.full_name if r.reviewed_by else 'Liaison' }}</td>
+              <td>{{ r.reviewed_at.strftime('%d/%m/%Y') if r.reviewed_at else '—' }}</td>
+              <td>
+                <a href="{{ url_for('liaison.review_acceptance', acceptance_id=r.id) }}" class="btn btn-outline btn-sm">Re-examine</a>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+{% endif %}
+{% endblock %}
