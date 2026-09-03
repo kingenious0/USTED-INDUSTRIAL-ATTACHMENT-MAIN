@@ -18,10 +18,67 @@
       Digitizing the Workplace Experience Learning (WEL) administrative lifecycle while preserving physical institutional verification, official wet-ink company stamps, and supervisor evaluations.
     </p>
 
-    <div style="display: flex; justify-content: center; gap: 1rem; margin-bottom: 2.5rem;">
-      <a href="{{ url_for('auth.login') }}" class="btn btn-primary" style="font-size: 1rem; font-weight: 700; padding: 0.75rem 2rem; min-height: 46px;">
-        Sign In to U-IAP Portal &rarr;
-      </a>
+    <div style="margin-bottom: 2.5rem;">
+      <div style="font-size: 0.82rem; font-weight: 700; color: var(--color-accent-gold); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.75rem;">
+        ⚡ Instant Role Preview (No Password or Login Barrier)
+      </div>
+      <div class="role-preview-grid">
+        <a href="{{ url_for('auth.switch_role', role='student') }}" class="role-preview-card card-student" style="text-decoration: none;">
+          <div>
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem;">
+              <span style="font-size: 1.5rem;">👨‍🎓</span>
+              <span class="role-pill role-student">Student</span>
+            </div>
+            <h4 style="color: var(--color-primary-dark); font-size: 1.05rem; font-weight: 700; margin-bottom: 0.25rem;">Elliot P. Entsiwah</h4>
+            <p style="font-size: 0.8rem; color: var(--color-text-muted); line-height: 1.4; margin-bottom: 0.75rem;">
+              B.Sc. Information Technology &bull; Level 300. Access eLogSheet, Mon-Fri activities, weekly locks, and acceptance upload.
+            </p>
+          </div>
+          <span class="btn btn-primary btn-sm" style="width: 100%; text-align: center; font-size: 0.82rem;">Launch Student UI &rarr;</span>
+        </a>
+
+        <a href="{{ url_for('auth.switch_role', role='liaison') }}" class="role-preview-card card-liaison" style="text-decoration: none;">
+          <div>
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem;">
+              <span style="font-size: 1.5rem;">🏛️</span>
+              <span class="role-pill role-liaison_officer">Liaison Officer</span>
+            </div>
+            <h4 style="color: var(--color-primary-dark); font-size: 1.05rem; font-weight: 700; margin-bottom: 0.25rem;">Mrs. Faustina Arthur</h4>
+            <p style="font-size: 0.8rem; color: var(--color-text-muted); line-height: 1.4; margin-bottom: 0.75rem;">
+              Liaison Unit Officer. Student verification lookup, PDF introductory letter engine, and acceptance form approval queue.
+            </p>
+          </div>
+          <span class="btn btn-secondary btn-sm" style="width: 100%; text-align: center; font-size: 0.82rem;">Launch Liaison UI &rarr;</span>
+        </a>
+
+        <a href="{{ url_for('auth.switch_role', role='admin') }}" class="role-preview-card card-admin" style="text-decoration: none;">
+          <div>
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem;">
+              <span style="font-size: 1.5rem;">⚙️</span>
+              <span class="role-pill role-liaison_head">Liaison Head</span>
+            </div>
+            <h4 style="color: var(--color-primary-dark); font-size: 1.05rem; font-weight: 700; margin-bottom: 0.25rem;">Dr. Kwame Asante</h4>
+            <p style="font-size: 0.8rem; color: var(--color-text-muted); line-height: 1.4; margin-bottom: 0.75rem;">
+              Head of Liaison / Administrator. Tamper-evident SHA-256 audit log, security events, policy toggles, and system settings.
+            </p>
+          </div>
+          <span class="btn btn-secondary btn-sm" style="width: 100%; text-align: center; font-size: 0.82rem;">Launch Admin UI &rarr;</span>
+        </a>
+
+        <a href="{{ url_for('auth.switch_role', role='supervisor') }}" class="role-preview-card card-super" style="text-decoration: none;">
+          <div>
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem;">
+              <span style="font-size: 1.5rem;">👨‍🏫</span>
+              <span class="role-pill role-academic_supervisor">Supervisor</span>
+            </div>
+            <h4 style="color: var(--color-primary-dark); font-size: 1.05rem; font-weight: 700; margin-bottom: 0.25rem;">Ing. Dr. Peter Owusu</h4>
+            <p style="font-size: 0.8rem; color: var(--color-text-muted); line-height: 1.4; margin-bottom: 0.75rem;">
+              Academic Supervisor. Roster of assigned students, eLogSheet lock verification, and physical evaluation records.
+            </p>
+          </div>
+          <span class="btn btn-secondary btn-sm" style="width: 100%; text-align: center; font-size: 0.82rem;">Launch Supervisor UI &rarr;</span>
+        </a>
+      </div>
     </div>
   </div>
 

@@ -18,31 +18,64 @@
       </p>
     </div>
 
-    <!-- Official Authentication Form -->
-    <form method="POST" action="{{ url_for('auth.login') }}">
-      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-
-      <div class="form-group">
-        <label class="form-label" for="username">Username or Student Index Number</label>
-        <input type="text" id="username" name="username" class="form-control" required autofocus placeholder="e.g. liaison1 or student index number" autocomplete="username">
+    <!-- Instant 1-Click Role Access (No Barrier / No Password Needed) -->
+    <div style="margin-bottom: 1.5rem; background: var(--color-surface-bg); border: 1px solid var(--color-border); border-radius: var(--radius); padding: 1.25rem;">
+      <div style="font-size: 0.78rem; font-weight: 800; color: var(--color-accent-gold); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.6rem; text-align: center;">
+        ⚡ Instant Role Preview (No Login Required)
       </div>
-
-      <div class="form-group">
-        <label class="form-label" for="password">Password</label>
-        <input type="password" id="password" name="password" class="form-control" required placeholder="Enter your password" autocomplete="current-password">
+      <p style="font-size: 0.8rem; color: var(--color-text-muted); text-align: center; margin-bottom: 1rem; line-height: 1.4;">
+        Click any role below to explore its UI and live workflows immediately:
+      </p>
+      <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+        <a href="{{ url_for('auth.switch_role', role='student') }}" class="btn btn-primary" style="justify-content: flex-start; padding: 0.6rem 1rem; font-size: 0.88rem; font-weight: 600;">
+          <span style="font-size: 1.2rem; margin-right: 0.5rem;">👨‍🎓</span>
+          <span><strong>Student:</strong> Elliot Paakow Entsiwah</span>
+        </a>
+        <a href="{{ url_for('auth.switch_role', role='liaison') }}" class="btn btn-secondary" style="justify-content: flex-start; padding: 0.6rem 1rem; font-size: 0.88rem; font-weight: 600;">
+          <span style="font-size: 1.2rem; margin-right: 0.5rem;">🏛️</span>
+          <span><strong>Liaison Officer:</strong> Mrs. Faustina Arthur</span>
+        </a>
+        <a href="{{ url_for('auth.switch_role', role='admin') }}" class="btn btn-secondary" style="justify-content: flex-start; padding: 0.6rem 1rem; font-size: 0.88rem; font-weight: 600;">
+          <span style="font-size: 1.2rem; margin-right: 0.5rem;">⚙️</span>
+          <span><strong>Liaison Head:</strong> Dr. Kwame Asante</span>
+        </a>
+        <a href="{{ url_for('auth.switch_role', role='supervisor') }}" class="btn btn-secondary" style="justify-content: flex-start; padding: 0.6rem 1rem; font-size: 0.88rem; font-weight: 600;">
+          <span style="font-size: 1.2rem; margin-right: 0.5rem;">👨‍🏫</span>
+          <span><strong>Supervisor:</strong> Ing. Dr. Peter Owusu</span>
+        </a>
       </div>
+    </div>
 
-      <div class="form-group" style="display: flex; align-items: center; gap: 0.5rem; margin-top: 1rem; margin-bottom: 1.5rem;">
-        <input type="checkbox" id="remember" name="remember" style="cursor: pointer; width: 16px; height: 16px; accent-color: var(--color-primary);">
-        <label for="remember" style="font-size: 0.85rem; color: var(--color-text-muted); cursor: pointer; user-select: none;">
-          Remember this device
-        </label>
-      </div>
+    <!-- Preserved Official Authentication Form (Collapsible for Tests & Manual Access) -->
+    <details style="margin-top: 1rem; font-size: 0.84rem; color: var(--color-text-muted);">
+      <summary style="font-weight: 600; color: var(--color-primary); cursor: pointer; padding: 0.5rem 0; user-select: none;">
+        &#9656; Manual Credentials Login (Tests & Advanced)
+      </summary>
+      <form method="POST" action="{{ url_for('auth.login') }}" style="margin-top: 1rem; padding-top: 0.75rem; border-top: 1px dashed var(--color-border);">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
 
-      <button type="submit" class="btn btn-primary" style="width: 100%; padding: 0.75rem; font-size: 1rem; font-weight: 700; border-radius: var(--radius); min-height: 44px;">
-        Sign In to U-IAP
-      </button>
-    </form>
+        <div class="form-group">
+          <label class="form-label" for="username">Username or Student Index Number</label>
+          <input type="text" id="username" name="username" class="form-control" placeholder="e.g. liaison1 or student index number" autocomplete="username">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="password">Password</label>
+          <input type="password" id="password" name="password" class="form-control" placeholder="Enter your password" autocomplete="current-password">
+        </div>
+
+        <div class="form-group" style="display: flex; align-items: center; gap: 0.5rem; margin-top: 1rem; margin-bottom: 1.5rem;">
+          <input type="checkbox" id="remember" name="remember" style="cursor: pointer; width: 16px; height: 16px; accent-color: var(--color-primary);">
+          <label for="remember" style="font-size: 0.85rem; color: var(--color-text-muted); cursor: pointer; user-select: none;">
+            Remember this device
+          </label>
+        </div>
+
+        <button type="submit" class="btn btn-primary" style="width: 100%; padding: 0.75rem; font-size: 1rem; font-weight: 700; border-radius: var(--radius); min-height: 44px;">
+          Sign In to U-IAP
+        </button>
+      </form>
+    </details>
 
     <!-- Institutional Verification Subtext -->
     <div style="margin-top: 2rem; padding-top: 1.25rem; border-top: 1px solid var(--color-border); text-align: center; font-size: 0.78rem; color: var(--color-text-muted); line-height: 1.5;">

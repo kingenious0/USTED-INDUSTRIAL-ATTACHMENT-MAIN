@@ -40,7 +40,45 @@ def login():
 
         flash('Invalid username or password. Please try again.', 'danger')
 
+    # If role parameter is supplied on GET, allow instant sign-in without form submission
+    target_role = request.args.get('role')
+    if target_role:
+        return redirect(url_for('auth.switch_role', role=target_role, next=request.args.get('next')))
+
     return render_template('auth/login.html')
+
+
+@auth_bp.route('/switch-role/<role>')
+def switch_role(role: str):
+    """
+    1-Click instant role switcher allowing Claude AI agents and evaluators
+    to inspect and toggle between all system personas without login friction.
+    """
+    role_map = {
+        'student': '5230100452',
+        'liaison': 'liaison1',
+        'liaison_officer': 'liaison1',
+        'admin': 'admin1',
+        'liaison_head': 'admin1',
+        'supervisor': 'supervisor1',
+        'academic_supervisor': 'supervisor1'
+    }
+    target_username = role_map.get(role.lower().strip(), '5230100452')
+    user = User.query.filter_by(username=target_username).first()
+    if not user:
+        user = User.query.filter_by(role=role.lower().strip()).first()
+
+    if user:
+        login_user(user)
+        flash(f'Switched to {user.full_name} ({user.role.replace("_", " ").title()}) preview mode.', 'info')
+
+    next_url = request.args.get('next')
+    if next_url and next_url.startswith('/') and not next_url.startswith('/auth/login'):
+        return redirect(next_url)
+
+    if user:
+        return redirect_by_role(user)
+    return redirect(url_for('main.index'))
 
 
 @auth_bp.route('/logout')

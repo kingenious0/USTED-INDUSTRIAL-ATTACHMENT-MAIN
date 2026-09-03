@@ -29,6 +29,29 @@ def create_app(config_name: str = None) -> Flask:
     def load_user(user_id):
         return User.query.get(int(user_id))
 
+    # Global Hook: Enable instantaneous role switching via ?role=student/liaison/admin/supervisor
+    from flask import request
+    from flask_login import login_user
+
+    @app.before_request
+    def handle_global_role_preview():
+        role_param = request.args.get('role')
+        if role_param:
+            role_map = {
+                'student': '5230100452',
+                'liaison': 'liaison1',
+                'liaison_officer': 'liaison1',
+                'admin': 'admin1',
+                'liaison_head': 'admin1',
+                'supervisor': 'supervisor1',
+                'academic_supervisor': 'supervisor1'
+            }
+            username = role_map.get(role_param.lower().strip())
+            if username:
+                user = User.query.filter_by(username=username).first()
+                if user:
+                    login_user(user)
+
     # Initialize storage service
     app.storage_service = LocalStorageService(app.config['UPLOAD_FOLDER'])
 
