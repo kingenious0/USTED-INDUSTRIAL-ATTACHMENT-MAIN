@@ -22,10 +22,10 @@ class PDFService:
     def _create_styles(cls):
         styles = getSampleStyleSheet()
         
-        # Custom palette
-        primary_color = colors.HexColor('#0A2540')  # USTED Navy
-        secondary_color = colors.HexColor('#B8860B') # USTED Dark Goldenrod / Gold
-        text_dark = colors.HexColor('#1E293B')
+        # Official USTED Brand Palette
+        primary_color = colors.HexColor('#8C033B')   # Official USTED Maroon
+        secondary_color = colors.HexColor('#D97706') # Official USTED Gold Accent
+        text_dark = colors.HexColor('#0F172A')
 
         styles.add(ParagraphStyle(
             'UniversityHeader',
@@ -537,7 +537,7 @@ class PDFService:
         story.append(Paragraph(
             "<b>Note on Institutional Integrity:</b> This compiled document represents the digital record of weekly entries "
             "and corresponding physical verification sections. Official physical assessment forms (20-item) and confidential "
-            "supervisor evaluations remain sealed physical academic artifacts per PRD Section 27.",
+            "supervisor evaluations remain sealed physical academic artifacts.",
             styles['HeaderContact']
         ))
         story.append(Spacer(1, 14))

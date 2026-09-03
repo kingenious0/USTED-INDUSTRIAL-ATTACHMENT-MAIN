@@ -5,32 +5,32 @@
 {% block content %}
 <div class="page-header">
   <div>
-    <a href="{{ url_for('admin.dashboard') }}" style="font-size: 0.85rem; color: var(--text-muted);">&larr; Back to Admin Dashboard</a>
+    <a href="{{ url_for('admin.dashboard') }}" style="font-size: 0.85rem; color: var(--color-text-muted);">&larr; Back to Admin Dashboard</a>
     <h1 class="page-title" style="margin-top: 0.25rem;">System Configuration & Policy Governance</h1>
-    <p class="page-subtitle">Configurable workflow parameters preserving institutional decision authority (PRD Rule 3 & Section 19)</p>
+    <p class="page-subtitle">Configurable workflow parameters preserving institutional decision authority</p>
   </div>
 </div>
 
 <div style="max-width: 800px; margin: 0 auto;">
-  <div class="card" style="border-top: 4px solid var(--primary);">
+  <div class="card" style="border-top: 4px solid var(--color-primary);">
     <form method="POST">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
 
-      <h3 style="font-size: 1.1rem; color: var(--primary); margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border);">
-        Acceptance Form Status Governance (PRD OQ-04)
+      <h3 style="font-size: 1.1rem; color: var(--color-primary-dark); margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--color-border);">
+        Acceptance Form Status Governance
       </h3>
 
-      <div style="background: #F8FAFC; border-left: 4px solid var(--secondary); padding: 1rem; border-radius: var(--radius); margin-bottom: 1.25rem; font-size: 0.88rem; line-height: 1.5;">
-        <strong>Governing Principle (PRD Section 19):</strong><br/>
+      <div style="background: var(--color-surface-bg); border-left: 4px solid var(--color-accent-gold); padding: 1rem 1.25rem; border-radius: var(--radius); margin-bottom: 1.25rem; font-size: 0.88rem; line-height: 1.5; border: 1px solid var(--color-border); border-left-width: 4px;">
+        <strong style="color: var(--color-primary-dark);">Governing Principle:</strong><br/>
         The system must not silently decide university institutional policy. This toggle allows the Liaison Unit to switch between <strong>Option A</strong> (strict pre-approval required before logging begins) and <strong>Option B</strong> (logging proceeds immediately while staff reviews asynchronously).
       </div>
 
       <div class="form-group">
         <label style="display: flex; align-items: flex-start; gap: 0.75rem; cursor: pointer;">
-          <input type="checkbox" name="require_acceptance_approval" value="1" {% if require_approval %}checked{% endif %} style="margin-top: 0.25rem; transform: scale(1.2);">
+          <input type="checkbox" name="require_acceptance_approval" value="1" {% if require_approval %}checked{% endif %} style="margin-top: 0.25rem; transform: scale(1.2); accent-color: var(--color-primary);">
           <div>
-            <strong style="color: var(--primary); font-size: 0.95rem;">Require Liaison Approval Before Enabling Student Activity Logging (Option A)</strong>
-            <p style="font-size: 0.82rem; color: var(--text-muted); margin-top: 0.25rem;">
+            <strong style="color: var(--color-primary-dark); font-size: 0.95rem;">Require Liaison Approval Before Enabling Student Activity Logging (Option A)</strong>
+            <p style="font-size: 0.82rem; color: var(--color-text-muted); margin-top: 0.25rem;">
               When enabled, students cannot enter daily activities until a Liaison Officer reviews and approves their uploaded Acceptance Form scan and verifies the official wet-ink company stamp.
               When disabled (Option B), students can log activities immediately after uploading their scan while Liaison reviews asynchronously.
             </p>

@@ -3,64 +3,48 @@
 {% block title %}Welcome — USTED Industrial Attachment Portal (U-IAP){% endblock %}
 
 {% block content %}
-<div class="card" style="padding: 2.5rem; text-align: center; border-top: 5px solid var(--primary);">
-  <div style="max-width: 750px; margin: 0 auto;">
-    <span class="badge badge-primary" style="margin-bottom: 0.75rem;">University of Skills Training and Entrepreneurial Development</span>
-    <h1 style="color: var(--primary); font-size: 2rem; margin-bottom: 0.75rem;">Industrial Attachment Management System (U-IAP)</h1>
-    <p style="color: var(--text-muted); font-size: 1.05rem; margin-bottom: 1.5rem;">
+<div class="card" style="padding: 3rem 2rem; text-align: center; border-top: 5px solid var(--color-primary);">
+  <div style="max-width: 780px; margin: 0 auto;">
+    <div style="width: 80px; height: 80px; margin: 0 auto 1.25rem auto;">
+      <img src="{{ url_for('static', filename='img/crest.svg') }}" alt="AAMUSTED Crest" width="80" height="80"/>
+    </div>
+    <span class="badge badge-admin" style="margin-bottom: 0.85rem; padding: 0.35rem 0.85rem; font-size: 0.8rem;">
+      Akenten Appiah-Menka University of Skills Training and Entrepreneurial Development
+    </span>
+    <h1 style="color: var(--color-primary-dark); font-size: 2.1rem; font-weight: 800; margin-bottom: 0.85rem; letter-spacing: -0.02em;">
+      Industrial Attachment Management System (U-IAP)
+    </h1>
+    <p style="color: var(--color-text-muted); font-size: 1.05rem; line-height: 1.6; margin-bottom: 2rem;">
       Digitizing the Workplace Experience Learning (WEL) administrative lifecycle while preserving physical institutional verification, official wet-ink company stamps, and supervisor evaluations.
     </p>
 
     <div style="display: flex; justify-content: center; gap: 1rem; margin-bottom: 2.5rem;">
-      <a href="{{ url_for('auth.login') }}" class="btn btn-primary" style="font-size: 1rem; padding: 0.75rem 1.75rem;">
-        Log In to U-IAP Portal
+      <a href="{{ url_for('auth.login') }}" class="btn btn-primary" style="font-size: 1rem; font-weight: 700; padding: 0.75rem 2rem; min-height: 46px;">
+        Sign In to U-IAP Portal &rarr;
       </a>
     </div>
   </div>
 
-  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; text-align: left; margin-top: 1.5rem; border-top: 1px solid var(--border); padding-top: 2rem;">
-    <div class="card" style="margin-bottom: 0; background: #F8FAFC;">
-      <h3 style="color: var(--primary); margin-bottom: 0.5rem; font-size: 1.1rem;">1. Liaison Intake & Verification</h3>
-      <p style="font-size: 0.88rem; color: var(--text-muted);">
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; text-align: left; margin-top: 1.5rem; border-top: 1px solid var(--color-border); padding-top: 2rem;">
+    <div class="card" style="margin-bottom: 0; background: var(--color-surface-bg); border-top: 3px solid var(--color-primary);">
+      <h3 style="color: var(--color-primary-dark); margin-bottom: 0.5rem; font-size: 1.1rem; font-weight: 700;">1. Liaison Intake & Verification</h3>
+      <p style="font-size: 0.88rem; color: var(--color-text-muted); line-height: 1.5;">
         Mandatory physical Liaison Office checkpoint. Students are verified by University Index Number, and official Introductory Letters are generated.
       </p>
     </div>
 
-    <div class="card" style="margin-bottom: 0; background: #F8FAFC;">
-      <h3 style="color: var(--primary); margin-bottom: 0.5rem; font-size: 1.1rem;">2. Acceptance Form Endorsement</h3>
-      <p style="font-size: 0.88rem; color: var(--text-muted);">
+    <div class="card" style="margin-bottom: 0; background: var(--color-surface-bg); border-top: 3px solid var(--color-accent-gold);">
+      <h3 style="color: var(--color-primary-dark); margin-bottom: 0.5rem; font-size: 1.1rem; font-weight: 700;">2. Acceptance Form Endorsement</h3>
+      <p style="font-size: 0.88rem; color: var(--color-text-muted); line-height: 1.5;">
         Host organizations complete physical acceptance forms with signatures and official wet-ink company stamps, scanned and uploaded by students.
       </p>
     </div>
 
-    <div class="card" style="margin-bottom: 0; background: #F8FAFC;">
-      <h3 style="color: var(--primary); margin-bottom: 0.5rem; font-size: 1.1rem;">3. Mon–Fri Logging & Locking</h3>
-      <p style="font-size: 0.88rem; color: var(--text-muted);">
+    <div class="card" style="margin-bottom: 0; background: var(--color-surface-bg); border-top: 3px solid var(--color-success);">
+      <h3 style="color: var(--color-primary-dark); margin-bottom: 0.5rem; font-size: 1.1rem; font-weight: 700;">3. Mon–Fri Logging & Locking</h3>
+      <p style="font-size: 0.88rem; color: var(--color-text-muted); line-height: 1.5;">
         Expandable Monday–Friday activity log. Students manually lock each week to trigger printed sheets for physical supervisor verification.
       </p>
-    </div>
-  </div>
-
-  <!-- Demo Accounts Helper Card -->
-  <div style="margin-top: 2rem; background: var(--info-bg); border: 1px solid #BFDBFE; border-radius: var(--radius); padding: 1.25rem; text-align: left;">
-    <h4 style="color: var(--info); margin-bottom: 0.5rem; font-size: 0.95rem;">Demo Testing Credentials (Pre-seeded):</h4>
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.75rem; font-size: 0.85rem;">
-      <div>
-        <strong>Liaison Officer:</strong><br/>
-        User: <code>liaison1</code> | Pass: <code>password123</code>
-      </div>
-      <div>
-        <strong>Student (Level 300 IT):</strong><br/>
-        User: <code>student1</code> | Pass: <code>password123</code>
-      </div>
-      <div>
-        <strong>Student (Level 200 Eng):</strong><br/>
-        User: <code>student2</code> | Pass: <code>password123</code>
-      </div>
-      <div>
-        <strong>Unit Admin / Head:</strong><br/>
-        User: <code>admin1</code> | Pass: <code>password123</code>
-      </div>
     </div>
   </div>
 </div>

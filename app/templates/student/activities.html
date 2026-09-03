@@ -68,7 +68,7 @@
   </div>
 {% endif %}
 
-<!-- Monday - Friday Activity Entries (PRD Section 21 & 22) -->
+<!-- Monday - Friday Activity Entries -->
 <div style="display: flex; flex-direction: column; gap: 1.25rem;">
   {% for day_name in ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'] %}
     {% set entry = selected_week.get_entry_for_day(day_name) %}
@@ -152,7 +152,7 @@
   {% endfor %}
 </div>
 
-<!-- Lock Week Confirmation Modal (PRD Section 23: Student-Controlled Lock) -->
+<!-- Lock Week Confirmation Modal -->
 <div id="lockModal" class="modal-backdrop">
   <div class="modal-card">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">

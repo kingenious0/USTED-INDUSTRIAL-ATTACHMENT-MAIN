@@ -6,12 +6,12 @@
 <div class="page-header">
   <div>
     <h1 class="page-title">Acceptance Form Review Queue</h1>
-    <p class="page-subtitle">Verify host employer endorsement, physical supervisor signature, and official wet-ink stamp (PRD Section 19 & 43)</p>
+    <p class="page-subtitle">Verify host employer endorsement, physical supervisor signature, and official wet-ink stamp</p>
   </div>
 </div>
 
 <!-- Pending Queue -->
-<div class="card" style="border-top: 4px solid var(--warning);">
+<div class="card" style="border-top: 4px solid var(--color-accent-gold);">
   <div class="card-header">
     <h3 class="card-title">Pending Institutional Verification ({{ pending_items|length }})</h3>
   </div>
@@ -31,20 +31,20 @@
       <tbody>
         {% for item in pending_items %}
           <tr>
-            <td><strong>{{ item.attachment.student.full_name }}</strong></td>
+            <td><strong style="color: var(--color-primary-dark);">{{ item.attachment.student.full_name }}</strong></td>
             <td>{{ item.attachment.student.index_number }}</td>
             <td><strong>{{ item.organization_name }}</strong></td>
-            <td>{{ item.location }}<br/><small style="color:var(--text-muted);">{{ item.telephone }}</small></td>
-            <td>{{ item.created_at.strftime('%d/%m/%Y %H:%M') }}</td>
+            <td>{{ item.location }}<br/><small style="color:var(--color-text-muted);">{{ item.telephone }}</small></td>
+            <td><small style="color:var(--color-text-muted);">{{ item.created_at.strftime('%d/%m/%Y %H:%M') }}</small></td>
             <td>
-              <a href="{{ url_for('liaison.review_acceptance', acceptance_id=item.id) }}" class="btn btn-warning btn-sm">
+              <a href="{{ url_for('liaison.review_acceptance', acceptance_id=item.id) }}" class="btn btn-secondary btn-sm">
                 Review & Verify &rarr;
               </a>
             </td>
           </tr>
         {% else %}
           <tr>
-            <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 2rem;">
+            <td colspan="6" style="text-align: center; color: var(--color-text-muted); padding: 2.5rem 1rem;">
               No Acceptance Forms currently awaiting verification.
             </td>
           </tr>
@@ -75,7 +75,7 @@
         <tbody>
           {% for r in reviewed_items %}
             <tr>
-              <td>{{ r.attachment.student.full_name }}</td>
+              <td><strong>{{ r.attachment.student.full_name }}</strong></td>
               <td>{{ r.organization_name }}</td>
               <td>
                 <span class="badge {% if r.is_approved %}badge-success{% elif r.is_flagged %}badge-danger{% else %}badge-secondary{% endif %}">
@@ -83,7 +83,7 @@
                 </span>
               </td>
               <td>{{ r.reviewed_by.full_name if r.reviewed_by else 'Liaison' }}</td>
-              <td>{{ r.reviewed_at.strftime('%d/%m/%Y') if r.reviewed_at else '—' }}</td>
+              <td><small style="color:var(--color-text-muted);">{{ r.reviewed_at.strftime('%d/%m/%Y') if r.reviewed_at else '—' }}</small></td>
               <td>
                 <a href="{{ url_for('liaison.review_acceptance', acceptance_id=r.id) }}" class="btn btn-outline btn-sm">Re-examine</a>
               </td>

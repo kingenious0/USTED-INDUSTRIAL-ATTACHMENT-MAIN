@@ -32,6 +32,63 @@ def create_app(config_name: str = None) -> Flask:
     # Initialize storage service
     app.storage_service = LocalStorageService(app.config['UPLOAD_FOLDER'])
 
+    # Jinja Template Filter: Format Audit Details as Human-Readable Text
+    @app.template_filter('humanize_audit')
+    def humanize_audit_filter(log):
+        if not log:
+            return "—"
+        action = getattr(log, 'action', '') or ""
+        details = getattr(log, 'details', {}) or {}
+        ip = getattr(log, 'ip_address', '') or 'Localhost'
+        
+        if action == 'USER_LOGIN':
+            role = (getattr(log, 'actor_role', '') or details.get('role', 'User')).replace('_', ' ').title()
+            return f"User Logged In ({role}) from {ip}"
+        elif action == 'USER_LOGOUT':
+            return f"User Logged Out ({ip})"
+        elif action == 'STUDENT_LOOKUP':
+            query = details.get('query', '')
+            count = details.get('results_count', 0)
+            return f"Looked up student \"{query}\" ({count} record{'s' if count != 1 else ''} found)"
+        elif action == 'ATTACHMENT_INITIATED':
+            weeks = details.get('duration_weeks', '')
+            year = details.get('academic_year', '')
+            return f"Initiated {weeks}-week attachment ({year})"
+        elif action == 'LETTER_GENERATED':
+            ref = details.get('reference_number', '')
+            org = details.get('target_organization', '')
+            return f"Generated Introductory Letter ({ref}) for {org}" if org else f"Generated Introductory Letter ({ref})"
+        elif action == 'LETTER_REPRINTED':
+            reason = details.get('reason', 'Replacement requested')
+            org = details.get('target_organization', '')
+            return f"Reprinted letter for {org} — Reason: {reason}" if org else f"Reprinted letter — Reason: {reason}"
+        elif action == 'ACCEPTANCE_UPLOADED':
+            org = details.get('organization_name', '')
+            loc = details.get('location', '')
+            return f"Uploaded Acceptance Form: {org} ({loc})" if loc else f"Uploaded Acceptance Form: {org}"
+        elif action == 'ACCEPTANCE_REVIEWED':
+            decision = (details.get('decision') or details.get('status') or '').replace('_', ' ').title()
+            notes = details.get('notes', '')
+            if notes:
+                return f"Review Decision: {decision} — Note: {notes}"
+            return f"Review Decision: {decision}" if decision else "Acceptance Form reviewed"
+        elif action == 'WEEK_LOCKED':
+            num = details.get('week_number', '')
+            return f"Locked Week {num} daily activity logbook"
+        elif action == 'WEEK_UNLOCKED':
+            num = details.get('week_number', '')
+            return f"Unlocked Week {num} daily activity logbook"
+        elif action == 'CONFIG_CHANGED':
+            key = details.get('key', 'Policy')
+            val = details.get('value', '')
+            return f"Updated policy setting: {key} = {val}"
+        
+        if isinstance(details, dict) and details:
+            parts = [f"{k.replace('_', ' ').title()}: {v}" for k, v in details.items() if v is not None]
+            return " | ".join(parts) if parts else "—"
+        return getattr(log, 'details_json', '') or "—"
+
+
     # Register Blueprints
     from app.routes.auth import auth_bp
     from app.routes.main import main_bp

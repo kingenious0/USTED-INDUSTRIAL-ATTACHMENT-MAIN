@@ -9,53 +9,69 @@
 </head>
 <body>
 
-  <!-- Top Navigation Bar -->
-  <nav class="navbar">
+  <!-- Top Institutional Navigation Bar -->
+  <nav class="navbar" role="navigation" aria-label="Main Navigation">
     <div class="nav-container">
-      <a href="{{ url_for('main.index') }}" class="brand-link">
-        <span class="brand-badge">USTED</span>
-        <span>U-IAP PORTAL</span>
+      <a href="{{ url_for('main.index') }}" class="brand-link" title="USTED Industrial Attachment Portal">
+        <div class="brand-crest">
+          <img src="{{ url_for('static', filename='img/crest.svg') }}" alt="USTED Crest" width="36" height="36"/>
+        </div>
+        <div class="brand-text-group">
+          <span class="brand-title">U-IAP PORTAL</span>
+          <span class="brand-sub">AAMUSTED &bull; Industrial Liaison</span>
+        </div>
       </a>
 
-      <ul class="nav-links">
+      <!-- Mobile Hamburger Toggle Button (< 1024px) -->
+      <button class="nav-toggle" id="navToggle" type="button" aria-label="Toggle navigation menu" aria-expanded="false">
+        <span aria-hidden="true">&#9776;</span>
+      </button>
+
+      <!-- Navigation Links & User Menu -->
+      <div class="nav-menu" id="navMenu">
         {% if current_user.is_authenticated %}
           {% if current_user.is_student %}
-            <li><a href="{{ url_for('student.dashboard') }}">Student Workspace</a></li>
+            <a href="{{ url_for('student.dashboard') }}">Student Workspace</a>
           {% elif current_user.is_liaison %}
-            <li><a href="{{ url_for('liaison.dashboard') }}">Liaison Dashboard</a></li>
-            <li><a href="{{ url_for('liaison.student_lookup') }}">Verify Student</a></li>
-            <li><a href="{{ url_for('liaison.attachments_list') }}">Attachments</a></li>
-            <li><a href="{{ url_for('liaison.acceptance_queue') }}">Acceptance Queue</a></li>
+            <a href="{{ url_for('liaison.dashboard') }}">Liaison Dashboard</a>
+            <a href="{{ url_for('liaison.student_lookup') }}">Verify Student</a>
+            <a href="{{ url_for('liaison.attachments_list') }}">Attachments</a>
+            <a href="{{ url_for('liaison.acceptance_queue') }}">Acceptance Queue</a>
             {% if current_user.is_admin %}
-              <li><a href="{{ url_for('admin.dashboard') }}">Admin / Audits</a></li>
-              <li><a href="{{ url_for('admin.settings') }}">Settings</a></li>
+              <a href="{{ url_for('admin.dashboard') }}">Admin / Audits</a>
+              <a href="{{ url_for('admin.settings') }}">Settings</a>
             {% endif %}
           {% elif current_user.is_supervisor %}
-            <li><a href="{{ url_for('supervisor.dashboard') }}">Assigned Students</a></li>
+            <a href="{{ url_for('supervisor.dashboard') }}">Assigned Students</a>
           {% endif %}
 
-          <li class="user-badge">
+          <div class="user-badge">
             <span>{{ current_user.full_name }}</span>
-            <span class="role-pill">{{ current_user.role.replace('_', ' ') }}</span>
-          </li>
-          <li><a href="{{ url_for('auth.logout') }}" class="btn btn-outline btn-sm" style="color:#FFF; border-color:rgba(255,255,255,0.3);">Log Out</a></li>
+            <span class="role-pill role-{{ current_user.role }}">{{ current_user.role.replace('_', ' ') }}</span>
+          </div>
+
+          <a href="{{ url_for('auth.logout') }}" class="btn btn-outline btn-sm nav-logout-btn" style="color:#FFFFFF; border-color:rgba(255,255,255,0.35);">
+            Log Out
+          </a>
         {% else %}
-          <li><a href="{{ url_for('auth.login') }}" class="btn btn-secondary btn-sm">Portal Login</a></li>
+          <a href="{{ url_for('auth.login') }}" class="btn btn-secondary btn-sm" style="color:#FFFFFF;">
+            Portal Login
+          </a>
         {% endif %}
-      </ul>
+      </div>
     </div>
   </nav>
 
-  <!-- Main Body Content -->
+  <!-- Main Body Content (Strict 7xl viewport constraint) -->
   <main class="main-wrapper">
-    <!-- Flash Messages Container -->
+    <!-- Flash Alerts Container -->
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% if messages %}
         <div class="flash-container">
           {% for category, message in messages %}
-            <div class="flash-alert {{ category }}">
+            <div class="flash-alert {{ category }}" role="alert">
               <span>{{ message }}</span>
-              <button type="button" class="alert-close" style="background:none; border:none; font-size:1.1rem; cursor:pointer; color:inherit;">&times;</button>
+              <button type="button" class="alert-close" style="background:none; border:none; font-size:1.2rem; cursor:pointer; color:inherit;" aria-label="Dismiss alert">&times;</button>
             </div>
           {% endfor %}
         </div>
@@ -69,12 +85,12 @@
   <footer class="footer">
     <div class="footer-container">
       <div>
-        <strong>{{ university_name }}</strong><br/>
+        <strong>Akenten Appiah-Menka University of Skills Training and Entrepreneurial Development (AAMUSTED)</strong><br/>
         <span>Industrial Liaison & Workplace Experience Learning (WEL) Unit</span>
       </div>
       <div style="text-align: right;">
-        <span>U-IAP Version {{ app_version }} | Operational MVP</span><br/>
-        <span>&copy; {{ current_year }} USTED. All rights reserved.</span>
+        <span>U-IAP Operational Portal</span><br/>
+        <span>&copy; {{ current_year }} AAMUSTED. All rights reserved.</span>
       </div>
     </div>
   </footer>

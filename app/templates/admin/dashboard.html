@@ -18,23 +18,23 @@
   <div class="metric-card primary">
     <span class="metric-label">Registered Portal Users</span>
     <span class="metric-value">{{ total_users }}</span>
-    <span style="font-size: 0.78rem; color: var(--text-muted);">Staff, students, and supervisors</span>
+    <span style="font-size: 0.78rem; color: var(--color-text-muted);">Staff, students, and supervisors</span>
   </div>
 
   <div class="metric-card highlight">
     <span class="metric-label">Total Attachment Records</span>
     <span class="metric-value">{{ total_attachments }}</span>
-    <span style="font-size: 0.78rem; color: var(--text-muted);">Cumulative lifecycle records</span>
+    <span style="font-size: 0.78rem; color: var(--color-text-muted);">Cumulative lifecycle records</span>
   </div>
 
   <div class="metric-card success">
     <span class="metric-label">System Audit Events Recorded</span>
     <span class="metric-value">{{ total_audits }}</span>
-    <span style="font-size: 0.78rem; color: var(--text-muted);">Security and workflow trail</span>
+    <span style="font-size: 0.78rem; color: var(--color-text-muted);">Security and workflow trail</span>
   </div>
 </div>
 
-<!-- Recent Audit Trail Inspection (PRD Section 31) -->
+<!-- Recent Audit Trail Inspection -->
 <div class="card">
   <div class="card-header">
     <h3 class="card-title">Recent System Audit Events</h3>
@@ -50,22 +50,30 @@
           <th>Role</th>
           <th>Action</th>
           <th>Target</th>
-          <th>IP Address</th>
+          <th>Event Summary</th>
         </tr>
       </thead>
       <tbody>
         {% for log in recent_audits %}
           <tr>
-            <td><small>{{ log.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</small></td>
+            <td><small style="color:var(--color-text-muted);">{{ log.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</small></td>
             <td><strong>{{ log.actor_username or 'SYSTEM' }}</strong></td>
-            <td><span class="badge badge-secondary">{{ log.actor_role or 'system' }}</span></td>
-            <td><span class="badge badge-primary">{{ log.action }}</span></td>
-            <td>{{ log.target_type or '—' }}{% if log.target_id %} #{{ log.target_id }}{% endif %}</td>
-            <td><small style="color:var(--text-muted);">{{ log.ip_address or '—' }}</small></td>
+            <td>
+              <span class="badge {% if log.actor_role in ['admin', 'liaison_head'] %}badge-admin{% elif log.actor_role == 'liaison_officer' %}badge-liaison-officer{% else %}badge-secondary{% endif %}">
+                {{ log.actor_role or 'system' }}
+              </span>
+            </td>
+            <td>
+              <span class="badge {% if 'LOGIN' in log.action or 'LOCKED' in log.action %}badge-success{% elif 'CHANGE' in log.action or 'REPRINT' in log.action %}badge-warning{% else %}badge-primary{% endif %}">
+                {{ log.action.replace('_', ' ') }}
+              </span>
+            </td>
+            <td>{{ log.target_type or '—' }}{% if log.target_id %} <small style="color:var(--color-text-muted);">#{{ log.target_id }}</small>{% endif %}</td>
+            <td><small style="color:var(--color-text-main);">{{ log | humanize_audit }}</small></td>
           </tr>
         {% else %}
           <tr>
-            <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 1.5rem;">No audit records logged yet.</td>
+            <td colspan="6" style="text-align: center; color: var(--color-text-muted); padding: 2rem;">No audit records logged yet.</td>
           </tr>
         {% endfor %}
       </tbody>
