@@ -48,9 +48,27 @@ def create_app(config_name: str = None) -> Flask:
             }
             username = role_map.get(role_param.lower().strip())
             if username:
-                user = User.query.filter_by(username=username).first()
-                if user:
-                    login_user(user)
+                try:
+                    user = User.query.filter_by(username=username).first()
+                    if not user and not app.config.get('TESTING'):
+                        db.create_all()
+                        from app.utils.seed_data import seed_database
+                        seed_database()
+                        user = User.query.filter_by(username=username).first()
+                    if user:
+                        login_user(user)
+                except Exception:
+                    db.session.rollback()
+                    if not app.config.get('TESTING'):
+                        try:
+                            db.create_all()
+                            from app.utils.seed_data import seed_database
+                            seed_database()
+                            user = User.query.filter_by(username=username).first()
+                            if user:
+                                login_user(user)
+                        except Exception:
+                            pass
 
     # Initialize storage service
     app.storage_service = LocalStorageService(app.config['UPLOAD_FOLDER'])
@@ -163,11 +181,14 @@ def create_app(config_name: str = None) -> Flask:
             seed_database()
             print("Database initialized successfully.")
 
-    @app.cli.command('seed-db')
-    def seed_db_command():
-        """Seeds demo data into existing database."""
-        from app.utils.seed_data import seed_database
+    # Auto-initialize database tables and seed data in non-testing environments (e.g. Render / Gunicorn)
+    if not app.config.get('TESTING'):
         with app.app_context():
-            seed_database()
+            try:
+                db.create_all()
+                from app.utils.seed_data import seed_database
+                seed_database()
+            except Exception as e:
+                app.logger.warning(f"Database auto-bootstrap notice: {e}")
 
     return app

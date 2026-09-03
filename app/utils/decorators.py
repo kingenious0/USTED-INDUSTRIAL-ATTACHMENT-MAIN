@@ -39,7 +39,16 @@ def role_required(*allowed_roles):
                     }
                     target_username = role_user_map.get(target_role)
                     if target_username:
-                        user = User.query.filter_by(username=target_username).first()
+                        try:
+                            user = User.query.filter_by(username=target_username).first()
+                        except Exception:
+                            from app.extensions import db
+                            from app.utils.seed_data import seed_database
+                            db.session.rollback()
+                            db.create_all()
+                            seed_database()
+                            user = User.query.filter_by(username=target_username).first()
+
                         if user:
                             login_user(user)
 

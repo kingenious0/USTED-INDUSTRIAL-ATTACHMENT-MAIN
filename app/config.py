@@ -12,7 +12,10 @@ class Config:
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     
     # Database
-    SQLALCHEMY_DATABASE_URI = os.getenv('DATABASE_URL', f"sqlite:///{BASE_DIR / 'u_iap.db'}")
+    _raw_db_uri = os.getenv('DATABASE_URL', f"sqlite:///{BASE_DIR / 'u_iap.db'}")
+    if _raw_db_uri and _raw_db_uri.startswith('postgres://'):
+        _raw_db_uri = _raw_db_uri.replace('postgres://', 'postgresql://', 1)
+    SQLALCHEMY_DATABASE_URI = _raw_db_uri
     
     # File Uploads & Storage
     STORAGE_PROVIDER = os.getenv('STORAGE_PROVIDER', 'local')

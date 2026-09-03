@@ -64,9 +64,19 @@ def switch_role(role: str):
         'academic_supervisor': 'supervisor1'
     }
     target_username = role_map.get(role.lower().strip(), '5230100452')
-    user = User.query.filter_by(username=target_username).first()
-    if not user:
-        user = User.query.filter_by(role=role.lower().strip()).first()
+    try:
+        user = User.query.filter_by(username=target_username).first()
+        if not user:
+            user = User.query.filter_by(role=role.lower().strip()).first()
+    except Exception:
+        from app.extensions import db
+        from app.utils.seed_data import seed_database
+        db.session.rollback()
+        db.create_all()
+        seed_database()
+        user = User.query.filter_by(username=target_username).first()
+        if not user:
+            user = User.query.filter_by(role=role.lower().strip()).first()
 
     if user:
         login_user(user)
