@@ -11,6 +11,7 @@ from app.models.acceptance import AcceptanceRecord
 from app.services.attachment_service import AttachmentService
 from app.services.pdf_service import PDFService
 from app.utils.decorators import student_required
+from app.utils.tokens import generate_elogbook_sso_jwt
 
 student_bp = Blueprint('student', __name__)
 
@@ -131,19 +132,31 @@ def upload_acceptance(attachment_id: int = None):
             flash('Please select a scanned document (PDF, PNG, JPG, or JPEG) to upload.', 'danger')
             return render_template('student/upload_acceptance.html', attachment=attachment)
 
-        supervisor_phone = (request.form.get('workplace_supervisor_phone') or request.form.get('telephone') or '').strip()
-        supervisor_name = (request.form.get('workplace_supervisor_name') or request.form.get('contact_person') or '').strip()
+        supervisor_phone = (request.form.get('workplace_supervisor_phone') or request.form.get('supervisor_phone') or request.form.get('telephone') or request.form.get('phone') or '').strip()
+        supervisor_name = (request.form.get('workplace_supervisor_name') or request.form.get('supervisor_name') or request.form.get('contact_person') or '').strip()
+        region = (request.form.get('region') or '').strip()
+        district_town = (request.form.get('district_town') or '').strip()
+        gps_address = (request.form.get('gps_address') or request.form.get('postal_address') or '').strip()
+        landmark = (request.form.get('landmark') or '').strip()
+        lat_val = request.form.get('latitude')
+        lng_val = request.form.get('longitude')
 
         org_data = {
-            'organization_name': (request.form.get('organization_name') or request.form.get('host_organization_name') or '').strip(),
-            'organization_type': (request.form.get('organization_type') or request.form.get('sector_type') or 'Private').strip(),
-            'location': (request.form.get('location') or request.form.get('industry_location') or '').strip(),
-            'postal_address': (request.form.get('postal_address') or request.form.get('gps_address') or '').strip(),
+            'organization_name': (request.form.get('organization_name') or request.form.get('host_organization_name') or request.form.get('company_name') or '').strip(),
+            'organization_type': (request.form.get('organization_type') or request.form.get('sector_type') or request.form.get('industry_sector') or 'Private').strip(),
+            'location': (request.form.get('location') or request.form.get('industry_location') or district_town or '').strip(),
+            'postal_address': (request.form.get('postal_address') or gps_address or '').strip(),
             'telephone': supervisor_phone,
             'email': request.form.get('email', '').strip(),
             'contact_person': supervisor_name,
             'workplace_supervisor_name': supervisor_name,
-            'workplace_supervisor_phone': supervisor_phone
+            'workplace_supervisor_phone': supervisor_phone,
+            'region': region or None,
+            'district_town': district_town or None,
+            'gps_address': gps_address or None,
+            'landmark': landmark or None,
+            'latitude': float(lat_val) if lat_val not in (None, '') else None,
+            'longitude': float(lng_val) if lng_val not in (None, '') else None,
         }
 
         # Validate required fields
@@ -329,3 +342,75 @@ def download_compiled_report(attachment_id: int):
         as_attachment=True,
         download_name=f"Compiled_WEL_Logbook_{attachment.student.index_number.replace('/', '_')}.pdf"
     )
+
+
+@student_bp.route('/attachment/<int:attachment_id>/launch-elogsheet')
+@student_bp.route('/attachment/<int:attachment_id>/launch-elogbook')
+@login_required
+@student_required
+def launch_elogsheet(attachment_id: int):
+    """
+    Decoupled eLogBook Single Sign-On (SSO) Gateway (Pipeline 5).
+    Issues a cryptographically signed HMAC-SHA256 JWT with a 120-second expiration window
+    and redirects the student to the decoupled external eLogBook application.
+    """
+    attachment = _get_student_attachment_or_404(attachment_id)
+    student = attachment.student
+
+    secret_key = current_app.config.get('SECRET_KEY', 'dev-secret-key-u-iap-2026')
+    sso_token = generate_elogbook_sso_jwt(student, attachment, secret_key, expires_in=120)
+
+    external_base = current_app.config.get('EXTERNAL_ELOGBOOK_URL', 'https://usted-elogbook.vercel.app').rstrip('/')
+    sso_redirect_url = f"{external_base}?sso_token={sso_token}"
+
+    flash("Redirecting to your secure external eLogBook session...", "info")
+    return redirect(sso_redirect_url)
+
+
+@student_bp.route('/attachment/<int:attachment_id>/assessment-form/download')
+@student_bp.route('/attachment/<int:attachment_id>/assessment-form')
+@login_required
+@student_required
+def download_assessment_form(attachment_id: int):
+    """
+    Generates and downloads the official 2-page Confidential 20-Item Assessment Form (Pipeline 6).
+    """
+    attachment = _get_student_attachment_or_404(attachment_id)
+    pdf_bytes = PDFService.generate_confidential_assessment_form(attachment)
+    idx_str = attachment.student.index_number.replace('/', '_')
+    return send_file(
+        io.BytesIO(pdf_bytes),
+        mimetype='application/pdf',
+        as_attachment=True,
+        download_name=f"Confidential_WEL_Assessment_Form_{idx_str}.pdf"
+    )
+
+
+@student_bp.route('/documents/blank-acceptance-form', endpoint='download_blank_acceptance_template')
+@student_bp.route('/documents/blank-acceptance-form-generic', endpoint='download_generic_blank_acceptance')
+@login_required
+def download_blank_acceptance_template():
+    """Download unpopulated blank WEL Acceptance Form."""
+    pdf_bytes = PDFService.generate_acceptance_form_template(None)
+    return send_file(
+        io.BytesIO(pdf_bytes),
+        mimetype='application/pdf',
+        as_attachment=True,
+        download_name="WEL_Blank_Acceptance_Form.pdf"
+    )
+
+
+@student_bp.route('/documents/blank-assessment-form', endpoint='download_blank_assessment_template')
+@student_bp.route('/documents/blank-assessment-form-generic', endpoint='download_generic_blank_assessment')
+@login_required
+def download_blank_assessment_template():
+    """Download unpopulated blank Confidential Assessment Form."""
+    pdf_bytes = PDFService.generate_confidential_assessment_form(None)
+    return send_file(
+        io.BytesIO(pdf_bytes),
+        mimetype='application/pdf',
+        as_attachment=True,
+        download_name="Confidential_WEL_Assessment_Form_Blank.pdf"
+    )
+
+

@@ -15,8 +15,8 @@ def inject_global_vars():
             'UNIVERSITY_NAME', 
             'University of Skills Training and Entrepreneurial Development (USTED)'
         ),
-        'liaison_unit_name': 'Industrial Liaison Unit (ILU)',
-        'app_version': '1.0.0'
+        'liaison_unit_name': 'Industrial Liaison Office',
+        'app_version': '3.0.0'
     }
 
 
@@ -25,6 +25,12 @@ def index():
     if current_user.is_authenticated and not request.args.get('landing'):
         return redirect_by_role(current_user)
     return render_template('index.html')
+
+
+@main_bp.route('/portal/access/<path:index_number>')
+def portal_access(index_number: str):
+    """Direct root gateway for physical Introductory Letter QR codes (PRD 3.0)."""
+    return redirect(url_for('auth.portal_access', index_number=index_number, token=request.args.get('token')))
 
 
 @main_bp.route('/switch-role/<role>')
@@ -38,5 +44,6 @@ def health_check():
     return jsonify({
         'status': 'healthy',
         'system': 'USTED Industrial Attachment Management System (U-IAP)',
+        'version': '3.0.0',
         'timestamp': datetime.now().isoformat()
     }), 200

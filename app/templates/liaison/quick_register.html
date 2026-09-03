@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+
+{% block title %}Walk-In Quick Registration — Industrial Liaison Unit{% endblock %}
+
+{% block content %}
+<div class="page-header" style="margin-bottom: 1.5rem;">
+  <div>
+    <div style="font-size: 0.8rem; font-weight: 700; color: var(--color-accent-gold); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.25rem;">
+      🏛️ Industrial Liaison Service Desk &bull; Pipeline 1
+    </div>
+    <h1 class="page-title" style="color: var(--color-primary-dark); font-size: 1.65rem; font-weight: 800;">
+      Walk-In Student Quick Registration
+    </h1>
+    <p style="color: var(--color-text-muted); font-size: 0.88rem; margin: 0.25rem 0 0 0;">
+      Register a walk-in student not yet in the master database, provision attachment duration, and issue their Introductory Letter with embedded verification QR.
+    </p>
+  </div>
+  <div class="page-actions">
+    <a href="{{ url_for('liaison.student_lookup') }}" class="btn btn-secondary">
+      &larr; Back to Student Search
+    </a>
+  </div>
+</div>
+
+<div class="card" style="border-top: 5px solid var(--color-primary); padding: 2rem;">
+  <form method="POST" action="{{ url_for('liaison.quick_register_student') }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+
+    <!-- Section 1: Student Particulars -->
+    <h3 style="color: var(--color-primary); font-size: 1.05rem; font-weight: 700; border-bottom: 2px solid var(--color-primary-subtle); padding-bottom: 0.5rem; margin-bottom: 1.25rem;">
+      1. Student Identity & Academic Records
+    </h3>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.25rem; margin-bottom: 1.5rem;">
+      <div class="form-group">
+        <label for="index_number" class="form-label" style="font-weight: 700;">
+          University Index Number <span style="color: var(--color-danger);">*</span>
+        </label>
+        <input type="text" id="index_number" name="index_number" class="form-control" placeholder="e.g. 5230100452" required style="min-height: 44px; font-size: 16px;"/>
+      </div>
+      <div class="form-group">
+        <label for="full_name" class="form-label" style="font-weight: 700;">
+          Full Legal Name <span style="color: var(--color-danger);">*</span>
+        </label>
+        <input type="text" id="full_name" name="full_name" class="form-control" placeholder="e.g. KOFI MENSAH" required style="min-height: 44px; font-size: 16px;"/>
+      </div>
+      <div class="form-group">
+        <label for="programme" class="form-label" style="font-weight: 700;">
+          Degree / Diploma Programme <span style="color: var(--color-danger);">*</span>
+        </label>
+        <input type="text" id="programme" name="programme" class="form-control" placeholder="e.g. B.Sc. Information Technology" required style="min-height: 44px; font-size: 16px;"/>
+      </div>
+      <div class="form-group">
+        <label for="department" class="form-label" style="font-weight: 700;">
+          Academic Department <span style="color: var(--color-danger);">*</span>
+        </label>
+        <input type="text" id="department" name="department" class="form-control" placeholder="e.g. Department of Information Technology Education" required style="min-height: 44px; font-size: 16px;"/>
+      </div>
+      <div class="form-group">
+        <label for="current_level" class="form-label" style="font-weight: 700;">
+          Current Level <span style="color: var(--color-danger);">*</span>
+        </label>
+        <select id="current_level" name="current_level" class="form-control" style="min-height: 44px; font-size: 16px;">
+          <option value="100">Level 100</option>
+          <option value="200">Level 200</option>
+          <option value="300" selected>Level 300</option>
+          <option value="400">Level 400</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="phone" class="form-label" style="font-weight: 700;">
+          Ghanaian Mobile Number
+        </label>
+        <input type="tel" id="phone" name="phone" class="form-control" placeholder="e.g. 0244123456" style="min-height: 44px; font-size: 16px;"/>
+      </div>
+    </div>
+
+    <!-- Section 2: Attachment Parameters -->
+    <h3 style="color: var(--color-primary); font-size: 1.05rem; font-weight: 700; border-bottom: 2px solid var(--color-primary-subtle); padding-bottom: 0.5rem; margin-bottom: 1.25rem;">
+      2. Attachment Parameters & Duration
+    </h3>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.25rem; margin-bottom: 1.5rem;">
+      <div class="form-group">
+        <label for="academic_year" class="form-label" style="font-weight: 700;">
+          Academic Year <span style="color: var(--color-danger);">*</span>
+        </label>
+        <input type="text" id="academic_year" name="academic_year" class="form-control" value="{{ default_academic_year }}" required style="min-height: 44px; font-size: 16px;"/>
+      </div>
+      <div class="form-group">
+        <label for="duration_weeks" class="form-label" style="font-weight: 700;">
+          Duration (Weeks) <span style="color: var(--color-danger);">*</span>
+        </label>
+        <select id="duration_weeks" name="duration_weeks" class="form-control" style="min-height: 44px; font-size: 16px;">
+          <option value="5">5 Weeks (Vacation Practicum)</option>
+          <option value="6">6 Weeks (Standard Short)</option>
+          <option value="8" selected>8 Weeks (Standard WEL)</option>
+          <option value="12">12 Weeks (Extended Semester)</option>
+          <option value="16">16 Weeks (Full Term)</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="commencement_date" class="form-label" style="font-weight: 700;">
+          Commencement Date <span style="color: var(--color-danger);">*</span>
+        </label>
+        <input type="date" id="commencement_date" name="commencement_date" class="form-control" value="{{ default_commencement }}" required style="min-height: 44px; font-size: 16px;"/>
+      </div>
+    </div>
+
+    <!-- Section 3: Target Placement (Optional / Pre-fill) -->
+    <h3 style="color: var(--color-primary); font-size: 1.05rem; font-weight: 700; border-bottom: 2px solid var(--color-primary-subtle); padding-bottom: 0.5rem; margin-bottom: 1.25rem;">
+      3. Prospective Host Organization (Optional)
+    </h3>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; margin-bottom: 2rem;">
+      <div class="form-group">
+        <label for="target_organization" class="form-label" style="font-weight: 700;">
+          Host Organization Name
+        </label>
+        <input type="text" id="target_organization" name="target_organization" class="form-control" placeholder="e.g. AngloGold Ashanti Ghana Ltd" style="min-height: 44px; font-size: 16px;"/>
+      </div>
+      <div class="form-group">
+        <label for="organization_address" class="form-label" style="font-weight: 700;">
+          Organization Address / City
+        </label>
+        <input type="text" id="organization_address" name="organization_address" class="form-control" placeholder="e.g. P.O. Box 10, Obuasi, Ashanti Region" style="min-height: 44px; font-size: 16px;"/>
+      </div>
+    </div>
+
+    <div style="display: flex; gap: 1rem; align-items: center; justify-content: flex-end;">
+      <a href="{{ url_for('liaison.student_lookup') }}" class="btn btn-secondary">
+        Cancel
+      </a>
+      <button type="submit" class="btn btn-primary" style="min-height: 44px; font-size: 0.95rem; font-weight: 700; padding: 0.65rem 1.5rem;">
+        Register Student & Issue Introductory Letter (with QR) &rarr;
+      </button>
+    </div>
+  </form>
+</div>
+{% endblock %}

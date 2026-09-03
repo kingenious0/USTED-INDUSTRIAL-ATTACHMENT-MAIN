@@ -14,6 +14,7 @@ from app.models.user import User, UserRole
 from app.services.attachment_service import AttachmentService
 from app.services.pdf_service import PDFService
 from app.utils.decorators import liaison_required
+from app.utils.tokens import validate_and_normalize_ghana_phone
 
 liaison_bp = Blueprint('liaison', __name__)
 
@@ -325,3 +326,210 @@ def view_scan(acceptance_id: int):
         mimetype=acceptance.mime_type,
         as_attachment=False
     )
+
+
+@liaison_bp.route('/students/quick-register', methods=['GET', 'POST'])
+@login_required
+@liaison_required
+def quick_register_student():
+    """
+    Physical Walk-In Desk Quick Registration (Pipeline 1: Walk-In Mode).
+    Enables liaison officer to register a walk-in student not yet in StudentMaster,
+    provision attachment, and immediately generate the official Introductory Letter with QR code.
+    """
+    now = datetime.now()
+    default_acad_year = f"{now.year}/{now.year + 1}"
+    default_commence = (now + timedelta(days=(7 - now.weekday()))).strftime('%Y-%m-%d')
+
+    if request.method == 'POST':
+        index_number = request.form.get('index_number', '').strip()
+        full_name = request.form.get('full_name', '').strip()
+        programme = request.form.get('programme', '').strip()
+        department = request.form.get('department', '').strip()
+        current_level = request.form.get('current_level', 300, type=int)
+        phone = request.form.get('phone', '').strip()
+        email = request.form.get('email', '').strip()
+        academic_year = request.form.get('academic_year', default_acad_year).strip()
+        duration_weeks = request.form.get('duration_weeks', 8, type=int)
+        commence_str = request.form.get('commencement_date', '').strip()
+        target_org = request.form.get('target_organization', '').strip()
+        org_address = request.form.get('organization_address', '').strip()
+
+        if not index_number or not full_name or not programme or not department:
+            flash("Index number, student name, programme, and department are mandatory.", "danger")
+            return render_template(
+                'liaison/quick_register.html',
+                default_academic_year=academic_year,
+                default_commencement=commence_str or default_commence
+            )
+
+        # Verify whether student already exists
+        existing_student = StudentMaster.query.filter_by(index_number=index_number).first()
+        if existing_student:
+            flash(f"Student record '{index_number}' already exists. Please verify attachment below.", "info")
+            return redirect(url_for('liaison.verify_and_create_attachment', student_id=existing_student.id))
+
+        # Validate Ghanaian phone if provided
+        normalized_phone = phone
+        if phone:
+            valid_phone, norm_ph, phone_err = validate_and_normalize_ghana_phone(phone)
+            if not valid_phone:
+                flash(phone_err, "danger")
+                return render_template(
+                    'liaison/quick_register.html',
+                    default_academic_year=academic_year,
+                    default_commencement=commence_str or default_commence
+                )
+            normalized_phone = norm_ph
+
+        try:
+            commence_date = datetime.strptime(commence_str, '%Y-%m-%d').date()
+        except (ValueError, TypeError):
+            commence_date = datetime.strptime(default_commence, '%Y-%m-%d').date()
+
+        end_date = commence_date + timedelta(weeks=duration_weeks)
+
+        # Create StudentMaster
+        student = StudentMaster(
+            index_number=index_number,
+            full_name=full_name,
+            programme=programme,
+            department=department,
+            current_level=current_level,
+            phone=normalized_phone,
+            email=email or f"{index_number}@st.usted.edu.gh"
+        )
+        db.session.add(student)
+        db.session.flush()
+
+        # Create AttachmentRecord and provision weekly sheets
+        attachment = AttachmentService.create_attachment(
+            student_id=student.id,
+            academic_year=academic_year,
+            duration_weeks=duration_weeks,
+            commencement_date=commence_date,
+            end_date=end_date,
+            created_by_id=current_user.id,
+            target_organization=target_org or None,
+            organization_address=org_address or None
+        )
+
+        # Generate Introductory Letter with embedded 24-hour verification QR code
+        letter, _ = AttachmentService.generate_or_reprint_letter(
+            attachment_id=attachment.id,
+            user_id=current_user.id,
+            storage_service=current_app.storage_service,
+            addressee_org=target_org or None,
+            config=current_app.config
+        )
+        attachment.status = AttachmentStatus.LETTER_ISSUED
+        db.session.commit()
+
+        flash(
+            f"Student {full_name} ({index_number}) registered successfully! "
+            f"Attachment record #{attachment.id} created and Introductory Letter ({letter.reference_number}) with QR code generated.",
+            "success"
+        )
+        return redirect(url_for('liaison.view_attachment_detail', attachment_id=attachment.id))
+
+    return render_template(
+        'liaison/quick_register.html',
+        default_academic_year=default_acad_year,
+        default_commencement=default_commence
+    )
+
+
+@liaison_bp.route('/supervision/zonal-mapping', methods=['GET', 'POST'])
+@login_required
+@liaison_required
+def zonal_mapping():
+    """
+    Zonal Mapping & Supervision Allocation Hub (Pipeline 4).
+    Aggregates attachment placements by Ghanaian Region and District/Town,
+    displaying GPS coordinates and facilitating batch supervisor allocation.
+    """
+    supervisors = User.query.filter_by(role=UserRole.ACADEMIC_SUPERVISOR, is_active=True).all()
+
+    if request.method == 'POST':
+        attachment_ids = request.form.getlist('attachment_ids')
+        supervisor_id = request.form.get('supervisor_id', type=int)
+
+        if not attachment_ids:
+            flash("Please select at least one attachment for supervisor allocation.", "warning")
+            return redirect(url_for('liaison.zonal_mapping'))
+
+        if not supervisor_id:
+            flash("Please select an academic supervisor.", "danger")
+            return redirect(url_for('liaison.zonal_mapping'))
+
+        supervisor = User.query.get_or_404(supervisor_id)
+        allocated_count = 0
+        for att_id in attachment_ids:
+            att = AttachmentRecord.query.get(int(att_id))
+            if att:
+                att.academic_supervisor_id = supervisor.id
+                allocated_count += 1
+
+        db.session.commit()
+        flash(f"Successfully allocated {allocated_count} attachment(s) to Supervisor {supervisor.full_name}.", "success")
+        return redirect(url_for('liaison.zonal_mapping'))
+
+    # Filter by region
+    selected_region = request.args.get('region', '').strip()
+    status_filter = request.args.get('status', '').strip()
+
+    query = AttachmentRecord.query
+
+    if status_filter == 'unallocated':
+        query = query.filter(AttachmentRecord.academic_supervisor_id.is_(None))
+    elif status_filter == 'allocated':
+        query = query.filter(AttachmentRecord.academic_supervisor_id.isnot(None))
+
+    attachments = query.order_by(AttachmentRecord.created_at.desc()).all()
+
+    # Filter in Python if selected_region is specified (checking latest_acceptance or organization_address)
+    if selected_region:
+        filtered_attachments = []
+        for a in attachments:
+            acc = a.latest_acceptance
+            region_match = acc and acc.region and (acc.region.lower() == selected_region.lower())
+            addr_match = a.organization_address and (selected_region.lower() in a.organization_address.lower())
+            if region_match or addr_match:
+                filtered_attachments.append(a)
+        attachments = filtered_attachments
+
+    # Ghanaian administrative regions
+    ghana_regions = [
+        "Ashanti Region", "Greater Accra Region", "Central Region", "Western Region",
+        "Eastern Region", "Volta Region", "Northern Region", "Upper East Region",
+        "Upper West Region", "Bono Region", "Bono East Region", "Ahafo Region",
+        "Oti Region", "North East Region", "Savannah Region", "Western North Region"
+    ]
+
+    # Calculate region distribution stats & unassigned counts
+    regional_summary = {}
+    total_unassigned = 0
+    for a in AttachmentRecord.query.all():
+        acc = a.latest_acceptance
+        r = (acc.region if acc and acc.region else "Unassigned Region").strip()
+        if r not in regional_summary:
+            regional_summary[r] = {'total': 0, 'unassigned': 0}
+        regional_summary[r]['total'] += 1
+        if not a.academic_supervisor_id:
+            regional_summary[r]['unassigned'] += 1
+            total_unassigned += 1
+
+    return render_template(
+        'liaison/zonal_mapping.html',
+        attachments=attachments,
+        supervisors=supervisors,
+        lecturers=supervisors,
+        selected_region=selected_region,
+        status_filter=status_filter,
+        regional_summary=regional_summary,
+        region_stats=regional_summary,
+        total_unassigned=total_unassigned,
+        regions=ghana_regions
+    )
+
+

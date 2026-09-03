@@ -212,11 +212,11 @@ def generate_weekly_sheet_pdf(attachment_id: int, week_number: int) -> bytes:
 
     # 1. Institutional Header
     story.append(Paragraph(
-        "AKENTEN APPIAH-MENKA UNIVERSITY OF SKILLS TRAINING AND ENTREPRENEURIAL DEVELOPMENT (AAMUSTED)",
+        "UNIVERSITY OF SKILLS TRAINING AND ENTREPRENEURIAL DEVELOPMENT (USTED)",
         styles['UnivHeader']
     ))
     story.append(Paragraph(
-        "INDUSTRIAL LIAISON UNIT &bull; WORKPLACE EXPERIENCE LEARNING (WEL)",
+        "INDUSTRIAL LIAISON OFFICE &bull; WORKPLACE EXPERIENCE LEARNING (WEL)",
         styles['SubHeader']
     ))
 

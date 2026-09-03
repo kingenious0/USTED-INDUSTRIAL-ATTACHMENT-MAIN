@@ -1,10 +1,185 @@
-from flask import Blueprint, render_template, redirect, url_for, flash, request
+from flask import Blueprint, render_template, redirect, url_for, flash, request, current_app
 from flask_login import login_user, logout_user, login_required, current_user
+from app.extensions import db
 from app.models.user import User, UserRole
+from app.models.student_master import StudentMaster
 from app.models.audit import AuditAction
 from app.services.audit_service import AuditService
+from app.utils.tokens import verify_qr_token, validate_and_normalize_ghana_phone
 
 auth_bp = Blueprint('auth', __name__)
+
+
+@auth_bp.route('/portal/access/<path:index_number>')
+def portal_access(index_number: str):
+    """
+    24-Hour Timed Access Gateway via Physical Introductory Letter QR Code (Pipeline 2).
+    """
+    token = request.args.get('token')
+    if not token:
+        flash("Authorization token missing from QR link.", "danger")
+        return redirect(url_for('auth.login'))
+
+    is_valid, err_msg = verify_qr_token(token, index_number, current_app.config['SECRET_KEY'])
+    if not is_valid:
+        flash(err_msg or "This 24-hour QR onboarding code has expired or is invalid.", "danger")
+        return redirect(url_for('auth.login'))
+
+    # Check if student already has a portal user account
+    user = User.query.filter_by(username=index_number).first()
+    if user:
+        if not user.is_active:
+            flash("Your account has been deactivated. Please contact the Industrial Liaison Unit.", "danger")
+            return redirect(url_for('auth.login'))
+        login_user(user)
+        flash(f"Welcome back, {user.full_name}! Verified via 24-Hour QR Gateway.", "success")
+        return redirect_by_role(user)
+
+    # Student has no active portal login -> Route to 1-time activation
+    flash("24-Hour QR Code verified! Set your password and phone number to activate portal access.", "info")
+    return redirect(url_for('auth.activate', index_number=index_number, token=token))
+
+
+@auth_bp.route('/activate', methods=['GET', 'POST'])
+def activate():
+    """
+    Student self-activation endpoint following 24-hour QR code verification.
+    """
+    index_number = request.args.get('index_number') or request.form.get('index_number')
+    token = request.args.get('token') or request.form.get('token')
+
+    if not index_number or not token:
+        flash("Activation link is incomplete or invalid.", "danger")
+        return redirect(url_for('auth.login'))
+
+    is_valid, err_msg = verify_qr_token(token, index_number, current_app.config['SECRET_KEY'])
+    if not is_valid:
+        flash(err_msg or "This 24-hour onboarding link has expired.", "danger")
+        return redirect(url_for('auth.login'))
+
+    student = StudentMaster.query.filter_by(index_number=index_number).first()
+    if not student:
+        flash("Student master record could not be found.", "danger")
+        return redirect(url_for('auth.login'))
+
+    if request.method == 'POST':
+        phone = request.form.get('phone', '').strip()
+        password = request.form.get('password', '')
+        confirm_password = request.form.get('confirm_password', '')
+
+        # Validate Ghanaian Mobile Number
+        valid_phone, normalized_phone, phone_err = validate_and_normalize_ghana_phone(phone)
+        if not valid_phone:
+            flash(phone_err, "danger")
+            return render_template('auth/activate.html', student=student, token=token, phone=phone)
+
+        # Validate Password
+        if len(password) < 6:
+            flash("Password must be at least 6 characters long.", "danger")
+            return render_template('auth/activate.html', student=student, token=token, phone=phone)
+
+        if password != confirm_password:
+            flash("Passwords do not match. Please re-enter.", "danger")
+            return render_template('auth/activate.html', student=student, token=token, phone=phone)
+
+        # Create or update user
+        user = User.query.filter_by(username=index_number).first()
+        if not user:
+            user = User(
+                username=index_number,
+                email=student.email or f"{index_number}@st.usted.edu.gh",
+                full_name=student.full_name,
+                role=UserRole.STUDENT,
+                is_active=True
+            )
+            db.session.add(user)
+
+        user.set_password(password)
+        student.phone = normalized_phone
+        db.session.commit()
+
+        login_user(user)
+        AuditService.log(
+            action=AuditAction.USER_LOGIN,
+            target_type='User',
+            target_id=user.id,
+            details={'method': 'qr_activation', 'phone': normalized_phone}
+        )
+
+        flash(f"Account activated successfully! Welcome to U-IAP, {student.full_name}.", "success")
+        return redirect(url_for('student.dashboard'))
+
+    return render_template('auth/activate.html', student=student, token=token, phone=student.phone or '')
+
+
+@auth_bp.route('/register', methods=['GET', 'POST'])
+def register():
+    """
+    Remote student onboarding intake (Pipeline 1: Option B).
+    """
+    if current_user.is_authenticated:
+        return redirect_by_role(current_user)
+
+    if request.method == 'POST':
+        index_number = request.form.get('index_number', '').strip()
+        phone = request.form.get('phone', '').strip()
+        email = request.form.get('email', '').strip()
+        password = request.form.get('password', '')
+        confirm_password = request.form.get('confirm_password', '')
+
+        # Check existing user
+        if User.query.filter_by(username=index_number).first():
+            flash("An account already exists for this index number. Please sign in.", "info")
+            return redirect(url_for('auth.login'))
+
+        # Check StudentMaster
+        student = StudentMaster.query.filter_by(index_number=index_number).first()
+        if not student:
+            flash(
+                f"Index number '{index_number}' was not found in the official USTED student master roster. "
+                "Please verify your index number or visit the Industrial Liaison Unit desk.",
+                "danger"
+            )
+            return render_template('auth/register.html', index_number=index_number, phone=phone, email=email)
+
+        # Validate Ghanaian Mobile Number
+        valid_phone, normalized_phone, phone_err = validate_and_normalize_ghana_phone(phone)
+        if not valid_phone:
+            flash(phone_err, "danger")
+            return render_template('auth/register.html', index_number=index_number, phone=phone, email=email)
+
+        if len(password) < 6:
+            flash("Password must be at least 6 characters.", "danger")
+            return render_template('auth/register.html', index_number=index_number, phone=phone, email=email)
+
+        if password != confirm_password:
+            flash("Passwords do not match.", "danger")
+            return render_template('auth/register.html', index_number=index_number, phone=phone, email=email)
+
+        user = User(
+            username=index_number,
+            email=email or student.email or f"{index_number}@st.usted.edu.gh",
+            full_name=student.full_name,
+            role=UserRole.STUDENT,
+            is_active=True
+        )
+        user.set_password(password)
+        student.phone = normalized_phone
+        db.session.add(user)
+        db.session.commit()
+
+        login_user(user)
+        AuditService.log(
+            action=AuditAction.USER_LOGIN,
+            target_type='User',
+            target_id=user.id,
+            details={'method': 'remote_registration', 'phone': normalized_phone}
+        )
+        flash(f"Registration successful! Welcome, {student.full_name}.", "success")
+        return redirect(url_for('student.dashboard'))
+
+    return render_template('auth/register.html')
+
 
 
 @auth_bp.route('/login', methods=['GET', 'POST'])

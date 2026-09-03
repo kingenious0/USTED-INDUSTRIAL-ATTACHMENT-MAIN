@@ -6,6 +6,7 @@ from app.models.acceptance import AcceptanceRecord, AcceptanceStatus
 from app.models.activity import WeeklyActivity, DailyActivity, DayOfWeek
 from app.models.document import Document, DocumentType
 from app.models.audit import AuditLog, AuditAction
+from app.models.supervision_visit import SupervisionVisit
 
 __all__ = [
     'User',
@@ -22,5 +23,6 @@ __all__ = [
     'Document',
     'DocumentType',
     'AuditLog',
-    'AuditAction'
+    'AuditAction',
+    'SupervisionVisit'
 ]

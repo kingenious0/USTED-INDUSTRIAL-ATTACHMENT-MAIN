@@ -1,347 +1,219 @@
 {% extends "base.html" %}
 
-{% block title %}Student Attachment Workspace — U-IAP{% endblock %}
+{% block title %}Student Attachment Workspace — USTED U-IAP{% endblock %}
 
 {% block content %}
-<div class="page-header">
+<div class="page-header" style="margin-bottom: 1.5rem;">
   <div>
-    <h1 class="page-title">Student Attachment Workspace</h1>
-    <p class="page-subtitle">Workplace Experience Learning (WEL) Lifecycle Management</p>
+    <div style="font-size: 0.8rem; font-weight: 700; color: var(--color-accent-gold); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.25rem;">
+      🎓 Student Portal &bull; Workplace Experience Learning (WEL)
+    </div>
+    <h1 class="page-title" style="color: var(--color-primary-dark); font-size: 1.65rem; font-weight: 800;">
+      Attachment Workspace
+    </h1>
+    <p class="page-subtitle" style="color: var(--color-text-muted); font-size: 0.9rem;">
+      Track placement approval, access physical documents, and manage your daily industrial logbook.
+    </p>
   </div>
   {% if active_attachment %}
-    <span class="badge {% if active_attachment.status == 'logging_active' or active_attachment.status == 'completed' %}badge-success{% else %}badge-primary{% endif %}">
-      {{ active_attachment.status.replace('_', ' ') }}
-    </span>
+    <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
+      {% if can_log %}
+        <a href="{{ url_for('student.launch_elogsheet', attachment_id=active_attachment.id) }}" target="_blank" rel="noopener noreferrer" class="btn btn-primary" style="font-weight: 700; background: var(--color-primary); border-color: var(--color-primary); box-shadow: 0 4px 12px rgba(140,3,59,0.25);">
+          🚀 Launch eLogBook (SSO) &rarr;
+        </a>
+      {% endif %}
+      <span class="badge" style="background: var(--color-primary-subtle); color: var(--color-primary); font-weight: 700; font-size: 0.82rem; padding: 0.4rem 0.8rem; border: 1px solid var(--color-primary);">
+        {{ active_attachment.status.replace('_', ' ').upper() }}
+      </span>
+    </div>
   {% endif %}
 </div>
 
 <!-- Student Profile Information Card -->
-<div class="card" style="border-left: 4px solid var(--color-primary);">
+<div class="card" style="border-left: 5px solid var(--color-primary); margin-bottom: 1.5rem; padding: 1.25rem 1.5rem;">
   <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
     <div>
-      <h2 style="color: var(--color-primary-dark); font-size: 1.25rem; font-weight: 700;">{{ student.full_name }}</h2>
-      <div style="font-size: 0.88rem; color: var(--color-text-muted); margin-top: 0.3rem;">
-        <span><strong>Index Number:</strong> {{ student.index_number }}</span> &bull;
+      <h2 style="color: var(--color-primary-dark); font-size: 1.25rem; font-weight: 800; margin: 0;">{{ student.full_name }}</h2>
+      <div style="font-size: 0.88rem; color: var(--color-text-muted); margin-top: 0.35rem;">
+        <span><strong>Index:</strong> {{ student.index_number }}</span> &bull;
         <span><strong>Programme:</strong> {{ student.programme }}</span> &bull;
         <span><strong>Level:</strong> Level {{ student.current_level }}</span>
       </div>
     </div>
     <div style="text-align: right;">
-      <span style="font-size: 0.8rem; color: var(--color-text-muted); display: block;">Department:</span>
-      <span style="font-weight: 600; color: var(--color-primary);">{{ student.department }}</span>
+      <span style="font-size: 0.78rem; color: var(--color-text-muted); text-transform: uppercase; font-weight: 700; display: block;">Academic Department:</span>
+      <span style="font-weight: 700; color: var(--color-primary);">{{ student.department }}</span>
     </div>
   </div>
 </div>
 
 {% if not active_attachment %}
-  <!-- Actionable Onboarding Checklist Card (No Dead Ends) -->
-  <div class="onboarding-card">
-    <div class="onboarding-header">
-      <div class="step-num" style="background: var(--color-accent-gold-subtle); color: var(--color-accent-gold-hover); border-color: #FDE68A;">
-        &#9733;
+  <!-- Actionable Onboarding Checklist Card (PRD 3.0 Task List) -->
+  <div class="card" style="border-top: 5px solid var(--color-primary); padding: 2rem; margin-bottom: 1.5rem;">
+    <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.25rem;">
+      <div style="background: var(--color-primary-subtle); color: var(--color-primary); font-size: 1.5rem; padding: 0.5rem; border-radius: var(--radius-sm);">
+        📋
       </div>
       <div>
-        <h3 class="onboarding-title">How to Begin Your Attachment</h3>
-        <p style="font-size: 0.88rem; color: var(--color-text-muted); margin-top: 0.2rem;">
-          Follow the university's standard administrative procedure to start your Workplace Experience Learning:
+        <h3 style="color: var(--color-primary-dark); font-size: 1.2rem; font-weight: 800; margin: 0;">
+          Attachment Initialization Checklist
+        </h3>
+        <p style="color: var(--color-text-muted); font-size: 0.88rem; margin: 0.2rem 0 0 0;">
+          Follow the official USTED procedure to register your placement and generate documentation.
         </p>
       </div>
     </div>
 
-    <ol class="checklist-steps">
-      <li class="checklist-step">
-        <span class="step-num">1</span>
-        <div class="step-text">
-          <strong>Visit the Industrial Liaison Office (Main Campus) with your Index Number</strong><br/>
-          An attachment record must be officially initiated at the Industrial Liaison Office. Present your student identity card for verification.
+    <div style="display: grid; gap: 1rem;">
+      <div style="display: flex; gap: 1rem; align-items: flex-start; padding: 1rem; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-sm);">
+        <div style="background: var(--color-primary); color: #fff; font-weight: 800; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: 50%; flex-shrink: 0;">1</div>
+        <div>
+          <strong style="color: var(--color-primary-dark);">Visit Industrial Liaison Service Desk or Register via Portal</strong>
+          <p style="font-size: 0.85rem; color: var(--color-text-muted); margin: 0.25rem 0 0 0;">
+            If you are a walk-in student, report to the Industrial Liaison Office (Main Campus) with your student ID to be indexed and obtain your official Introductory Letter.
+          </p>
         </div>
-      </li>
-      <li class="checklist-step">
-        <span class="step-num">2</span>
-        <div class="step-text">
-          <strong>Request your official Industrial Liaison / Introductory Letter</strong><br/>
-          Liaison staff will generate your formal Introductory Letter addressed to your prospective host enterprise.
-        </div>
-      </li>
-      <li class="checklist-step">
-        <span class="step-num">3</span>
-        <div class="step-text">
-          <strong>Take your Introductory Letter & Acceptance Form to your host enterprise</strong><br/>
-          Deliver the letter and blank Acceptance Form to the company for endorsement, signature, and their official wet-ink stamp.
-        </div>
-      </li>
-      <li class="checklist-step">
-        <span class="step-num">4</span>
-        <div class="step-text">
-          <strong>Return here to upload your signed and stamped Acceptance Form</strong><br/>
-          Once your attachment is initiated by Liaison, upload the clear scanned document to activate your weekly logbook.
-        </div>
-      </li>
-    </ol>
+      </div>
 
-    <div class="support-notice">
-      <strong>Need assistance?</strong> Contact the Industrial Liaison Unit directly at the Administration Block or email the Liaison Coordinator.
+      <div style="display: flex; gap: 1rem; align-items: flex-start; padding: 1rem; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-sm);">
+        <div style="background: var(--color-primary); color: #fff; font-weight: 800; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: 50%; flex-shrink: 0;">2</div>
+        <div>
+          <strong style="color: var(--color-primary-dark);">Deliver Introductory Letter & Acceptance Form to Employer</strong>
+          <p style="font-size: 0.85rem; color: var(--color-text-muted); margin: 0.25rem 0 0 0;">
+            Present the university introductory letter to your prospective workplace supervisor. Request them to complete, sign, and endorse the Acceptance Form with their official wet-ink company stamp.
+          </p>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 1rem; align-items: flex-start; padding: 1rem; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-sm);">
+        <div style="background: var(--color-primary); color: #fff; font-weight: 800; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: 50%; flex-shrink: 0;">3</div>
+        <div>
+          <strong style="color: var(--color-primary-dark);">Upload Stamped Acceptance Scan & Pin Workstation GPS</strong>
+          <p style="font-size: 0.85rem; color: var(--color-text-muted); margin: 0.25rem 0 0 0;">
+            Upload your signed acceptance form scan and record your Ghana Post GPS / GIS coordinates to unlock your daily eLogBook.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top: 1.5rem; display: flex; gap: 1rem; flex-wrap: wrap;">
+      <a href="{{ url_for('student.download_generic_blank_acceptance') }}" class="btn btn-secondary" style="font-weight: 700;">
+        📄 Download Blank Acceptance Form (PDF)
+      </a>
+      <a href="{{ url_for('student.download_generic_blank_assessment') }}" class="btn btn-secondary" style="font-weight: 700;">
+        📄 Download Blank Assessment Form (PDF)
+      </a>
     </div>
   </div>
 {% else %}
-  <!-- Pipeline 3: Active Banner when Logging is Enabled -->
+  <!-- Active Attachment Highlight -->
   {% if can_log %}
-    <div class="card" style="background: linear-gradient(135deg, var(--color-primary-dark), var(--color-primary)); color: #FFFFFF; padding: 1.5rem; border-radius: var(--radius-lg); margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; border-left: 6px solid var(--color-accent-gold); box-shadow: var(--shadow-md);">
+    <div class="card" style="background: linear-gradient(135deg, var(--color-primary-dark), var(--color-primary)); color: #FFFFFF; padding: 1.5rem; border-radius: var(--radius); margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; border-left: 6px solid var(--color-accent-gold); box-shadow: var(--shadow-md);">
       <div>
-        <span class="badge" style="background: rgba(217,119,6,0.3); color: var(--color-accent-gold-subtle); border: 1px solid rgba(217,119,6,0.5); font-weight: 700; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.05em; padding: 0.25rem 0.6rem; border-radius: 4px; display: inline-block; margin-bottom: 0.5rem;">
-          Verified &bull; Workplace Experience Learning Active
+        <span class="badge" style="background: rgba(217,119,6,0.35); color: #fff; border: 1px solid rgba(217,119,6,0.7); font-weight: 700; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.05em; padding: 0.25rem 0.6rem; border-radius: 4px; display: inline-block; margin-bottom: 0.4rem;">
+          ✓ Workplace Placement Approved & Verified
         </span>
-        <h2 style="font-size: 1.35rem; font-weight: 700; color: #FFFFFF; margin: 0;">
-          Attachment Active: {{ active_attachment.target_organization or 'Host Enterprise' }}
+        <h2 style="font-size: 1.35rem; font-weight: 800; color: #FFFFFF; margin: 0;">
+          Attachment Active: {{ active_attachment.acceptance.company_name if active_attachment.acceptance else active_attachment.target_organization }}
         </h2>
         <p style="font-size: 0.88rem; color: #FDF2F5; margin: 0.35rem 0 0 0;">
-          Academic Year: {{ active_attachment.academic_year }} &bull; {{ active_attachment.duration_weeks }} Weeks Duration &bull; eLogSheet Workspace Unlocked
+          Academic Year: {{ active_attachment.academic_year }} &bull; {{ active_attachment.duration_weeks }} Weeks Duration &bull; eLogBook Unlocked
         </p>
       </div>
-      <a href="{{ url_for('student.activities', attachment_id=active_attachment.id) }}" class="btn btn-gold" style="font-weight: 700; padding: 0.75rem 1.6rem; font-size: 0.95rem; box-shadow: 0 4px 14px rgba(0,0,0,0.3);">
-        Open Weekly Activity Workspace &rarr;
-      </a>
+      <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+        <a href="{{ url_for('student.launch_elogsheet', attachment_id=active_attachment.id) }}" target="_blank" rel="noopener noreferrer" class="btn" style="background: var(--color-accent-gold); color: #fff; font-weight: 800; padding: 0.75rem 1.6rem; font-size: 0.95rem; box-shadow: 0 4px 14px rgba(0,0,0,0.3); border: none;">
+          🚀 Launch eLogBook (SSO) &rarr;
+        </a>
+        <a href="{{ url_for('student.activities', attachment_id=active_attachment.id) }}" class="btn btn-secondary" style="background: rgba(255,255,255,0.15); color: #fff; border: 1px solid rgba(255,255,255,0.3); font-weight: 600;">
+          Open Weekly Activity Workspace &rarr;
+        </a>
+      </div>
     </div>
-  {% elif active_attachment.latest_acceptance and active_attachment.latest_acceptance.is_pending %}
-    <!-- Pipeline 2 State: Pending Verification Banner -->
-    <div class="card" style="background: var(--color-warning-subtle); border-left: 4px solid var(--color-warning); padding: 1.25rem 1.5rem; margin-bottom: 1.5rem; border: 1px solid #FDE68A;">
+  {% elif active_attachment.acceptance and active_attachment.acceptance.is_pending %}
+    <div class="card" style="background: #fffbeb; border-left: 5px solid var(--color-accent-gold); padding: 1.25rem 1.5rem; margin-bottom: 1.5rem; border: 1px solid #fde68a;">
       <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem;">
         <div>
-          <span class="badge badge-warning" style="margin-bottom: 0.35rem;">Status: Pending Verification</span>
-          <h4 style="color: #92400E; margin: 0; font-size: 1.1rem; font-weight: 700;">Acceptance Form Under Liaison Verification</h4>
-          <p style="font-size: 0.85rem; color: #78350F; margin: 0.35rem 0 0 0;">
-            Endorsed Acceptance Form for <strong>{{ active_attachment.latest_acceptance.organization_name }}</strong> submitted on {{ active_attachment.latest_acceptance.created_at.strftime('%d %b, %Y at %H:%M') }}. Liaison officers will verify the supervisor signature and wet-ink stamp.
+          <span class="badge badge-warning" style="margin-bottom: 0.35rem;">Status: Verification In Progress</span>
+          <h4 style="color: #92400e; margin: 0; font-size: 1.1rem; font-weight: 800;">Acceptance Scan Under Liaison Review</h4>
+          <p style="font-size: 0.85rem; color: #78350f; margin: 0.35rem 0 0 0;">
+            Endorsed Acceptance Form for <strong>{{ active_attachment.acceptance.company_name }}</strong> submitted on {{ active_attachment.acceptance.created_at.strftime('%d %b, %Y at %H:%M') }}. Industrial Liaison officers will verify the official wet-ink stamp.
           </p>
         </div>
-        <a href="{{ url_for('student.view_uploaded_scan', attachment_id=active_attachment.id, acceptance_id=active_attachment.latest_acceptance.id) }}" target="_blank" class="btn btn-outline btn-sm">
+        <a href="{{ url_for('student.view_uploaded_scan', attachment_id=active_attachment.id, acceptance_id=active_attachment.acceptance.id) }}" target="_blank" class="btn btn-outline btn-sm">
           View Uploaded Scan
         </a>
       </div>
     </div>
   {% elif not can_log %}
-    <!-- Pipeline 2 State: Upload Completed Acceptance Form Card -->
-    <div class="card" style="border-top: 4px solid var(--color-primary); margin-bottom: 1.5rem;">
-      <div class="card-header" style="border-bottom: 1px solid var(--color-border); padding-bottom: 0.75rem;">
+    <div class="card" style="border-top: 5px solid var(--color-primary); padding: 1.5rem; margin-bottom: 1.5rem;">
+      <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1rem;">
         <div>
-          <span class="badge badge-primary" style="margin-bottom: 0.3rem;">Required Checkpoint</span>
-          <h3 class="card-title" style="color: var(--color-primary-dark); font-size: 1.15rem; margin: 0;">Upload Completed Acceptance Form</h3>
-          <p class="form-hint" style="margin-top: 0.2rem;">Upload the endorsed form with workplace supervisor signature and official wet-ink stamp to activate your logbook.</p>
+          <span class="badge badge-primary" style="margin-bottom: 0.3rem;">Required Action</span>
+          <h3 style="color: var(--color-primary-dark); font-size: 1.15rem; font-weight: 800; margin: 0;">Upload Completed Acceptance Form & Pin GPS</h3>
+          <p style="color: var(--color-text-muted); font-size: 0.85rem; margin: 0.2rem 0 0 0;">
+            Submit your endorsed acceptance form scan and workstation geolocation to unlock your eLogBook.
+          </p>
         </div>
-        <a href="{{ url_for('student.download_blank_acceptance_form', attachment_id=active_attachment.id) }}" class="btn btn-outline btn-sm">
-          Download Blank Form (PDF)
+        <a href="{{ url_for('student.upload_acceptance', attachment_id=active_attachment.id) }}" class="btn btn-primary" style="font-weight: 700;">
+          Upload Stamped Form & GPS &rarr;
         </a>
       </div>
-
-      <form method="POST" action="{{ url_for('student.upload_acceptance') }}" enctype="multipart/form-data" style="margin-top: 1rem;">
-        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-        <input type="hidden" name="attachment_id" value="{{ active_attachment.id }}"/>
-
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem;">
-          <div class="form-group">
-            <label class="form-label" for="host_organization_name">Host Organization Name <span style="color:var(--color-danger)">*</span></label>
-            <input type="text" id="host_organization_name" name="host_organization_name" class="form-control" required
-                   placeholder="e.g. Electricity Company of Ghana" value="{{ active_attachment.target_organization or '' }}">
-          </div>
-
-          <div class="form-group">
-            <label class="form-label" for="industry_location">Industry Location / Town <span style="color:var(--color-danger)">*</span></label>
-            <input type="text" id="industry_location" name="industry_location" class="form-control" required
-                   placeholder="e.g. Adum, Kumasi" value="{{ active_attachment.organization_address or '' }}">
-          </div>
-        </div>
-
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem;">
-          <div class="form-group">
-            <label class="form-label" for="gps_address">GPS Address / Digital Address</label>
-            <input type="text" id="gps_address" name="gps_address" class="form-control"
-                   placeholder="e.g. AK-039-2345">
-          </div>
-
-          <div class="form-group">
-            <label class="form-label" for="sector_type">Sector Type <span style="color:var(--color-danger)">*</span></label>
-            <select id="sector_type" name="sector_type" class="form-control" required>
-              <option value="Private" selected>Private Enterprise</option>
-              <option value="Statutory">Public / Statutory Corporation</option>
-              <option value="NGO">Non-Governmental Organization (NGO)</option>
-              <option value="Education">Educational Institution</option>
-            </select>
-          </div>
-        </div>
-
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem;">
-          <div class="form-group">
-            <label class="form-label" for="workplace_supervisor_name">Workplace Supervisor Name <span style="color:var(--color-danger)">*</span></label>
-            <input type="text" id="workplace_supervisor_name" name="workplace_supervisor_name" class="form-control" required
-                   placeholder="e.g. Ing. Kwame Mensah">
-          </div>
-
-          <div class="form-group">
-            <label class="form-label" for="workplace_supervisor_phone">Workplace Supervisor Phone <span style="color:var(--color-danger)">*</span></label>
-            <input type="tel" id="workplace_supervisor_phone" name="workplace_supervisor_phone" class="form-control" required
-                   placeholder="e.g. 0244123456">
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label" for="acceptance_scan">Endorsed Acceptance Form Scan <span style="color:var(--color-danger)">*</span></label>
-          <input type="file" id="acceptance_scan" name="acceptance_scan" class="form-control" required accept=".pdf,.png,.jpg,.jpeg">
-          <p class="form-hint">Accepted formats: PDF, PNG, JPG (Maximum file size: 5 MB). Ensure the company's official wet-ink stamp is clearly visible.</p>
-        </div>
-
-        <div style="text-align: right; margin-top: 1.25rem;">
-          <button type="submit" class="btn btn-primary" style="padding: 0.65rem 1.6rem; font-weight: 600;">
-            Submit Completed Acceptance Form
-          </button>
-        </div>
-      </form>
     </div>
   {% endif %}
 
-  <!-- Active Attachment Summary Card -->
-  <div class="card" style="border-top: 4px solid var(--color-accent-gold);">
-    <div class="card-header">
-      <h3 class="card-title">Attachment Particulars (Academic Year: {{ active_attachment.academic_year }})</h3>
-      <a href="{{ url_for('student.view_attachment', attachment_id=active_attachment.id) }}" class="btn btn-outline btn-sm">View Full Attachment</a>
-    </div>
-
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; font-size: 0.9rem;">
-      <div style="background: var(--color-surface-bg); padding: 0.85rem 1rem; border-radius: var(--radius); border: 1px solid var(--color-border);">
-        <span style="color: var(--color-text-muted); font-size: 0.8rem; display: block;">Host Organization:</span>
-        <strong style="color: var(--color-primary-dark);">{{ active_attachment.target_organization or 'To be confirmed by Acceptance Form' }}</strong>
-      </div>
-
-      <div style="background: var(--color-surface-bg); padding: 0.85rem 1rem; border-radius: var(--radius); border: 1px solid var(--color-border);">
-        <span style="color: var(--color-text-muted); font-size: 0.8rem; display: block;">Period & Duration:</span>
-        <strong>{{ active_attachment.duration_weeks }} Weeks</strong><br/>
-        <small style="color: var(--color-text-muted);">{{ active_attachment.commencement_date.strftime('%d %b, %Y') }} to {{ active_attachment.end_date.strftime('%d %b, %Y') }}</small>
-      </div>
-
-      <div style="background: var(--color-surface-bg); padding: 0.85rem 1rem; border-radius: var(--radius); border: 1px solid var(--color-border);">
-        <span style="color: var(--color-text-muted); font-size: 0.8rem; display: block;">Acceptance Form:</span>
-        {% if active_attachment.latest_acceptance %}
-          <span class="badge {% if active_attachment.latest_acceptance.is_approved %}badge-success{% elif active_attachment.latest_acceptance.is_flagged %}badge-danger{% else %}badge-warning{% endif %}">
-            {{ active_attachment.latest_acceptance.status.replace('_', ' ') }}
-          </span>
-        {% else %}
-          <span class="badge badge-secondary">Pending Upload</span>
-        {% endif %}
-      </div>
-
-      <div style="background: var(--color-surface-bg); padding: 0.85rem 1rem; border-radius: var(--radius); border: 1px solid var(--color-border);">
-        <span style="color: var(--color-text-muted); font-size: 0.8rem; display: block;">Activity Logging:</span>
-        {% if can_log %}
-          <span class="badge badge-success">Active / Enabled</span>
-        {% else %}
-          <span class="badge badge-warning">Locked Until Acceptance Upload</span>
-        {% endif %}
-      </div>
-    </div>
-
-    <!-- Workflow Action Grid -->
-    <h4 style="font-size: 0.95rem; font-weight: 700; color: var(--color-primary-dark); margin-bottom: 0.85rem;">Step-by-Step Attachment Actions:</h4>
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem;">
-      <!-- Step 1: Letter -->
-      <div style="border: 1px solid var(--color-border); border-radius: var(--radius); padding: 1.15rem; display: flex; flex-direction: column; justify-content: space-between; background: #FFFFFF;">
+  <!-- Core Documents Hub -->
+  <div class="card" style="border-top: 4px solid var(--color-accent-gold); padding: 1.5rem; margin-bottom: 1.5rem;">
+    <h3 style="color: var(--color-primary-dark); font-size: 1.1rem; font-weight: 800; margin-bottom: 1rem;">
+      Official Attachment Documentation & Artifacts
+    </h3>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 1rem;">
+      <!-- Introductory Letter -->
+      <div style="border: 1px solid var(--color-border); border-radius: var(--radius-sm); padding: 1.15rem; background: var(--color-surface); display: flex; flex-direction: column; justify-content: space-between;">
         <div>
-          <span class="badge badge-secondary" style="margin-bottom: 0.5rem;">Step 1</span>
-          <h5 style="color: var(--color-primary-dark); font-size: 0.95rem; font-weight: 600;">Introductory Letter</h5>
-          <p style="font-size: 0.82rem; color: var(--color-text-muted); margin: 0.25rem 0 1rem 0;">Official letter addressed to employer for placement.</p>
+          <span class="badge" style="background: var(--color-primary-subtle); color: var(--color-primary); font-weight: 700; margin-bottom: 0.5rem;">Official Letter</span>
+          <h5 style="color: var(--color-primary-dark); font-size: 0.95rem; font-weight: 700; margin: 0;">Introductory Letter</h5>
+          <p style="font-size: 0.82rem; color: var(--color-text-muted); margin: 0.35rem 0 1rem 0;">Formal university letter with 24-hr verification QR code for host employer.</p>
         </div>
-        <a href="{{ url_for('student.download_letter', attachment_id=active_attachment.id) }}" class="btn btn-outline btn-sm">
-          Download Official Letter (PDF)
+        <a href="{{ url_for('student.download_letter', attachment_id=active_attachment.id) }}" class="btn btn-outline btn-sm" style="width: 100%; text-align: center; font-weight: 600;">
+          Download Letter (PDF)
         </a>
       </div>
 
-      <!-- Step 2: Blank Acceptance Form -->
-      <div style="border: 1px solid var(--color-border); border-radius: var(--radius); padding: 1.15rem; display: flex; flex-direction: column; justify-content: space-between; background: #FFFFFF;">
+      <!-- Blank Acceptance Form -->
+      <div style="border: 1px solid var(--color-border); border-radius: var(--radius-sm); padding: 1.15rem; background: var(--color-surface); display: flex; flex-direction: column; justify-content: space-between;">
         <div>
-          <span class="badge badge-secondary" style="margin-bottom: 0.5rem;">Step 2</span>
-          <h5 style="color: var(--color-primary-dark); font-size: 0.95rem; font-weight: 600;">Physical Acceptance Form</h5>
-          <p style="font-size: 0.82rem; color: var(--color-text-muted); margin: 0.25rem 0 1rem 0;">Standard physical form for wet-ink company endorsement.</p>
+          <span class="badge" style="background: #e2e8f0; color: #334155; font-weight: 700; margin-bottom: 0.5rem;">Endorsement Form</span>
+          <h5 style="color: var(--color-primary-dark); font-size: 0.95rem; font-weight: 700; margin: 0;">Acceptance Form</h5>
+          <p style="font-size: 0.82rem; color: var(--color-text-muted); margin: 0.35rem 0 1rem 0;">Standard physical form for employer wet-ink stamp and supervisor details.</p>
         </div>
-        <a href="{{ url_for('student.download_blank_acceptance_form', attachment_id=active_attachment.id) }}" class="btn btn-outline btn-sm">
-          Download Blank Form (PDF)
+        <a href="{{ url_for('student.download_blank_acceptance_form', attachment_id=active_attachment.id) }}" class="btn btn-outline btn-sm" style="width: 100%; text-align: center; font-weight: 600;">
+          Download Form (PDF)
         </a>
       </div>
 
-      <!-- Step 3: Upload Scan -->
-      <div style="border: 1px solid var(--color-border); border-radius: var(--radius); padding: 1.15rem; display: flex; flex-direction: column; justify-content: space-between; background: #FFFFFF;">
+      <!-- Confidential Assessment Form -->
+      <div style="border: 1px solid var(--color-border); border-radius: var(--radius-sm); padding: 1.15rem; background: var(--color-surface); display: flex; flex-direction: column; justify-content: space-between;">
         <div>
-          <span class="badge badge-secondary" style="margin-bottom: 0.5rem;">Step 3</span>
-          <h5 style="color: var(--color-primary-dark); font-size: 0.95rem; font-weight: 600;">Upload Completed Scan</h5>
-          <p style="font-size: 0.82rem; color: var(--color-text-muted); margin: 0.25rem 0 1rem 0;">Upload clear photograph or scan of endorsed form.</p>
+          <span class="badge" style="background: #fee2e2; color: #b91c1c; font-weight: 700; margin-bottom: 0.5rem;">Confidential Form</span>
+          <h5 style="color: var(--color-primary-dark); font-size: 0.95rem; font-weight: 700; margin: 0;">Assessment Rubric</h5>
+          <p style="font-size: 0.82rem; color: var(--color-text-muted); margin: 0.35rem 0 1rem 0;">20-item Workplace Supervisor Assessment Form (sealed physical submission).</p>
         </div>
-        <a href="{{ url_for('student.upload_acceptance', attachment_id=active_attachment.id) }}" class="btn btn-primary btn-sm">
-          {% if active_attachment.latest_acceptance %}Update / Re-Upload Scan{% else %}Upload Form Scan{% endif %}
+        <a href="{{ url_for('student.download_assessment_form', attachment_id=active_attachment.id) }}" class="btn btn-outline btn-sm" style="width: 100%; text-align: center; font-weight: 600;">
+          Download Rubric (PDF)
         </a>
       </div>
 
-      <!-- Step 4: Activity Logger -->
-      <div style="border: 1px solid var(--color-border); border-radius: var(--radius); padding: 1.15rem; display: flex; flex-direction: column; justify-content: space-between; background: #FFFFFF;">
+      <!-- Compiled Logbook Report -->
+      <div style="border: 1px solid var(--color-border); border-radius: var(--radius-sm); padding: 1.15rem; background: var(--color-surface); display: flex; flex-direction: column; justify-content: space-between;">
         <div>
-          <span class="badge badge-secondary" style="margin-bottom: 0.5rem;">Step 4</span>
-          <h5 style="color: var(--color-primary-dark); font-size: 0.95rem; font-weight: 600;">Monday–Friday Logbook</h5>
-          <p style="font-size: 0.82rem; color: var(--color-text-muted); margin: 0.25rem 0 1rem 0;">Log daily workplace activities and lock weekly sheets.</p>
+          <span class="badge" style="background: #dcfce7; color: #166534; font-weight: 700; margin-bottom: 0.5rem;">Closeout Report</span>
+          <h5 style="color: var(--color-primary-dark); font-size: 0.95rem; font-weight: 700; margin: 0;">Compiled Logbook</h5>
+          <p style="font-size: 0.82rem; color: var(--color-text-muted); margin: 0.35rem 0 1rem 0;">Consolidated PDF of all locked weekly activity sheets for final academic grading.</p>
         </div>
-        {% if can_log %}
-          <a href="{{ url_for('student.activities', attachment_id=active_attachment.id) }}" class="btn btn-success btn-sm">
-            Open Activity Logger
-          </a>
-        {% else %}
-          <button class="btn btn-outline btn-sm" disabled title="Upload Acceptance Form to enable logger">
-            Logging Locked
-          </button>
-        {% endif %}
+        <a href="{{ url_for('student.download_compiled_report', attachment_id=active_attachment.id) }}" class="btn btn-outline btn-sm" style="width: 100%; text-align: center; font-weight: 600;">
+          Download Logbook (PDF)
+        </a>
       </div>
-    </div>
-  </div>
-
-  <!-- End of Attachment Deliverables Notice -->
-  <div class="card" style="background: var(--color-surface-bg); border: 1px solid var(--color-border);">
-    <h4 style="font-size: 0.95rem; font-weight: 700; color: var(--color-primary-dark); margin-bottom: 0.5rem;">End-of-Attachment Deliverables & Closeout</h4>
-    <p style="font-size: 0.85rem; color: var(--color-text-muted); margin-bottom: 1rem;">
-      Once all weeks are completed and physically verified by your workplace supervisor:
-    </p>
-    <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
-      <a href="{{ url_for('student.download_compiled_report', attachment_id=active_attachment.id) }}" class="btn btn-outline btn-sm">
-        Download Compiled WEL Logbook (PDF)
-      </a>
-    </div>
-    <div style="margin-top: 1rem; font-size: 0.82rem; color: var(--color-text-muted); border-top: 1px solid var(--color-border); padding-top: 0.75rem;">
-      <strong>Institutional Notice:</strong> The official 20-item Workplace Supervisor Assessment Form remains a confidential sealed physical document. Students must NOT submit assessment scores online. Technical report submission remains a separate physical academic requirement.
-    </div>
-  </div>
-{% endif %}
-
-<!-- Attachment History -->
-{% if attachments|length > 1 %}
-  <div class="card">
-    <h3 class="card-title" style="margin-bottom: 1rem;">Attachment History</h3>
-    <div class="table-responsive">
-      <table class="table">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Academic Year</th>
-            <th>Organization</th>
-            <th>Duration</th>
-            <th>Status</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for att in attachments %}
-            <tr>
-              <td>#{{ att.id }}</td>
-              <td>{{ att.academic_year }}</td>
-              <td>{{ att.target_organization or 'N/A' }}</td>
-              <td>{{ att.duration_weeks }} Weeks</td>
-              <td><span class="badge badge-secondary">{{ att.status.replace('_', ' ') }}</span></td>
-              <td><a href="{{ url_for('student.view_attachment', attachment_id=att.id) }}" class="btn btn-outline btn-sm">View</a></td>
-            </tr>
-          {% endfor %}
-        </tbody>
-      </table>
     </div>
   </div>
 {% endif %}

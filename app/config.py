@@ -36,13 +36,16 @@ class Config:
         'REQUIRE_ACCEPTANCE_APPROVAL_BEFORE_LOGGING', 'false'
     ).lower() in ('true', '1', 't', 'yes')
 
-    # University & Liaison Signatory Information
+    # University & Liaison Signatory Information (PRD 3.0)
     UNIVERSITY_NAME = os.getenv(
         'UNIVERSITY_NAME', 
         'University of Skills Training and Entrepreneurial Development (USTED)'
     )
-    LIAISON_HEAD_NAME = os.getenv('LIAISON_HEAD_NAME', 'Dr. Kwame Asante')
-    LIAISON_HEAD_TITLE = os.getenv('LIAISON_HEAD_TITLE', 'Head, Industrial Liaison Unit')
+    LIAISON_HEAD_NAME = os.getenv('LIAISON_HEAD_NAME', 'DONALD KWAME ASIEDU (ChPA)')
+    LIAISON_HEAD_TITLE = os.getenv('LIAISON_HEAD_TITLE', 'Head, Industrial Liaison Office')
+    
+    # External Decoupled eLogBook SSO
+    EXTERNAL_ELOGBOOK_URL = os.getenv('EXTERNAL_ELOGBOOK_URL', 'https://usted-elogbook.vercel.app')
 
 
 class DevelopmentConfig(Config):

@@ -12,6 +12,7 @@ from app.models.audit import AuditAction
 from app.services.storage import StorageService
 from app.services.pdf_service import PDFService
 from app.services.audit_service import AuditService
+from app.utils.tokens import generate_qr_token
 
 
 class AttachmentService:
@@ -138,14 +139,20 @@ class AttachmentService:
 
         db.session.flush()
 
-        # Generate PDF via ReportLab
+        # Generate PDF via ReportLab with embedded 24-hour verification QR code
         liaison_name = config.get('LIAISON_HEAD_NAME') if config else None
         liaison_title = config.get('LIAISON_HEAD_TITLE') if config else None
+        secret_key = config.get('SECRET_KEY', 'dev-secret-key-u-iap-2026') if config else 'dev-secret-key-u-iap-2026'
+
+        qr_token = generate_qr_token(attachment.student.index_number, secret_key)
+        qr_access_url = f"/portal/access/{attachment.student.index_number}?token={qr_token}"
+
         pdf_bytes = PDFService.generate_introductory_letter(
             attachment,
             letter_record,
             liaison_head_name=liaison_name,
-            liaison_head_title=liaison_title
+            liaison_head_title=liaison_title,
+            qr_access_url=qr_access_url
         )
 
         # Save to storage service
@@ -223,18 +230,25 @@ class AttachmentService:
 
         acceptance = AcceptanceRecord(
             attachment_id=attachment.id,
-            organization_name=org_data.get('organization_name', '').strip(),
-            organization_type=org_data.get('organization_type', '').strip(),
-            location=org_data.get('location', '').strip(),
-            postal_address=org_data.get('postal_address', '').strip(),
-            telephone=org_data.get('telephone', '').strip(),
-            email=org_data.get('email', '').strip(),
-            contact_person=org_data.get('contact_person', '').strip(),
-            workplace_supervisor_name=org_data.get('workplace_supervisor_name', '').strip(),
-            workplace_supervisor_phone=org_data.get('workplace_supervisor_phone', '').strip(),
+            organization_name=(org_data.get('organization_name') or '').strip(),
+            organization_type=(org_data.get('organization_type') or '').strip(),
+            location=(org_data.get('location') or '').strip(),
+            postal_address=(org_data.get('postal_address') or '').strip(),
+            telephone=(org_data.get('telephone') or '').strip(),
+            email=(org_data.get('email') or '').strip(),
+            contact_person=(org_data.get('contact_person') or '').strip(),
+            workplace_supervisor_name=(org_data.get('workplace_supervisor_name') or org_data.get('supervisor_name') or '').strip(),
+            workplace_supervisor_phone=(org_data.get('workplace_supervisor_phone') or org_data.get('supervisor_phone') or '').strip(),
+            region=(org_data.get('region') or '').strip() or None,
+            district_town=(org_data.get('district_town') or '').strip() or None,
+            gps_address=(org_data.get('gps_address') or '').strip() or None,
+            landmark=(org_data.get('landmark') or '').strip() or None,
+            latitude=float(org_data['latitude']) if org_data.get('latitude') not in (None, '') else None,
+            longitude=float(org_data['longitude']) if org_data.get('longitude') not in (None, '') else None,
             original_filename=filename,
             storage_key=storage_key,
             mime_type=content_type or 'application/octet-stream',
+
             file_size_bytes=len(file_bytes),
             uploaded_by_id=user_id,
             status=AcceptanceStatus.PENDING_REVIEW

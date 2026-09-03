@@ -1,29 +1,38 @@
 {% extends "base.html" %}
 
-{% block title %}Academic Supervisor Workspace — U-IAP{% endblock %}
+{% block title %}Academic Supervisor Workspace — USTED U-IAP{% endblock %}
 
 {% block content %}
-<div class="page-header">
+<div class="page-header" style="margin-bottom: 1.5rem;">
   <div>
-    <h1 class="page-title">Academic Supervisor Workspace</h1>
-    <p class="page-subtitle">Assigned Student Workplace Experience Learning Monitoring</p>
+    <div style="font-size: 0.8rem; font-weight: 700; color: var(--color-accent-gold); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.25rem;">
+      🏛️ Visiting Academic Supervision Desk
+    </div>
+    <h1 class="page-title" style="color: var(--color-primary-dark); font-size: 1.65rem; font-weight: 800;">
+      Academic Supervisor Workspace
+    </h1>
+    <p class="page-subtitle" style="color: var(--color-text-muted); font-size: 0.9rem;">
+      Monitored Student Workplace Experience Learning (WEL) Roster & GIS Route Planning
+    </p>
   </div>
 </div>
 
-<div class="card">
-  <div class="card-header">
-    <h3 class="card-title">Assigned Students ({{ attachments|length }})</h3>
+<div class="card" style="border-top: 4px solid var(--color-primary); padding: 1.5rem;">
+  <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+    <h3 class="card-title" style="color: var(--color-primary-dark); font-weight: 700;">
+      Assigned Students ({{ attachments|length }})
+    </h3>
   </div>
 
   <div class="table-responsive">
-    <table class="table">
+    <table class="table" style="font-size: 0.88rem; vertical-align: middle;">
       <thead>
-        <tr>
-          <th>Index Number</th>
-          <th>Student Name</th>
-          <th>Programme</th>
+        <tr style="background: var(--color-primary-subtle); color: var(--color-primary-dark);">
+          <th>Index / Name</th>
+          <th>Programme & Level</th>
           <th>Host Organization</th>
-          <th>Location / Contact</th>
+          <th>Location & Region</th>
+          <th>GPS / Nav</th>
           <th>Status</th>
           <th>Action</th>
         </tr>
@@ -31,21 +40,67 @@
       <tbody>
         {% for att in attachments %}
           <tr>
-            <td><strong>{{ att.student.index_number }}</strong></td>
-            <td>{{ att.student.full_name }}</td>
-            <td><small>{{ att.student.programme }} (Level {{ att.student.current_level }})</small></td>
-            <td><strong>{{ att.target_organization or 'To be confirmed' }}</strong></td>
-            <td>{{ att.organization_address or '—' }}</td>
-            <td><span class="badge badge-primary">{{ att.status.replace('_', ' ') }}</span></td>
             <td>
-              <a href="{{ url_for('supervisor.view_assigned_student', attachment_id=att.id) }}" class="btn btn-outline btn-sm">
-                View Placement & Logbook
-              </a>
+              <div style="font-weight: 700; color: var(--color-primary-dark);">{{ att.student.index_number }}</div>
+              <div>{{ att.student.full_name }}</div>
+              {% if att.student.phone %}
+              <div style="font-size: 0.75rem; color: var(--color-text-muted);">📞 {{ att.student.phone }}</div>
+              {% endif %}
+            </td>
+            <td>
+              <div>{{ att.student.programme }}</div>
+              <span class="badge" style="background: #e2e8f0; color: #334155; font-size: 0.72rem;">Level {{ att.student.current_level }}</span>
+            </td>
+            <td>
+              <div style="font-weight: 600;">
+                {{ att.target_organization or (att.acceptance.company_name if att.acceptance else 'Pending Placement') }}
+              </div>
+              {% if att.acceptance and att.acceptance.supervisor_name %}
+              <div style="font-size: 0.75rem; color: var(--color-text-muted);">
+                Sup: {{ att.acceptance.supervisor_name }} ({{ att.acceptance.supervisor_phone or '—' }})
+              </div>
+              {% endif %}
+            </td>
+            <td>
+              {% if att.acceptance and att.acceptance.region %}
+                <span class="badge" style="background: var(--color-primary-subtle); color: var(--color-primary); font-weight: 700;">
+                  {{ att.acceptance.region }}
+                </span>
+                <div style="font-size: 0.78rem; margin-top: 0.2rem;">{{ att.acceptance.district_town or '' }}</div>
+              {% else %}
+                <span style="color: var(--color-text-muted); font-size: 0.82rem;">{{ att.organization_address or '—' }}</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if nav_map and nav_map[att.id] %}
+                <a href="{{ nav_map[att.id] }}" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-secondary" style="color: #0284c7; font-weight: 700; font-size: 0.75rem; padding: 0.25rem 0.5rem;" title="Navigate via Google Maps">
+                  🗺️ Open Maps &rarr;
+                </a>
+              {% elif att.acceptance and att.acceptance.gps_address %}
+                <code style="font-size: 0.75rem; color: #0284c7;">{{ att.acceptance.gps_address }}</code>
+              {% else %}
+                <span style="font-size: 0.75rem; color: var(--color-text-muted);">No GPS</span>
+              {% endif %}
+            </td>
+            <td>
+              <span class="badge" style="background: var(--color-surface); color: var(--color-primary); border: 1px solid var(--color-primary); font-weight: 700; font-size: 0.75rem;">
+                {{ att.status.replace('_', ' ').upper() }}
+              </span>
+            </td>
+            <td>
+              <div style="display: flex; gap: 0.35rem; flex-wrap: wrap;">
+                <a href="{{ url_for('supervisor.view_assigned_student', attachment_id=att.id) }}" class="btn btn-outline btn-sm" style="font-size: 0.78rem;">
+                  Profile & Logbook
+                </a>
+                <a href="{{ url_for('supervisor.log_visit', attachment_id=att.id) }}" class="btn btn-primary btn-sm" style="font-size: 0.78rem; font-weight: 700;">
+                  Log Visit
+                </a>
+              </div>
             </td>
           </tr>
         {% else %}
           <tr>
-            <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 2rem;">
+            <td colspan="7" style="text-align: center; color: var(--color-text-muted); padding: 2rem;">
               No students are currently assigned to your supervision roster.
             </td>
           </tr>

@@ -71,10 +71,20 @@ class AttachmentRecord(db.Model):
         cascade='all, delete-orphan',
         order_by='desc(Document.created_at)'
     )
+    supervision_visits = db.relationship(
+        'SupervisionVisit',
+        back_populates='attachment',
+        cascade='all, delete-orphan',
+        order_by='desc(SupervisionVisit.visit_date)'
+    )
 
     @property
     def latest_acceptance(self):
         return self.acceptance_records[0] if self.acceptance_records else None
+
+    @property
+    def acceptance(self):
+        return self.latest_acceptance
 
     @property
     def latest_letter(self):

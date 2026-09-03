@@ -7,6 +7,8 @@ from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.platypus import (
     SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, PageBreak, KeepTogether, HRFlowable
 )
+from reportlab.graphics.shapes import Drawing
+from reportlab.graphics.barcode.qr import QrCodeWidget
 
 
 class PDFService:
@@ -125,8 +127,8 @@ class PDFService:
         story.append(HRFlowable(width="100%", thickness=1.5, color=colors.HexColor('#0A2540'), spaceAfter=12))
 
     @classmethod
-    def generate_introductory_letter(cls, attachment, letter_record, liaison_head_name=None, liaison_head_title=None) -> bytes:
-        """Generates the official standardized Introductory Letter as a PDF."""
+    def generate_introductory_letter(cls, attachment, letter_record, liaison_head_name=None, liaison_head_title=None, qr_access_url=None) -> bytes:
+        """Generates the official standardized Introductory Letter as a PDF with embedded verification QR."""
         buffer = io.BytesIO()
         doc = SimpleDocTemplate(
             buffer,
@@ -222,12 +224,12 @@ class PDFService:
         story.append(Paragraph("We count on your esteemed co-operation in building the nation's human capital.", styles['BodyTextDark']))
         story.append(Spacer(1, 16))
 
-        # Signatory Section
-        signatory_name = liaison_head_name or "Dr. Kwame Asante"
-        signatory_title = liaison_head_title or "Head, Industrial Liaison Unit"
+        # Signatory Section (PRD 3.0)
+        signatory_name = liaison_head_name or "DONALD KWAME ASIEDU (ChPA)"
+        signatory_title = liaison_head_title or "Head, Industrial Liaison Office"
         sign_block = [
             Paragraph("Yours faithfully,", styles['BodyTextDark']),
-            Spacer(1, 28), # Space for wet-ink signature
+            Spacer(1, 24), # Space for wet-ink signature
             Paragraph(f"<b>{signatory_name}</b>", styles['BodyTextDark']),
             Paragraph(signatory_title, styles['BodyTextDark']),
             Paragraph("For: Vice-Chancellor", styles['BodyTextDark']),
@@ -235,12 +237,45 @@ class PDFService:
         for item in sign_block:
             story.append(item)
 
+        # Embedded QR Code Verification Box (Pipeline 2: 24-Hour Gateway)
+        if qr_access_url:
+            try:
+                qr = QrCodeWidget(qr_access_url)
+                b = qr.getBounds()
+                w, h = b[2] - b[0], b[3] - b[1]
+                scale = 55.0 / max(w, 1.0)
+                d = Drawing(55, 55, transform=[scale, 0, 0, scale, 0, 0])
+                d.add(qr)
+
+                qr_cell_content = [
+                    Paragraph("<b>OFFICIAL DIGITAL ONBOARDING & VERIFICATION GATEWAY</b>", styles['TableCellBold']),
+                    Spacer(1, 2),
+                    Paragraph(
+                        "Scan this QR code using a smartphone camera within 24 hours to initiate your secure "
+                        "U-IAP portal account, upload acceptance details, and access your eLogBook.",
+                        styles['TableCell']
+                    ),
+                    Paragraph(f"<font size=6 color='#64748B'>Gateway: {qr_access_url}</font>", styles['TableCell'])
+                ]
+
+                t_qr = Table([[d, qr_cell_content]], colWidths=[65, 435])
+                t_qr.setStyle(TableStyle([
+                    ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+                    ('BACKGROUND', (0, 0), (-1, -1), colors.HexColor('#F8FAFC')),
+                    ('BOX', (0, 0), (-1, -1), 0.75, colors.HexColor('#CBD5E1')),
+                    ('PADDING', (0, 0), (-1, -1), 4),
+                ]))
+                story.append(Spacer(1, 10))
+                story.append(t_qr)
+            except Exception:
+                pass  # Gracefully proceed if QR generation encounters unexpected environment issue
+
         doc.build(story)
         buffer.seek(0)
         return buffer.getvalue()
 
     @classmethod
-    def generate_acceptance_form_template(cls, attachment) -> bytes:
+    def generate_acceptance_form_template(cls, attachment=None) -> bytes:
         """Generates the standard physical WEL Acceptance Form template."""
         buffer = io.BytesIO()
         doc = SimpleDocTemplate(
@@ -265,21 +300,40 @@ class PDFService:
         story.append(Spacer(1, 10))
 
         # Section A: Student Particulars
-        student = attachment.student
-        commence_str = attachment.commencement_date.strftime('%d/%m/%Y')
-        end_str = attachment.end_date.strftime('%d/%m/%Y')
+        if attachment:
+            student = attachment.student
+            commence_str = attachment.commencement_date.strftime('%d/%m/%Y')
+            end_str = attachment.end_date.strftime('%d/%m/%Y')
+            s_name = student.full_name
+            s_index = student.index_number
+            s_prog = student.programme
+            s_level = str(student.current_level)
+            s_dept = student.department
+            s_acad = attachment.academic_year
+            s_dur = f"{attachment.duration_weeks} Weeks"
+            s_period = f"{commence_str} to {end_str}"
+        else:
+            s_name = "____________________________________"
+            s_index = "______________________"
+            s_prog = "____________________________________"
+            s_level = "_______"
+            s_dept = "____________________________________"
+            s_acad = "2025/2026"
+            s_dur = "____ Weeks"
+            s_period = "____/____/2026 to ____/____/2026"
+
         story.append(Paragraph("<b>SECTION A: STUDENT & ATTACHMENT DETAILS (University Records)</b>", styles['BodyTextBold']))
         story.append(Spacer(1, 4))
 
         sec_a_data = [
-            [Paragraph("<b>Student Name:</b>", styles['TableCellBold']), Paragraph(student.full_name, styles['TableCell']),
-             Paragraph("<b>Index No:</b>", styles['TableCellBold']), Paragraph(student.index_number, styles['TableCell'])],
-            [Paragraph("<b>Programme:</b>", styles['TableCellBold']), Paragraph(student.programme, styles['TableCell']),
-             Paragraph("<b>Level:</b>", styles['TableCellBold']), Paragraph(str(student.current_level), styles['TableCell'])],
-            [Paragraph("<b>Department:</b>", styles['TableCellBold']), Paragraph(student.department, styles['TableCell']),
-             Paragraph("<b>Academic Year:</b>", styles['TableCellBold']), Paragraph(attachment.academic_year, styles['TableCell'])],
-            [Paragraph("<b>Duration:</b>", styles['TableCellBold']), Paragraph(f"{attachment.duration_weeks} Weeks", styles['TableCell']),
-             Paragraph("<b>Period:</b>", styles['TableCellBold']), Paragraph(f"{commence_str} to {end_str}", styles['TableCell'])],
+            [Paragraph("<b>Student Name:</b>", styles['TableCellBold']), Paragraph(s_name, styles['TableCell']),
+             Paragraph("<b>Index No:</b>", styles['TableCellBold']), Paragraph(s_index, styles['TableCell'])],
+            [Paragraph("<b>Programme:</b>", styles['TableCellBold']), Paragraph(s_prog, styles['TableCell']),
+             Paragraph("<b>Level:</b>", styles['TableCellBold']), Paragraph(s_level, styles['TableCell'])],
+            [Paragraph("<b>Department:</b>", styles['TableCellBold']), Paragraph(s_dept, styles['TableCell']),
+             Paragraph("<b>Academic Year:</b>", styles['TableCellBold']), Paragraph(s_acad, styles['TableCell'])],
+            [Paragraph("<b>Duration:</b>", styles['TableCellBold']), Paragraph(s_dur, styles['TableCell']),
+             Paragraph("<b>Period:</b>", styles['TableCellBold']), Paragraph(s_period, styles['TableCell'])],
         ]
         t_a = Table(sec_a_data, colWidths=[90, 180, 80, 170])
         t_a.setStyle(TableStyle([
@@ -490,6 +544,248 @@ class PDFService:
                     ('BACKGROUND', (1, 0), (1, 0), colors.HexColor('#FAFAFA')),
                 ]))
                 story.append(KeepTogether([t_v]))
+
+        doc.build(story)
+        buffer.seek(0)
+        return buffer.getvalue()
+
+    @classmethod
+    def generate_confidential_assessment_form(cls, attachment=None) -> bytes:
+        """
+        Generates the official 2-page Confidential 20-Item Assessment Form
+        for Host Organization Industry Supervisors per PRD 3.0.
+        """
+        buffer = io.BytesIO()
+        doc = SimpleDocTemplate(
+            buffer,
+            pagesize=A4,
+            leftMargin=36,
+            rightMargin=36,
+            topMargin=30,
+            bottomMargin=30
+        )
+        styles = cls._create_styles()
+        story = []
+
+        # =========================================================================
+        # PAGE 1: Particulars & Categories 1 & 2
+        # =========================================================================
+        cls._add_letterhead(story, styles)
+
+        story.append(Paragraph("<b>CONFIDENTIAL WORKPLACE SUPERVISOR ASSESSMENT FORM</b>", styles['DocTitle']))
+        story.append(Spacer(1, 2))
+        story.append(Paragraph(
+            "<i>(STRICTLY CONFIDENTIAL: To be completed solely by the Industry Supervisor at the conclusion of the attachment. "
+            "Scores must reflect objective workplace performance. Stamp and sign in Section D.)</i>",
+            styles['VerificationNotice']
+        ))
+        story.append(Spacer(1, 6))
+
+        # Section A: Trainee Particulars
+        if attachment:
+            student = attachment.student
+            commence_str = attachment.commencement_date.strftime('%d/%m/%Y')
+            end_str = attachment.end_date.strftime('%d/%m/%Y')
+            s_name = student.full_name
+            s_index = student.index_number
+            s_prog = student.programme
+            s_level = f"Level {student.current_level}"
+            s_org = attachment.target_organization or "____________________________________"
+            s_period = f"{commence_str} to {end_str} ({attachment.duration_weeks} Wks)"
+        else:
+            s_name = "____________________________________"
+            s_index = "______________________"
+            s_prog = "____________________________________"
+            s_level = "_______"
+            s_org = "____________________________________"
+            s_period = "____/____/2026 to ____/____/2026"
+
+        sec_a_data = [
+            [Paragraph("<b>Student Name:</b>", styles['TableCellBold']), Paragraph(s_name, styles['TableCell']),
+             Paragraph("<b>Index Number:</b>", styles['TableCellBold']), Paragraph(s_index, styles['TableCell'])],
+            [Paragraph("<b>Programme:</b>", styles['TableCellBold']), Paragraph(s_prog, styles['TableCell']),
+             Paragraph("<b>Level:</b>", styles['TableCellBold']), Paragraph(s_level, styles['TableCell'])],
+            [Paragraph("<b>Host Establishment:</b>", styles['TableCellBold']), Paragraph(s_org, styles['TableCell']),
+             Paragraph("<b>Attachment Period:</b>", styles['TableCellBold']), Paragraph(s_period, styles['TableCell'])],
+        ]
+        t_a = Table(sec_a_data, colWidths=[105, 175, 95, 145])
+        t_a.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, -1), colors.HexColor('#F1F5F9')),
+            ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#CBD5E1')),
+            ('PADDING', (0, 0), (-1, -1), 3.5),
+        ]))
+        story.append(t_a)
+        story.append(Spacer(1, 8))
+
+        # Section B Rubric Header
+        story.append(Paragraph(
+            "<b>SECTION B: PERFORMANCE EVALUATION RUBRIC (20 OBJECTIVE METRICS — 100 POINTS TOTAL)</b>",
+            styles['BodyTextBold']
+        ))
+        story.append(Paragraph(
+            "Rating Scale: <b>5</b> = Excellent (Outstanding) | <b>4</b> = Very Good (Above Average) | "
+            "<b>3</b> = Satisfactory (Competent) | <b>2</b> = Fair (Needs Improvement) | <b>1</b> = Unsatisfactory (Poor)",
+            styles['TableCell']
+        ))
+        story.append(Spacer(1, 4))
+
+        def _build_category_table(title, items, start_num):
+            cat_rows = [
+                [Paragraph(f"<b>{title}</b>", styles['TableHeader']),
+                 Paragraph("<b>5</b>", styles['TableHeader']),
+                 Paragraph("<b>4</b>", styles['TableHeader']),
+                 Paragraph("<b>3</b>", styles['TableHeader']),
+                 Paragraph("<b>2</b>", styles['TableHeader']),
+                 Paragraph("<b>1</b>", styles['TableHeader'])]
+            ]
+            for i, text in enumerate(items):
+                num = start_num + i
+                cat_rows.append([
+                    Paragraph(f"<b>{num}.</b> {text}", styles['TableCell']),
+                    Paragraph("[ &nbsp; ]", styles['TableCell']),
+                    Paragraph("[ &nbsp; ]", styles['TableCell']),
+                    Paragraph("[ &nbsp; ]", styles['TableCell']),
+                    Paragraph("[ &nbsp; ]", styles['TableCell']),
+                    Paragraph("[ &nbsp; ]", styles['TableCell']),
+                ])
+            cat_table = Table(cat_rows, colWidths=[370, 30, 30, 30, 30, 30])
+            cat_table.setStyle(TableStyle([
+                ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#8C033B')),
+                ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+                ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#CBD5E1')),
+                ('ALIGN', (1, 0), (-1, -1), 'CENTER'),
+                ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+                ('PADDING', (0, 0), (-1, -1), 2.5),
+            ]))
+            return cat_table
+
+        # Category 1
+        cat1_items = [
+            "Punctuality, regularity of attendance, and adherence to official reporting hours",
+            "Compliance with workplace health, safety rules, and organizational regulations",
+            "Professional appearance, appropriate grooming, and strict dress code conformity",
+            "Respect for workplace hierarchy, organizational protocol, and fellow workers",
+            "General dependability, reliability, and responsibility in handling duties",
+        ]
+        story.append(_build_category_table("CATEGORY 1: WORK ATTITUDE & PROFESSIONAL CONDUCT (25%)", cat1_items, 1))
+        story.append(Spacer(1, 6))
+
+        # Category 2
+        cat2_items = [
+            "Comprehension and practical application of theoretical classroom knowledge",
+            "Proficiency and care in operating workplace tools, machinery, or digital equipment",
+            "Precision, accuracy, and overall quality of daily technical output produced",
+            "Efficiency, time management, and ability to meet agreed operational deadlines",
+            "Adaptability to technical changes, emerging workflows, and new work methods",
+        ]
+        story.append(_build_category_table("CATEGORY 2: TECHNICAL COMPETENCE & EXECUTION (25%)", cat2_items, 6))
+
+        # =========================================================================
+        # PAGE 2: Categories 3 & 4, Scoring Box, Qualitative Assessment, Wet-Ink Stamp
+        # =========================================================================
+        story.append(PageBreak())
+
+        # Category 3
+        cat3_items = [
+            "Clarity, conciseness, and professionalism in spoken/verbal communications",
+            "Quality, neatness, and accuracy in keeping written notes and technical records",
+            "Ability to listen attentively and accurately execute multi-step instructions",
+            "Teamwork, active cooperation, and positive engagement with coworkers",
+            "Openness to guidance, supervisory mentoring, and constructive correction",
+        ]
+        story.append(_build_category_table("CATEGORY 3: INTERPERSONAL COMMUNICATION & TEAM DYNAMICS (25%)", cat3_items, 11))
+        story.append(Spacer(1, 6))
+
+        # Category 4
+        cat4_items = [
+            "Resourcefulness, initiative, and proactive attitude in solving practical problems",
+            "Readiness to ask clarifying questions and seek appropriate guidance when needed",
+            "Enthusiasm, intellectual curiosity, and eagerness to acquire new competencies",
+            "Ability to propose valuable improvements to workplace processes or productivity",
+            "Capacity for sustained independent work under minimal direct supervision",
+        ]
+        story.append(_build_category_table("CATEGORY 4: INITIATIVE, ADAPTABILITY & PROBLEM SOLVING (25%)", cat4_items, 16))
+        story.append(Spacer(1, 8))
+
+        # Scoring Calculation & Grade Scale Box
+        score_data = [
+            [
+                Paragraph("<b>SCORE CALCULATION & GRADE CONVERSION (Max: 100 Marks)</b>", styles['TableCellBold']),
+                Paragraph("<b>Grading Scale:</b> 80-100: A | 70-79: B | 60-69: C | 50-59: D | Below 50: F", styles['TableCell'])
+            ],
+            [
+                Paragraph(
+                    "<b>Total Points Scored:</b> &nbsp; [ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ] / 100 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"
+                    "<b>Final Grade:</b> &nbsp; [ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ]",
+                    styles['TableCellBold']
+                ),
+                Paragraph("<i>(Passing mark is 50%. Evaluator signature required below)</i>", styles['TableCell'])
+            ]
+        ]
+        t_score = Table(score_data, colWidths=[310, 210])
+        t_score.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, -1), colors.HexColor('#F8FAFC')),
+            ('BOX', (0, 0), (-1, -1), 1, colors.HexColor('#0F172A')),
+            ('INNERGRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#CBD5E1')),
+            ('PADDING', (0, 0), (-1, -1), 4),
+        ]))
+        story.append(t_score)
+        story.append(Spacer(1, 8))
+
+        # Section C: Industry Supervisor Qualitative Assessment
+        story.append(Paragraph("<b>SECTION C: INDUSTRY SUPERVISOR QUALITATIVE REMARKS</b>", styles['BodyTextBold']))
+        story.append(Spacer(1, 3))
+        qual_data = [
+            [Paragraph("<b>Notable Strengths & Talents Observed:</b><br/><br/>__________________________________________________________________________________________________", styles['TableCell'])],
+            [Paragraph("<b>Areas Needing Further Academic / Practical Improvement:</b><br/><br/>__________________________________________________________________________________________________", styles['TableCell'])],
+            [Paragraph(
+                "<b>Employment / Retention Prospect:</b> &nbsp;&nbsp; "
+                "[ &nbsp; ] Strongly Recommended &nbsp;&nbsp;&nbsp;&nbsp; "
+                "[ &nbsp; ] Recommended &nbsp;&nbsp;&nbsp;&nbsp; "
+                "[ &nbsp; ] Recommended with Reservations &nbsp;&nbsp;&nbsp;&nbsp; "
+                "[ &nbsp; ] Not Recommended",
+                styles['TableCell']
+            )],
+        ]
+        t_qual = Table(qual_data, colWidths=[520])
+        t_qual.setStyle(TableStyle([
+            ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#CBD5E1')),
+            ('PADDING', (0, 0), (-1, -1), 4),
+            ('BACKGROUND', (0, 0), (-1, -1), colors.HexColor('#FFFFFF')),
+        ]))
+        story.append(t_qual)
+        story.append(Spacer(1, 8))
+
+        # Section D: Endorsement & Mandatory Wet-Ink Stamp Box (PRD Section 17 & 25)
+        story.append(Paragraph("<b>SECTION D: AUTHENTICATION & MANDATORY WET-INK STAMP</b>", styles['BodyTextBold']))
+        story.append(Spacer(1, 3))
+
+        endorse_data = [
+            [
+                Paragraph(
+                    "<b>Industry Evaluator Details:</b><br/><br/>"
+                    "Supervisor Name: _________________________________________<br/><br/>"
+                    "Designation / Title: ______________________________________<br/><br/>"
+                    "Direct Telephone: _________________________________________<br/><br/>"
+                    "Signature: ______________________ Date: ____/____/2026",
+                    styles['TableCell']
+                ),
+                Paragraph(
+                    "<b>MANDATORY OFFICIAL COMPANY WET-INK STAMP</b><br/>"
+                    "<i>(Box: &ge; 60mm &times; 35mm. Must apply official ink seal below)</i><br/><br/><br/><br/><br/><br/>",
+                    styles['TableCell']
+                )
+            ]
+        ]
+        t_endorse = Table(endorse_data, colWidths=[310, 210])
+        t_endorse.setStyle(TableStyle([
+            ('BOX', (0, 0), (-1, -1), 1, colors.HexColor('#8C033B')),
+            ('INNERGRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#CBD5E1')),
+            ('PADDING', (0, 0), (-1, -1), 4),
+            ('BACKGROUND', (1, 0), (1, 0), colors.HexColor('#F8FAFC')),
+            ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+        ]))
+        story.append(t_endorse)
 
         doc.build(story)
         buffer.seek(0)

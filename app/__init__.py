@@ -181,12 +181,13 @@ def create_app(config_name: str = None) -> Flask:
             seed_database()
             print("Database initialized successfully.")
 
-    # Auto-initialize database tables and seed data in non-testing environments (e.g. Render / Gunicorn)
+    # Auto-initialize database tables, apply schema migrations, and seed data in non-testing environments (e.g. Render / Gunicorn)
     if not app.config.get('TESTING'):
         with app.app_context():
             try:
-                db.create_all()
+                from app.utils.db_migrate import migrate_database_schema
                 from app.utils.seed_data import seed_database
+                migrate_database_schema()
                 seed_database()
             except Exception as e:
                 app.logger.warning(f"Database auto-bootstrap notice: {e}")

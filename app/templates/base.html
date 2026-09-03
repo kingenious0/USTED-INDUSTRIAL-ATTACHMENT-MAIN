@@ -4,10 +4,15 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
   <title>{% block title %}U-IAP — Workplace Experience Learning Portal{% endblock %}</title>
+  <!-- Institutional Fonts & Tabler Core Framework -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/core@latest/dist/css/tabler.min.css">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
   {% block extra_head %}{% endblock %}
 </head>
-<body class="app-body">
+<body class="app-body layout-boxed">
 
   <!-- Role Switcher & Live Preview Banner (Frictionless Scraper & Role Explorer) -->
   <aside class="role-switcher-banner" aria-label="Role Switcher and Scraper Preview Controls">
@@ -46,10 +51,10 @@
       <span class="hamburger-icon" aria-hidden="true">&#9776;</span>
     </button>
     <a href="{{ url_for('main.index') }}" class="mobile-brand-link">
-      <img src="{{ url_for('static', filename='img/crest.svg') }}" alt="AAMUSTED Crest" width="30" height="30" class="mobile-crest"/>
+      <img src="{{ url_for('static', filename='img/crest.svg') }}" alt="USTED Crest" width="30" height="30" class="mobile-crest"/>
       <div class="mobile-brand-text">
         <span class="mobile-brand-title">U-IAP PORTAL</span>
-        <span class="mobile-brand-sub">AAMUSTED</span>
+        <span class="mobile-brand-sub">USTED</span>
       </div>
     </a>
     <div class="mobile-topbar-right">
@@ -71,11 +76,11 @@
     <div class="sidebar-header">
       <a href="{{ url_for('main.index') }}" class="sidebar-brand">
         <div class="sidebar-crest-box">
-          <img src="{{ url_for('static', filename='img/crest.svg') }}" alt="AAMUSTED Crest" width="40" height="40"/>
+          <img src="{{ url_for('static', filename='img/crest.svg') }}" alt="USTED Crest" width="40" height="40"/>
         </div>
         <div class="sidebar-brand-text">
           <span class="sidebar-brand-title">U-IAP PORTAL</span>
-          <span class="sidebar-brand-sub">AAMUSTED &bull; Liaison Unit</span>
+          <span class="sidebar-brand-sub">USTED &bull; Liaison Unit</span>
         </div>
       </a>
       <button type="button" class="sidebar-close-btn" id="sidebarClose" aria-label="Close navigation sidebar">
@@ -214,7 +219,7 @@
         </a>
       {% endif %}
       <div class="sidebar-inst-tag">
-        <span>AAMUSTED &bull; U-IAP v1.0</span>
+        <span>USTED &bull; U-IAP v3.0</span>
       </div>
     </div>
   </aside>
@@ -243,12 +248,12 @@
     <footer class="footer">
       <div class="footer-container">
         <div>
-          <strong>Akenten Appiah-Menka University of Skills Training and Entrepreneurial Development (AAMUSTED)</strong><br/>
-          <span>Industrial Liaison & Workplace Experience Learning (WEL) Unit</span>
+          <strong>University of Skills Training and Entrepreneurial Development (USTED)</strong><br/>
+          <span>Industrial Liaison & Workplace Experience Learning (WEL) Office</span>
         </div>
         <div class="footer-right">
           <span>U-IAP Operational Portal</span><br/>
-          <span>&copy; {{ current_year }} AAMUSTED. All rights reserved.</span>
+          <span>&copy; {{ current_year }} USTED. All rights reserved.</span>
         </div>
       </div>
     </footer>

@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+
+{% block title %}Log Field Visit — {{ attachment.student.full_name }} — USTED U-IAP{% endblock %}
+
+{% block content %}
+<div class="page-header" style="margin-bottom: 1.5rem;">
+  <div>
+    <div style="font-size: 0.8rem; font-weight: 700; color: var(--color-accent-gold); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.25rem;">
+      📋 Supervisory Field Log &bull; Pipeline 4
+    </div>
+    <h1 class="page-title" style="color: var(--color-primary-dark); font-size: 1.65rem; font-weight: 800;">
+      Record Institutional Supervisory Visit
+    </h1>
+    <p style="color: var(--color-text-muted); font-size: 0.88rem; margin: 0.25rem 0 0 0;">
+      Document physical or virtual monitoring engagement with <strong>{{ attachment.student.full_name }}</strong> ({{ attachment.student.index_number }}).
+    </p>
+  </div>
+  <div class="page-actions">
+    <a href="{{ url_for('supervisor.student_detail', attachment_id=attachment.id) }}" class="btn btn-secondary">
+      &larr; Back to Student Profile
+    </a>
+  </div>
+</div>
+
+<!-- Placement Context Card -->
+<div class="card" style="padding: 1.25rem; margin-bottom: 1.5rem; background: var(--color-surface); border-left: 5px solid var(--color-primary);">
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; font-size: 0.88rem;">
+    <div>
+      <span style="color: var(--color-text-muted); display: block; font-size: 0.78rem;">Student:</span>
+      <strong style="color: var(--color-primary-dark);">{{ attachment.student.full_name }}</strong>
+      <div style="font-size: 0.8rem; color: var(--color-text-muted);">{{ attachment.student.programme }} (L{{ attachment.student.level }})</div>
+    </div>
+    <div>
+      <span style="color: var(--color-text-muted); display: block; font-size: 0.78rem;">Host Placement:</span>
+      <strong>{{ attachment.acceptance.company_name if attachment.acceptance else attachment.target_organization }}</strong>
+      <div style="font-size: 0.8rem; color: var(--color-text-muted);">{{ attachment.acceptance.region if attachment.acceptance else 'Ghana' }}</div>
+    </div>
+    <div>
+      <span style="color: var(--color-text-muted); display: block; font-size: 0.78rem;">Industry Contact:</span>
+      <strong>{{ attachment.acceptance.supervisor_name if attachment.acceptance and attachment.acceptance.supervisor_name else 'Not Provided' }}</strong>
+      <div style="font-size: 0.8rem; color: var(--color-text-muted);">{{ attachment.acceptance.supervisor_phone if attachment.acceptance else '' }}</div>
+    </div>
+  </div>
+</div>
+
+<!-- Log Visit Form -->
+<div class="card" style="border-top: 5px solid var(--color-primary); padding: 2rem;">
+  <form method="POST" action="{{ url_for('supervisor.log_visit', attachment_id=attachment.id) }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+
+    <h3 style="color: var(--color-primary); font-size: 1.05rem; font-weight: 700; border-bottom: 2px solid var(--color-primary-subtle); padding-bottom: 0.5rem; margin-bottom: 1.25rem;">
+      Visit Details & Verification Check
+    </h3>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.25rem; margin-bottom: 1.5rem;">
+      <div class="form-group">
+        <label for="visit_date" class="form-label" style="font-weight: 700;">
+          Date of Visit / Contact <span style="color: var(--color-danger);">*</span>
+        </label>
+        <input type="date" id="visit_date" name="visit_date" class="form-control" value="{{ today }}" required style="min-height: 44px; font-size: 16px;"/>
+      </div>
+      <div class="form-group">
+        <label for="visit_type" class="form-label" style="font-weight: 700;">
+          Interaction Mode <span style="color: var(--color-danger);">*</span>
+        </label>
+        <select id="visit_type" name="visit_type" class="form-control" style="min-height: 44px; font-size: 16px;">
+          <option value="in_person" selected>🏢 In-Person On-Site Inspection</option>
+          <option value="virtual">💻 Virtual / Telephonic Monitoring</option>
+          <option value="follow_up">🔄 Follow-up Check</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Attendance and Contact Verification Checkboxes -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; background: var(--color-primary-subtle); padding: 1.25rem; border-radius: var(--radius-sm);">
+      <div style="display: flex; align-items: flex-start; gap: 0.65rem;">
+        <input type="checkbox" id="student_present" name="student_present" value="1" checked style="margin-top: 0.25rem; width: 18px; height: 18px; cursor: pointer;"/>
+        <label for="student_present" style="font-size: 0.9rem; font-weight: 600; cursor: pointer;">
+          Student was physically present & actively at workstation
+          <span style="display: block; font-size: 0.78rem; font-weight: normal; color: var(--color-text-muted);">
+            Uncheck if student was absent, on leave, or off-duty during visit.
+          </span>
+        </label>
+      </div>
+      <div style="display: flex; align-items: flex-start; gap: 0.65rem;">
+        <input type="checkbox" id="supervisor_contacted" name="supervisor_contacted" value="1" checked style="margin-top: 0.25rem; width: 18px; height: 18px; cursor: pointer;"/>
+        <label for="supervisor_contacted" style="font-size: 0.9rem; font-weight: 600; cursor: pointer;">
+          Industry Host Supervisor consulted
+          <span style="display: block; font-size: 0.78rem; font-weight: normal; color: var(--color-text-muted);">
+            Check if host supervisor/manager gave verbal or written feedback.
+          </span>
+        </label>
+      </div>
+    </div>
+
+    <h3 style="color: var(--color-primary); font-size: 1.05rem; font-weight: 700; border-bottom: 2px solid var(--color-primary-subtle); padding-bottom: 0.5rem; margin-bottom: 1.25rem;">
+      Supervisory Observations & Recommendations
+    </h3>
+
+    <div class="form-group" style="margin-bottom: 1.25rem;">
+      <label for="general_remarks" class="form-label" style="font-weight: 700;">
+        General Remarks / Performance Assessment <span style="color: var(--color-danger);">*</span>
+      </label>
+      <textarea id="general_remarks" name="general_remarks" class="form-control" rows="4" placeholder="Detail student's tasks, alignment with curriculum, professional comportment, and host supervisor satisfaction..." required style="font-size: 15px;"></textarea>
+    </div>
+
+    <div class="form-group" style="margin-bottom: 1.25rem;">
+      <label for="action_items" class="form-label" style="font-weight: 700;">
+        Action Items / Corrective Guidance for Student
+      </label>
+      <textarea id="action_items" name="action_items" class="form-control" rows="2" placeholder="e.g. Ensure daily logbook is signed weekly; wear mandatory PPE in workshop..." style="font-size: 15px;"></textarea>
+    </div>
+
+    <div style="margin-bottom: 2rem;">
+      <div style="display: flex; align-items: center; gap: 0.65rem;">
+        <input type="checkbox" id="follow_up_needed" name="follow_up_needed" value="1" style="width: 18px; height: 18px; cursor: pointer;"/>
+        <label for="follow_up_needed" style="font-size: 0.92rem; font-weight: 700; color: var(--color-danger); cursor: pointer;">
+          ⚠️ Escalation / Immediate Follow-Up Visit Required
+        </label>
+      </div>
+      <div style="font-size: 0.8rem; color: var(--color-text-muted); margin-left: 1.8rem;">
+        Flag this record if placement conditions are inadequate or student requires institutional intervention.
+      </div>
+    </div>
+
+    <div style="display: flex; gap: 1rem; align-items: center; justify-content: flex-end;">
+      <a href="{{ url_for('supervisor.student_detail', attachment_id=attachment.id) }}" class="btn btn-secondary">
+        Cancel
+      </a>
+      <button type="submit" class="btn btn-primary" style="min-height: 44px; font-size: 0.95rem; font-weight: 700; padding: 0.65rem 1.75rem;">
+        Submit & Lock Supervisory Visit Log &rarr;
+      </button>
+    </div>
+  </form>
+</div>
+{% endblock %}

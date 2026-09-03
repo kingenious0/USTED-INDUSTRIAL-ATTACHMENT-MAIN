@@ -1497,5 +1497,80 @@ textarea.form-control {
 .role-preview-card.card-admin   { border-top: 4px solid #4F46E5; }
 .role-preview-card.card-super   { border-top: 4px solid #059669; }
 
+/* ==========================================================================
+   PRD 3.0 Mobile Usability & Enterprise Density Styling
+   ========================================================================== */
+
+/* Mobile Touch Targets & iOS Zoom Prevention (Min 44px height, 16px font) */
+@media (max-width: 768px) {
+  .form-control,
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="tel"],
+  input[type="date"],
+  input[type="number"],
+  input[type="file"],
+  select.form-control,
+  select {
+    min-height: 44px !important;
+    font-size: 16px !important; /* Prevents unwanted iOS Safari page zooming */
+  }
+
+  .btn {
+    min-height: 44px;
+    padding: 0.65rem 1.15rem;
+  }
+}
+
+/* Atlassian-Style Compact Data Density Tables */
+.table-compact th,
+.table-compact td {
+  padding: 0.45rem 0.65rem !important;
+  font-size: 0.84rem !important;
+  line-height: 1.35 !important;
+}
+
+/* GOV.UK Pattern Density: Task Lists & Questions */
+.govuk-task-list {
+  list-style: none;
+  padding: 0;
+  margin: 1.5rem 0;
+}
+
+.govuk-task-list-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid var(--color-border);
+  background: #FFFFFF;
+}
+
+.govuk-task-list-item:first-child {
+  border-top: 1px solid var(--color-border);
+}
+
+.govuk-task-list-item:hover {
+  background: var(--color-surface-bg);
+}
+
+.govuk-task-name {
+  font-weight: 700;
+  color: var(--color-primary-dark);
+  font-size: 0.95rem;
+}
+
+.govuk-tag {
+  display: inline-block;
+  padding: 0.25rem 0.65rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  border-radius: 2px;
+}
+
+
 
 
