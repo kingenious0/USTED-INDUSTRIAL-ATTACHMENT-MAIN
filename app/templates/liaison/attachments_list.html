@@ -1,32 +1,36 @@
 {% extends "base.html" %}
 
 {% block title %}All Attachments Roster — U-IAP{% endblock %}
+{% block page_breadcrumb %}Attachments Roster{% endblock %}
 
 {% block content %}
 <div class="page-header">
   <div>
     <h1 class="page-title">Industrial Attachment Records</h1>
-    <p class="page-subtitle">Roster of all workplace experience learning instances</p>
+    <p class="page-subtitle">Roster of all workplace experience learning instances across departments</p>
   </div>
   <div>
-    <a href="{{ url_for('liaison.student_lookup') }}" class="btn btn-primary btn-sm">+ In-Person Verification</a>
+    <a href="{{ url_for('liaison.student_lookup') }}" class="btn-primary btn-sm">
+      <span class="material-symbols-outlined" style="font-size: 16px;">add</span>
+      <span>In-Person Verification</span>
+    </a>
   </div>
 </div>
 
-<div class="card">
+<div class="modern-card">
   <!-- Status Filter Pills -->
   <div style="display: flex; gap: 0.5rem; margin-bottom: 1.25rem; flex-wrap: wrap;">
-    <a href="{{ url_for('liaison.attachments_list') }}" class="btn {% if not selected_status %}btn-primary{% else %}btn-outline{% endif %} btn-sm">All</a>
-    <a href="{{ url_for('liaison.attachments_list', status='initiated') }}" class="btn {% if selected_status == 'initiated' %}btn-primary{% else %}btn-outline{% endif %} btn-sm">Initiated</a>
-    <a href="{{ url_for('liaison.attachments_list', status='letter_generated') }}" class="btn {% if selected_status == 'letter_generated' %}btn-primary{% else %}btn-outline{% endif %} btn-sm">Letter Issued</a>
-    <a href="{{ url_for('liaison.attachments_list', status='acceptance_uploaded') }}" class="btn {% if selected_status == 'acceptance_uploaded' %}btn-primary{% else %}btn-outline{% endif %} btn-sm">Acceptance Uploaded</a>
-    <a href="{{ url_for('liaison.attachments_list', status='acceptance_approved') }}" class="btn {% if selected_status == 'acceptance_approved' %}btn-primary{% else %}btn-outline{% endif %} btn-sm">Acceptance Approved</a>
-    <a href="{{ url_for('liaison.attachments_list', status='logging_active') }}" class="btn {% if selected_status == 'logging_active' %}btn-primary{% else %}btn-outline{% endif %} btn-sm">Logging Active</a>
-    <a href="{{ url_for('liaison.attachments_list', status='completed') }}" class="btn {% if selected_status == 'completed' %}btn-primary{% else %}btn-outline{% endif %} btn-sm">Completed</a>
+    <a href="{{ url_for('liaison.attachments_list') }}" class="badge {% if not selected_status %}badge-primary{% else %}badge-secondary{% endif %}" style="padding: 6px 12px; font-size: 11px; text-decoration: none;">All</a>
+    <a href="{{ url_for('liaison.attachments_list', status='initiated') }}" class="badge {% if selected_status == 'initiated' %}badge-primary{% else %}badge-secondary{% endif %}" style="padding: 6px 12px; font-size: 11px; text-decoration: none;">Initiated</a>
+    <a href="{{ url_for('liaison.attachments_list', status='letter_generated') }}" class="badge {% if selected_status == 'letter_generated' %}badge-primary{% else %}badge-secondary{% endif %}" style="padding: 6px 12px; font-size: 11px; text-decoration: none;">Letter Issued</a>
+    <a href="{{ url_for('liaison.attachments_list', status='acceptance_uploaded') }}" class="badge {% if selected_status == 'acceptance_uploaded' %}badge-primary{% else %}badge-secondary{% endif %}" style="padding: 6px 12px; font-size: 11px; text-decoration: none;">Acceptance Uploaded</a>
+    <a href="{{ url_for('liaison.attachments_list', status='acceptance_approved') }}" class="badge {% if selected_status == 'acceptance_approved' %}badge-primary{% else %}badge-secondary{% endif %}" style="padding: 6px 12px; font-size: 11px; text-decoration: none;">Acceptance Approved</a>
+    <a href="{{ url_for('liaison.attachments_list', status='logging_active') }}" class="badge {% if selected_status == 'logging_active' %}badge-primary{% else %}badge-secondary{% endif %}" style="padding: 6px 12px; font-size: 11px; text-decoration: none;">Logging Active</a>
+    <a href="{{ url_for('liaison.attachments_list', status='completed') }}" class="badge {% if selected_status == 'completed' %}badge-primary{% else %}badge-secondary{% endif %}" style="padding: 6px 12px; font-size: 11px; text-decoration: none;">Completed</a>
   </div>
 
   <div class="table-responsive">
-    <table class="table">
+    <table class="modern-table">
       <thead>
         <tr>
           <th>ID</th>
@@ -36,28 +40,41 @@
           <th>Host Organization</th>
           <th>Academic Year</th>
           <th>Status</th>
-          <th>Action</th>
+          <th style="text-align: right;">Action</th>
         </tr>
       </thead>
       <tbody>
         {% for att in attachments %}
           <tr>
-            <td>#{{ att.id }}</td>
-            <td><strong>{{ att.student.index_number }}</strong></td>
-            <td>{{ att.student.full_name }}</td>
-            <td><small>{{ att.student.programme }} (L{{ att.student.current_level }})</small></td>
-            <td>{{ att.target_organization or 'Pending Acceptance' }}</td>
-            <td>{{ att.academic_year }}</td>
-            <td><span class="badge badge-primary">{{ att.status.replace('_', ' ') }}</span></td>
+            <td style="color: #64748B; font-weight: 600;">#{{ att.id }}</td>
             <td>
-              <a href="{{ url_for('liaison.view_attachment_detail', attachment_id=att.id) }}" class="btn btn-outline btn-sm">
-                Manage
+              <code style="font-family: 'JetBrains Mono', monospace; font-weight: 700; color: #7E002F;">{{ att.student.index_number }}</code>
+            </td>
+            <td>
+              <strong style="color: #0F172A;">{{ att.student.full_name }}</strong>
+            </td>
+            <td>
+              <div style="font-size: 0.82rem; color: #334155;">{{ att.student.programme }}</div>
+              <span class="badge badge-secondary" style="font-size: 9px; padding: 1px 5px;">Level {{ att.student.current_level }}</span>
+            </td>
+            <td>
+              <span style="font-weight: 600; color: #1E293B;">{{ att.target_organization or 'Pending Acceptance' }}</span>
+            </td>
+            <td>
+              <span style="color: #64748B; font-size: 0.82rem;">{{ att.academic_year }}</span>
+            </td>
+            <td>
+              <span class="badge badge-primary">{{ att.status.replace('_', ' ') }}</span>
+            </td>
+            <td style="text-align: right;">
+              <a href="{{ url_for('liaison.view_attachment_detail', attachment_id=att.id) }}" class="btn-secondary btn-sm">
+                <span>Manage</span>
               </a>
             </td>
           </tr>
         {% else %}
           <tr>
-            <td colspan="8" style="text-align: center; color: var(--text-muted); padding: 2rem;">
+            <td colspan="8" style="text-align: center; color: #64748B; padding: 2.5rem;">
               No attachment records found matching current criteria.
             </td>
           </tr>

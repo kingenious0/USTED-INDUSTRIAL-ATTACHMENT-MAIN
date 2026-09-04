@@ -36,31 +36,49 @@ def validate_and_normalize_ghana_phone(phone: str) -> Tuple[bool, Optional[str],
     return True, normalized, None
 
 
-def generate_qr_token(index_number: str, secret_key: str) -> str:
+def generate_qr_token(index_number: str, secret_key: str, attachment_id: Optional[int] = None) -> str:
     """
-    Generates a 24-hour timed signed token for physical-to-digital QR gateway.
+    Generates a secure timed signed token for physical-to-digital QR onboarding gateway.
+    Embeds student index number and attachment ID.
     """
     serializer = URLSafeTimedSerializer(secret_key, salt='qr-onboarding')
-    return serializer.dumps({'index_number': index_number})
+    payload = {'index_number': index_number}
+    if attachment_id is not None:
+        payload['attachment_id'] = attachment_id
+    return serializer.dumps(payload)
 
 
-def verify_qr_token(token: str, expected_index_number: str, secret_key: str, max_age: int = 86400) -> Tuple[bool, Optional[str]]:
+def decode_qr_onboard_token(token: str, secret_key: str, max_age: int = 604800) -> Tuple[bool, Optional[Dict[str, Any]], Optional[str]]:
     """
-    Validates a 24-hour timed QR token.
-    Returns (is_valid, error_reason).
+    Decodes and validates a secure QR onboarding token.
+    Default max_age is 7 days (604800 seconds) to accommodate physical delivery/intake.
+    Returns (is_valid, payload_dict_or_none, error_message_or_none).
     """
     serializer = URLSafeTimedSerializer(secret_key, salt='qr-onboarding')
     try:
         data = serializer.loads(token, max_age=max_age)
-        if data.get('index_number') != expected_index_number:
-            return False, "Token index number does not match this student record."
-        return True, None
+        if not isinstance(data, dict) or not data.get('index_number'):
+            return False, None, "Invalid token structure."
+        return True, data, None
     except SignatureExpired:
-        return False, "This 24-hour onboarding QR code has expired. Please visit the Industrial Liaison Unit for a re-issuance."
+        return False, None, "This onboarding QR code has expired. Please visit the Industrial Liaison Office for a re-issuance."
     except (BadTimeSignature, BadSignature):
-        return False, "Invalid or tampered verification token."
+        return False, None, "Invalid or altered onboarding QR token."
     except Exception as e:
-        return False, f"Token validation error: {str(e)}"
+        return False, None, f"Token validation error: {str(e)}"
+
+
+def verify_qr_token(token: str, expected_index_number: str, secret_key: str, max_age: int = 604800) -> Tuple[bool, Optional[str]]:
+    """
+    Validates a timed QR token against an expected student index number.
+    Returns (is_valid, error_reason).
+    """
+    is_valid, data, err = decode_qr_onboard_token(token, secret_key, max_age=max_age)
+    if not is_valid:
+        return False, err
+    if data.get('index_number') != expected_index_number:
+        return False, "Token index number does not match this student record."
+    return True, None
 
 
 def generate_elogbook_sso_jwt(student, attachment, secret_key: str, expires_in: int = 120) -> str:

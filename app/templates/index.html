@@ -1,108 +1,177 @@
 {% extends "base.html" %}
 
-{% block title %}Welcome — USTED Industrial Attachment Portal (U-IAP){% endblock %}
+{% block title %}USTED Industrial Attachment Portal (U-IAP) — Workplace Experience Learning{% endblock %}
+
+{% block page_breadcrumb %}Portal Overview{% endblock %}
 
 {% block content %}
-<div class="card" style="padding: 3rem 2rem; text-align: center; border-top: 5px solid var(--color-primary);">
-  <div style="max-width: 780px; margin: 0 auto;">
-    <div style="width: 80px; height: 80px; margin: 0 auto 1.25rem auto;">
-      <img src="{{ url_for('static', filename='img/crest.svg') }}" alt="USTED Crest" width="80" height="80"/>
+<div class="landing-portal-container">
+  <!-- Hero Section -->
+  <section class="landing-hero-card">
+    <div class="landing-hero-badge">
+      <span class="material-symbols-outlined" style="font-size: 16px;">verified</span>
+      <span>University of Skills Training and Entrepreneurial Development</span>
     </div>
-    <span class="badge badge-admin" style="margin-bottom: 0.85rem; padding: 0.35rem 0.85rem; font-size: 0.8rem;">
-      University of Skills Training and Entrepreneurial Development (USTED)
-    </span>
-    <h1 style="color: var(--color-primary-dark); font-size: 2.1rem; font-weight: 800; margin-bottom: 0.85rem; letter-spacing: -0.02em;">
-      Industrial Attachment Management System (U-IAP)
+
+    <div class="landing-crest-container">
+      <img src="{{ url_for('static', filename='img/crest.svg') }}" alt="USTED Crest" width="88" height="88" class="landing-crest-img"/>
+    </div>
+
+    <h1 class="landing-hero-title">
+      Industrial Attachment Management System
     </h1>
-    <p style="color: var(--color-text-muted); font-size: 1.05rem; line-height: 1.6; margin-bottom: 2rem;">
-      Digitizing the Workplace Experience Learning (WEL) administrative lifecycle while preserving physical institutional verification, official wet-ink company stamps, and supervisor evaluations.
+    <p class="landing-hero-subtitle">
+      The official institutional platform for Workplace Experience Learning (WEL). Streamlining student placements, physical letter verification, stamped acceptance workflows, and academic field supervision across the Republic of Ghana.
     </p>
 
-    <div style="margin-bottom: 2.5rem;">
-      <div style="font-size: 0.82rem; font-weight: 700; color: var(--color-accent-gold); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.75rem;">
-        ⚡ Instant Role Preview (No Password or Login Barrier)
+    <!-- Action Buttons -->
+    <div class="landing-actions-group">
+      {% if current_user.is_authenticated %}
+        {% if current_user.is_student %}
+          <a href="{{ url_for('student.dashboard') }}" class="btn-modern-hero-primary">
+            <span class="material-symbols-outlined">dashboard</span>
+            <span>Go to My Student Workspace &rarr;</span>
+          </a>
+        {% elif current_user.is_liaison %}
+          <a href="{{ url_for('liaison.dashboard') }}" class="btn-modern-hero-primary">
+            <span class="material-symbols-outlined">dashboard</span>
+            <span>Go to Liaison Operations Console &rarr;</span>
+          </a>
+        {% elif current_user.is_supervisor %}
+          <a href="{{ url_for('supervisor.dashboard') }}" class="btn-modern-hero-primary">
+            <span class="material-symbols-outlined">assignment_ind</span>
+            <span>Go to Supervisor Workspace &rarr;</span>
+          </a>
+        {% elif current_user.is_admin %}
+          <a href="{{ url_for('admin.dashboard') }}" class="btn-modern-hero-primary">
+            <span class="material-symbols-outlined">security</span>
+            <span>Go to Administration &rarr;</span>
+          </a>
+        {% endif %}
+      {% else %}
+        <a href="{{ url_for('auth.login') }}" class="btn-modern-hero-primary">
+          <span class="material-symbols-outlined">school</span>
+          <span>Access Student Portal</span>
+        </a>
+        <a href="{{ url_for('auth.login') }}" class="btn-modern-hero-secondary">
+          <span class="material-symbols-outlined">admin_panel_settings</span>
+          <span>Staff &amp; Liaison Sign In</span>
+        </a>
+      {% endif %}
+    </div>
+
+    <!-- Institutional Key Stats -->
+    <div class="landing-stats-grid">
+      <div class="landing-stat-item">
+        <span class="landing-stat-val">100%</span>
+        <span class="landing-stat-lbl">Tamper-Evident QR Letters</span>
       </div>
-      <div class="role-preview-grid">
-        <a href="{{ url_for('auth.switch_role', role='student') }}" class="role-preview-card card-student" style="text-decoration: none;">
-          <div>
-            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem;">
-              <span style="font-size: 1.5rem;">👨‍🎓</span>
-              <span class="role-pill role-student">Student</span>
-            </div>
-            <h4 style="color: var(--color-primary-dark); font-size: 1.05rem; font-weight: 700; margin-bottom: 0.25rem;">Elliot P. Entsiwah</h4>
-            <p style="font-size: 0.8rem; color: var(--color-text-muted); line-height: 1.4; margin-bottom: 0.75rem;">
-              B.Sc. Information Technology &bull; Level 300. Access eLogSheet, Mon-Fri activities, weekly locks, and acceptance upload.
-            </p>
-          </div>
-          <span class="btn btn-primary btn-sm" style="width: 100%; text-align: center; font-size: 0.82rem;">Launch Student UI &rarr;</span>
-        </a>
-
-        <a href="{{ url_for('auth.switch_role', role='liaison') }}" class="role-preview-card card-liaison" style="text-decoration: none;">
-          <div>
-            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem;">
-              <span style="font-size: 1.5rem;">🏛️</span>
-              <span class="role-pill role-liaison_officer">Liaison Officer</span>
-            </div>
-            <h4 style="color: var(--color-primary-dark); font-size: 1.05rem; font-weight: 700; margin-bottom: 0.25rem;">Mrs. Faustina Arthur</h4>
-            <p style="font-size: 0.8rem; color: var(--color-text-muted); line-height: 1.4; margin-bottom: 0.75rem;">
-              Liaison Unit Officer. Student verification lookup, PDF introductory letter engine, and acceptance form approval queue.
-            </p>
-          </div>
-          <span class="btn btn-secondary btn-sm" style="width: 100%; text-align: center; font-size: 0.82rem;">Launch Liaison UI &rarr;</span>
-        </a>
-
-        <a href="{{ url_for('auth.switch_role', role='admin') }}" class="role-preview-card card-admin" style="text-decoration: none;">
-          <div>
-            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem;">
-              <span style="font-size: 1.5rem;">⚙️</span>
-              <span class="role-pill role-liaison_head">Liaison Head</span>
-            </div>
-            <h4 style="color: var(--color-primary-dark); font-size: 1.05rem; font-weight: 700; margin-bottom: 0.25rem;">Dr. Kwame Asante</h4>
-            <p style="font-size: 0.8rem; color: var(--color-text-muted); line-height: 1.4; margin-bottom: 0.75rem;">
-              Head of Liaison / Administrator. Tamper-evident SHA-256 audit log, security events, policy toggles, and system settings.
-            </p>
-          </div>
-          <span class="btn btn-secondary btn-sm" style="width: 100%; text-align: center; font-size: 0.82rem;">Launch Admin UI &rarr;</span>
-        </a>
-
-        <a href="{{ url_for('auth.switch_role', role='supervisor') }}" class="role-preview-card card-super" style="text-decoration: none;">
-          <div>
-            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem;">
-              <span style="font-size: 1.5rem;">👨‍🏫</span>
-              <span class="role-pill role-academic_supervisor">Supervisor</span>
-            </div>
-            <h4 style="color: var(--color-primary-dark); font-size: 1.05rem; font-weight: 700; margin-bottom: 0.25rem;">Ing. Dr. Peter Owusu</h4>
-            <p style="font-size: 0.8rem; color: var(--color-text-muted); line-height: 1.4; margin-bottom: 0.75rem;">
-              Academic Supervisor. Roster of assigned students, eLogSheet lock verification, and physical evaluation records.
-            </p>
-          </div>
-          <span class="btn btn-secondary btn-sm" style="width: 100%; text-align: center; font-size: 0.82rem;">Launch Supervisor UI &rarr;</span>
-        </a>
+      <div class="landing-stat-item">
+        <span class="landing-stat-val">16</span>
+        <span class="landing-stat-lbl">Administrative Regions Covered</span>
+      </div>
+      <div class="landing-stat-item">
+        <span class="landing-stat-val">SHA-256</span>
+        <span class="landing-stat-lbl">Cryptographic Audit Trail</span>
+      </div>
+      <div class="landing-stat-item">
+        <span class="landing-stat-val">2024/2025</span>
+        <span class="landing-stat-lbl">Academic Session Active</span>
       </div>
     </div>
-  </div>
+  </section>
 
-  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; text-align: left; margin-top: 1.5rem; border-top: 1px solid var(--color-border); padding-top: 2rem;">
-    <div class="card" style="margin-bottom: 0; background: var(--color-surface-bg); border-top: 3px solid var(--color-primary);">
-      <h3 style="color: var(--color-primary-dark); margin-bottom: 0.5rem; font-size: 1.1rem; font-weight: 700;">1. Liaison Intake & Verification</h3>
-      <p style="font-size: 0.88rem; color: var(--color-text-muted); line-height: 1.5;">
-        Mandatory physical Liaison Office checkpoint. Students are verified by University Index Number, and official Introductory Letters are generated.
-      </p>
+  <!-- Core Functional Pillars Section -->
+  <section class="landing-section">
+    <div class="landing-section-header">
+      <span class="landing-section-tag">INSTITUTIONAL LIFECYCLE</span>
+      <h2 class="landing-section-title">The Three Pillars of WEL Administration</h2>
+      <p class="landing-section-desc">Designed to preserve rigorous university governance, physical company wet-ink stamps, and on-site supervisor evaluation.</p>
     </div>
 
-    <div class="card" style="margin-bottom: 0; background: var(--color-surface-bg); border-top: 3px solid var(--color-accent-gold);">
-      <h3 style="color: var(--color-primary-dark); margin-bottom: 0.5rem; font-size: 1.1rem; font-weight: 700;">2. Acceptance Form Endorsement</h3>
-      <p style="font-size: 0.88rem; color: var(--color-text-muted); line-height: 1.5;">
-        Host organizations complete physical acceptance forms with signatures and official wet-ink company stamps, scanned and uploaded by students.
-      </p>
-    </div>
+    <div class="landing-pillars-grid">
+      <!-- Pillar 1 -->
+      <div class="landing-pillar-card">
+        <div class="pillar-icon-box maroon-tint">
+          <span class="material-symbols-outlined">how_to_reg</span>
+        </div>
+        <h3 class="pillar-title">1. Physical Liaison Intake</h3>
+        <p class="pillar-text">
+          Students report in-person to the Industrial Liaison Office. Index numbers are authenticated against the master roster, generating an official Introductory Letter with a unique cryptographic QR token.
+        </p>
+        <ul class="pillar-features">
+          <li><span class="material-symbols-outlined feat-check">check_circle</span> In-person identity verification</li>
+          <li><span class="material-symbols-outlined feat-check">check_circle</span> Automated PDF letter generation</li>
+          <li><span class="material-symbols-outlined feat-check">check_circle</span> Instant QR onboarding link</li>
+        </ul>
+      </div>
 
-    <div class="card" style="margin-bottom: 0; background: var(--color-surface-bg); border-top: 3px solid var(--color-success);">
-      <h3 style="color: var(--color-primary-dark); margin-bottom: 0.5rem; font-size: 1.1rem; font-weight: 700;">3. Mon–Fri Logging & Locking</h3>
-      <p style="font-size: 0.88rem; color: var(--color-text-muted); line-height: 1.5;">
-        Expandable Monday–Friday activity log. Students manually lock each week to trigger printed sheets for physical supervisor verification.
-      </p>
+      <!-- Pillar 2 -->
+      <div class="landing-pillar-card">
+        <div class="pillar-icon-box gold-tint">
+          <span class="material-symbols-outlined">verified_user</span>
+        </div>
+        <h3 class="pillar-title">2. Wet-Ink Company Endorsement</h3>
+        <p class="pillar-text">
+          Host organizations confirm placements by signing and stamping physical Acceptance Forms. Students upload high-resolution scans and capture workplace GPS coordinates for validation.
+        </p>
+        <ul class="pillar-features">
+          <li><span class="material-symbols-outlined feat-check">check_circle</span> Wet-ink company stamp audit</li>
+          <li><span class="material-symbols-outlined feat-check">check_circle</span> Workplace geolocation pin</li>
+          <li><span class="material-symbols-outlined feat-check">check_circle</span> Liaison approval workflow</li>
+        </ul>
+      </div>
+
+      <!-- Pillar 3 -->
+      <div class="landing-pillar-card">
+        <div class="pillar-icon-box green-tint">
+          <span class="material-symbols-outlined">lock_clock</span>
+        </div>
+        <h3 class="pillar-title">3. eLogSheet &amp; Field Supervision</h3>
+        <p class="pillar-text">
+          Students maintain daily workplace activities from Monday to Friday. Weekly locking enforces tamper resistance, while assigned academic supervisors conduct zonal evaluations and record grades.
+        </p>
+        <ul class="pillar-features">
+          <li><span class="material-symbols-outlined feat-check">check_circle</span> Immutable weekly lock mechanism</li>
+          <li><span class="material-symbols-outlined feat-check">check_circle</span> Zonal supervisor mapping</li>
+          <li><span class="material-symbols-outlined feat-check">check_circle</span> Standardized scoring criteria</li>
+        </ul>
+      </div>
     </div>
-  </div>
+  </section>
+
+  <!-- Downloadable Resources Card -->
+  <section class="landing-section">
+    <div class="landing-download-card">
+      <div class="download-card-content">
+        <div class="download-icon">
+          <span class="material-symbols-outlined" style="font-size: 32px;">description</span>
+        </div>
+        <div>
+          <h3 class="download-title">Official Documentation &amp; Blank Templates</h3>
+          <p class="download-desc">Download blank physical forms approved by the USTED Academic Board for the current industrial attachment session.</p>
+        </div>
+      </div>
+      <div class="download-actions">
+        <a href="{{ url_for('student.download_generic_blank_acceptance') }}" class="btn-download-pill">
+          <span class="material-symbols-outlined">download</span>
+          <span>Blank Acceptance Form (PDF)</span>
+        </a>
+        <a href="{{ url_for('student.download_generic_blank_assessment') }}" class="btn-download-pill">
+          <span class="material-symbols-outlined">download</span>
+          <span>Confidential Assessment Sheet (PDF)</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Institutional Footer Notice -->
+  <footer class="landing-footer">
+    <div class="footer-inst-info">
+      <strong>University of Skills Training and Entrepreneurial Development (USTED)</strong>
+      <p>Industrial Liaison Unit &bull; Kumasi &amp; Mampong Campuses, Ghana</p>
+      <p class="footer-copy">&copy; 2025 USTED. All rights reserved. System governed under Academic Policy Directive WEL-2024.</p>
+    </div>
+  </footer>
 </div>
 {% endblock %}

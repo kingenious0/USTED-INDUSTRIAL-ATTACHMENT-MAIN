@@ -1,16 +1,27 @@
 {% extends "base.html" %}
 
 {% block title %}Server Error — 500 — U-IAP{% endblock %}
+{% block page_breadcrumb %}System Notice / Internal Error{% endblock %}
 
 {% block content %}
-<div style="max-width: 600px; margin: 3rem auto; text-align: center;">
-  <div class="card" style="border-top: 5px solid var(--danger); padding: 2.5rem 1.5rem;">
-    <h1 style="color: var(--danger); font-size: 3rem; font-weight: 800; line-height: 1;">500</h1>
-    <h2 style="color: var(--primary); font-size: 1.3rem; margin: 0.75rem 0;">Internal Server Error</h2>
-    <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 1.5rem;">
-      An unexpected internal error occurred. The database session has been rolled back safely. Please retry or contact technical support.
+<div style="max-width: 540px; margin: 3rem auto; text-align: center;">
+  <div class="modern-card" style="padding: 2.5rem 2rem; border-top: 4px solid var(--color-danger);">
+    <div style="width: 56px; height: 56px; border-radius: 50%; background: #FEF2F2; color: var(--color-danger); display: flex; align-items: center; justify-content: center; margin: 0 auto 1.25rem auto;">
+      <span class="material-symbols-outlined" style="font-size: 28px;">error</span>
+    </div>
+    <span style="font-family: var(--font-mono, monospace); font-size: 0.85rem; font-weight: 700; color: var(--color-danger); text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 0.25rem;">
+      Error 500
+    </span>
+    <h2 style="font-size: 1.35rem; font-weight: 800; color: var(--color-text-main); margin: 0 0 0.75rem 0;">
+      Internal Server Error
+    </h2>
+    <p style="color: var(--color-text-muted); font-size: 0.9rem; line-height: 1.55; margin-bottom: 1.75rem;">
+      An unexpected internal operational error occurred. The database transaction has been safely rolled back to preserve data integrity. Please retry or contact technical support.
     </p>
-    <a href="{{ url_for('main.index') }}" class="btn btn-primary">Return to Portal Home</a>
+    <a href="{{ url_for('main.index') }}" class="btn btn-primary" style="display: inline-flex; align-items: center; gap: 6px;">
+      <span class="material-symbols-outlined" style="font-size: 16px;">home</span>
+      <span>Return to Portal Home</span>
+    </a>
   </div>
 </div>
 {% endblock %}

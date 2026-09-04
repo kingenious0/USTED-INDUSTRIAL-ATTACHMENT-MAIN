@@ -3,7 +3,7 @@
 document.addEventListener('DOMContentLoaded', () => {
   // 1. Mobile Navigation Sidebar Drawer Controller (< 1024px)
   const sidebar = document.getElementById('appSidebar');
-  const sidebarToggle = document.getElementById('sidebarToggle');
+  const sidebarToggles = document.querySelectorAll('.sidebar-toggle-btn, .header-toggle-sidebar, #sidebarToggle');
   const sidebarClose = document.getElementById('sidebarClose');
   const sidebarBackdrop = document.getElementById('sidebarBackdrop');
 
@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (sidebar) {
       sidebar.classList.add('sidebar-open');
       if (sidebarBackdrop) sidebarBackdrop.classList.add('active');
-      if (sidebarToggle) sidebarToggle.setAttribute('aria-expanded', 'true');
+      sidebarToggles.forEach(btn => btn.setAttribute('aria-expanded', 'true'));
       document.body.style.overflow = 'hidden'; // prevent background scrolling while drawer is open
     }
   };
@@ -20,17 +20,17 @@ document.addEventListener('DOMContentLoaded', () => {
     if (sidebar) {
       sidebar.classList.remove('sidebar-open');
       if (sidebarBackdrop) sidebarBackdrop.classList.remove('active');
-      if (sidebarToggle) sidebarToggle.setAttribute('aria-expanded', 'false');
+      sidebarToggles.forEach(btn => btn.setAttribute('aria-expanded', 'false'));
       document.body.style.overflow = '';
     }
   };
 
-  if (sidebarToggle) {
-    sidebarToggle.addEventListener('click', (e) => {
+  sidebarToggles.forEach(btn => {
+    btn.addEventListener('click', (e) => {
       e.stopPropagation();
       openSidebar();
     });
-  }
+  });
 
   if (sidebarClose) {
     sidebarClose.addEventListener('click', closeSidebar);
@@ -233,3 +233,26 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 });
+
+// 8. User Profile Dropdown Controller (Top Navigation Header)
+window.toggleUserDropdown = function(event) {
+  if (event) event.stopPropagation();
+  const menu = document.getElementById('userDropdownMenu');
+  const btn = document.getElementById('userMenuBtn');
+  if (!menu) return;
+  const isHidden = menu.style.display === 'none' || !menu.style.display;
+  menu.style.display = isHidden ? 'block' : 'none';
+  if (btn) btn.setAttribute('aria-expanded', isHidden ? 'true' : 'false');
+};
+
+document.addEventListener('click', function(e) {
+  const menu = document.getElementById('userDropdownMenu');
+  const btn = document.getElementById('userMenuBtn');
+  if (menu && menu.style.display === 'block') {
+    if (!menu.contains(e.target) && (!btn || !btn.contains(e.target))) {
+      menu.style.display = 'none';
+      if (btn) btn.setAttribute('aria-expanded', 'false');
+    }
+  }
+});
+

@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 
 {% block title %}Acceptance Form Review Queue — U-IAP{% endblock %}
+{% block page_breadcrumb %}Acceptance Queue{% endblock %}
 
 {% block content %}
 <div class="page-header">
@@ -11,52 +12,73 @@
 </div>
 
 <!-- Pending Queue -->
-<div class="card" style="border-top: 4px solid var(--color-accent-gold);">
+<div class="modern-card" style="margin-bottom: 2rem;">
   <div class="card-header">
-    <h3 class="card-title">Pending Institutional Verification ({{ pending_items|length }})</h3>
+    <div style="display: flex; align-items: center; gap: 8px;">
+      <span class="material-symbols-outlined" style="color: #D97706; font-size: 22px;">pending_actions</span>
+      <h3 class="card-title">Pending Institutional Verification ({{ pending_items|length }})</h3>
+    </div>
+    <span class="badge badge-warning">{{ pending_items|length }} Awaiting Review</span>
   </div>
 
   <div class="table-responsive">
-    <table class="table">
+    <table class="modern-table">
       <thead>
         <tr>
-          <th>Student Name</th>
+          <th>Student Details</th>
           <th>Index Number</th>
           <th>Host Organization</th>
-          <th>Location / Phone</th>
+          <th>Location &amp; Phone</th>
           <th>Upload Date</th>
-          <th>Action</th>
+          <th style="text-align: right;">Action</th>
         </tr>
       </thead>
       <tbody>
         {% for item in pending_items %}
           <tr>
-            <td><strong style="color: var(--color-primary-dark);">{{ item.attachment.student.full_name }}</strong></td>
-            <td>{{ item.attachment.student.index_number }}</td>
-            <td><strong>{{ item.organization_name }}</strong></td>
-            <td>{{ item.location }}<br/><small style="color:var(--color-text-muted);">{{ item.telephone }}</small></td>
-            <td><small style="color:var(--color-text-muted);">{{ item.created_at.strftime('%d/%m/%Y %H:%M') }}</small></td>
             <td>
-              <div style="display: flex; gap: 0.4rem; flex-wrap: wrap; align-items: center;">
-                <a href="{{ url_for('liaison.view_scan', acceptance_id=item.id) }}" target="_blank" class="btn btn-outline btn-sm" style="padding: 0.35rem 0.65rem; font-size: 0.8rem;">
-                  View Scan
+              <strong style="color: #0F172A; font-size: 0.9rem;">{{ item.attachment.student.full_name }}</strong>
+              <div style="font-size: 0.78rem; color: #64748B;">{{ item.attachment.student.programme }}</div>
+            </td>
+            <td>
+              <code style="font-family: 'JetBrains Mono', monospace; font-weight: 700; color: #7E002F;">{{ item.attachment.student.index_number }}</code>
+            </td>
+            <td>
+              <strong style="color: #1E293B;">{{ item.organization_name }}</strong>
+              <div style="font-size: 0.78rem; color: #64748B;">{{ item.organization_type or 'General' }}</div>
+            </td>
+            <td>
+              <div>{{ item.location }}</div>
+              <small style="color: #64748B;">{{ item.telephone }}</small>
+            </td>
+            <td>
+              <small style="color: #64748B; font-weight: 500;">{{ item.created_at.strftime('%d/%m/%Y %H:%M') }}</small>
+            </td>
+            <td style="text-align: right;">
+              <div style="display: inline-flex; gap: 6px; align-items: center;">
+                <a href="{{ url_for('liaison.view_scan', acceptance_id=item.id) }}" target="_blank" class="btn-secondary btn-sm">
+                  <span class="material-symbols-outlined" style="font-size: 15px;">visibility</span>
+                  <span>Scan</span>
                 </a>
                 <form method="POST" action="{{ url_for('liaison.verify_and_activate_acceptance', acceptance_id=item.id) }}" style="display: inline; margin: 0;">
                   <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-                  <button type="submit" class="btn btn-primary btn-sm" style="padding: 0.35rem 0.75rem; font-size: 0.8rem; font-weight: 600;">
-                    Verify Acceptance &amp; Activate Attachment
+                  <button type="submit" class="btn-primary btn-sm">
+                    <span class="material-symbols-outlined" style="font-size: 15px;">check_circle</span>
+                    <span>Verify Acceptance &amp; Activate Attachment</span>
                   </button>
                 </form>
-                <a href="{{ url_for('liaison.review_acceptance', acceptance_id=item.id) }}" class="btn btn-secondary btn-sm" style="padding: 0.35rem 0.65rem; font-size: 0.8rem;">
-                  Detailed Review &rarr;
+                <a href="{{ url_for('liaison.review_acceptance', acceptance_id=item.id) }}" class="btn-secondary btn-sm">
+                  <span>Review &rarr;</span>
                 </a>
               </div>
             </td>
           </tr>
         {% else %}
           <tr>
-            <td colspan="6" style="text-align: center; color: var(--color-text-muted); padding: 2.5rem 1rem;">
-              No Acceptance Forms currently awaiting verification.
+            <td colspan="6" style="text-align: center; color: #64748B; padding: 3rem 1rem;">
+              <span class="material-symbols-outlined" style="font-size: 40px; color: #94A3B8; display: block; margin-bottom: 8px;">task_alt</span>
+              <strong>All caught up!</strong>
+              <p style="font-size: 0.82rem; margin: 4px 0 0 0;">No Acceptance Forms currently awaiting verification.</p>
             </td>
           </tr>
         {% endfor %}
@@ -67,12 +89,16 @@
 
 <!-- Recently Reviewed Queue -->
 {% if reviewed_items %}
-  <div class="card">
+  <div class="modern-card">
     <div class="card-header">
-      <h3 class="card-title">Recently Reviewed Submissions</h3>
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <span class="material-symbols-outlined" style="color: #64748B; font-size: 22px;">history</span>
+        <h3 class="card-title">Recently Reviewed Submissions</h3>
+      </div>
+      <span class="badge badge-secondary">{{ reviewed_items|length }} Processed</span>
     </div>
     <div class="table-responsive">
-      <table class="table">
+      <table class="modern-table">
         <thead>
           <tr>
             <th>Student</th>
@@ -80,23 +106,29 @@
             <th>Decision Status</th>
             <th>Reviewed By</th>
             <th>Date</th>
-            <th>Action</th>
+            <th style="text-align: right;">Action</th>
           </tr>
         </thead>
         <tbody>
           {% for r in reviewed_items %}
             <tr>
-              <td><strong>{{ r.attachment.student.full_name }}</strong></td>
+              <td>
+                <strong style="color: #0F172A;">{{ r.attachment.student.full_name }}</strong>
+                <div style="font-size: 0.78rem; color: #64748B;">{{ r.attachment.student.index_number }}</div>
+              </td>
               <td>{{ r.organization_name }}</td>
               <td>
                 <span class="badge {% if r.is_approved %}badge-success{% elif r.is_flagged %}badge-danger{% else %}badge-secondary{% endif %}">
                   {{ r.status.replace('_', ' ') }}
                 </span>
               </td>
-              <td>{{ r.reviewed_by.full_name if r.reviewed_by else 'Liaison' }}</td>
-              <td><small style="color:var(--color-text-muted);">{{ r.reviewed_at.strftime('%d/%m/%Y') if r.reviewed_at else '—' }}</small></td>
-              <td>
-                <a href="{{ url_for('liaison.review_acceptance', acceptance_id=r.id) }}" class="btn btn-outline btn-sm">Re-examine</a>
+              <td>{{ r.reviewed_by.full_name if r.reviewed_by else 'Liaison Officer' }}</td>
+              <td><small style="color: #64748B;">{{ r.reviewed_at.strftime('%d/%m/%Y') if r.reviewed_at else '—' }}</small></td>
+              <td style="text-align: right;">
+                <a href="{{ url_for('liaison.review_acceptance', acceptance_id=r.id) }}" class="btn-secondary btn-sm">
+                  <span class="material-symbols-outlined" style="font-size: 15px;">find_replace</span>
+                  <span>Re-examine</span>
+                </a>
               </td>
             </tr>
           {% endfor %}

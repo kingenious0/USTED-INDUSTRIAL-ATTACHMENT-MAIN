@@ -1,43 +1,44 @@
 {% extends "base.html" %}
 
-{% block title %}Activate Your Account — USTED Industrial Attachment Portal (U-IAP){% endblock %}
+{% block title %}Activate Student Portal — USTED Industrial Attachment Portal (U-IAP){% endblock %}
 
 {% block content %}
-<div style="max-width: 540px; margin: 2rem auto;">
-  <!-- GOV.UK inspired Step Card -->
-  <div class="card" style="border-top: 5px solid var(--color-accent-gold); padding: 2.25rem 2rem;">
-    <div style="text-align: center; margin-bottom: 1.75rem;">
-      <div style="width: 64px; height: 64px; margin: 0 auto 0.75rem auto;">
+<div style="min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 2.5rem 1rem; background: #F8FAFC;">
+  <div class="modern-card" style="width: 100%; max-width: 500px; padding: 2.5rem 2.25rem;">
+    
+    <div style="text-align: center; margin-bottom: 2rem;">
+      <div style="width: 64px; height: 64px; margin: 0 auto 1rem auto;">
         <img src="{{ url_for('static', filename='img/crest.svg') }}" alt="USTED Crest" width="64" height="64"/>
       </div>
-      <span class="badge badge-success" style="font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.5rem; display: inline-block;">
-        ✓ 24-Hour QR Gateway Verified
-      </span>
-      <h1 style="color: var(--color-primary-dark); font-size: 1.5rem; font-weight: 800; letter-spacing: -0.01em; margin-bottom: 0.25rem;">
+      <div style="display: inline-flex; align-items: center; gap: 6px; background: #ECFDF5; border: 1px solid #A7F3D0; color: #065F46; padding: 4px 12px; border-radius: 9999px; font-size: 11.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.75rem;">
+        <span class="material-symbols-outlined" style="font-size: 15px;">verified</span>
+        <span>QR Gateway Verified</span>
+      </div>
+      <h1 style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 1.5rem; font-weight: 800; color: #0F172A; margin: 0 0 6px 0; letter-spacing: -0.015em;">
         Activate Student Portal
       </h1>
-      <p style="color: var(--color-text-muted); font-size: 0.88rem;">
-        Complete this one-time setup to secure your U-IAP portal account and access your electronic logbook.
+      <p style="font-size: 0.88rem; color: #64748B; margin: 0;">
+        Complete this one-time setup to access your electronic logbook.
       </p>
     </div>
 
     <!-- Student Record Summary (Read-Only Registry Verification) -->
-    <div style="background: var(--color-surface-bg); border: 1px solid var(--color-border); border-radius: var(--radius); padding: 1rem 1.25rem; margin-bottom: 1.75rem;">
-      <div style="font-size: 0.75rem; font-weight: 700; color: var(--color-text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem;">
+    <div style="background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 8px; padding: 1rem 1.25rem; margin-bottom: 1.5rem;">
+      <div style="font-size: 0.72rem; font-weight: 700; color: #64748B; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem;">
         Official USTED Registry Match
       </div>
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; font-size: 0.85rem;">
         <div>
-          <span style="color: var(--color-text-muted);">Name:</span><br/>
-          <strong style="color: var(--color-text);">{{ student.full_name }}</strong>
+          <span style="color: #64748B; font-size: 0.78rem;">Full Name:</span><br/>
+          <strong style="color: #0F172A;">{{ student.full_name }}</strong>
         </div>
         <div>
-          <span style="color: var(--color-text-muted);">Index No:</span><br/>
-          <code style="font-weight: 700; color: var(--color-primary);">{{ student.index_number }}</code>
+          <span style="color: #64748B; font-size: 0.78rem;">Index Number:</span><br/>
+          <code style="font-weight: 700; color: #7E002F; font-size: 0.9rem;">{{ student.index_number }}</code>
         </div>
-        <div style="grid-column: span 2;">
-          <span style="color: var(--color-text-muted);">Programme:</span><br/>
-          <span style="color: var(--color-text); font-weight: 500;">{{ student.programme }} (Level {{ student.current_level }})</span>
+        <div style="grid-column: span 2; margin-top: 4px;">
+          <span style="color: #64748B; font-size: 0.78rem;">Programme:</span><br/>
+          <span style="color: #334155; font-weight: 600;">{{ student.programme }} (Level {{ student.current_level }})</span>
         </div>
       </div>
     </div>
@@ -48,11 +49,11 @@
       <input type="hidden" name="token" value="{{ token }}"/>
 
       <div class="form-group" style="margin-bottom: 1.25rem;">
-        <label for="phone" class="form-label" style="font-weight: 700; font-size: 0.88rem;">
-          Ghanaian Mobile Phone Number <span style="color: var(--color-danger);">*</span>
+        <label for="phone" class="form-label">
+          Ghanaian Mobile Phone Number <span style="color: #BE123C;">*</span>
         </label>
-        <span style="display: block; font-size: 0.78rem; color: var(--color-text-muted); margin-bottom: 0.35rem;">
-          Required for supervisory SMS alerts and zonal placement mapping (e.g. 0244123456 or +233244123456).
+        <span style="display: block; font-size: 0.78rem; color: #64748B; margin-bottom: 6px;">
+          For supervisory SMS alerts and zonal mapping (e.g. 0244123456).
         </span>
         <input
           type="tel"
@@ -62,15 +63,14 @@
           placeholder="e.g. 0244123456"
           value="{{ phone }}"
           required
-          style="min-height: 44px; font-size: 16px;"
         />
       </div>
 
       <div class="form-group" style="margin-bottom: 1.25rem;">
-        <label for="password" class="form-label" style="font-weight: 700; font-size: 0.88rem;">
-          Create Portal Password <span style="color: var(--color-danger);">*</span>
+        <label for="password" class="form-label">
+          Create Portal Password <span style="color: #BE123C;">*</span>
         </label>
-        <span style="display: block; font-size: 0.78rem; color: var(--color-text-muted); margin-bottom: 0.35rem;">
+        <span style="display: block; font-size: 0.78rem; color: #64748B; margin-bottom: 6px;">
           Minimum 6 characters. Use something secure you will remember.
         </span>
         <input
@@ -78,29 +78,27 @@
           id="password"
           name="password"
           class="form-control"
-          placeholder="••••••••"
+          placeholder="Minimum 6 characters"
           required
-          style="min-height: 44px; font-size: 16px;"
         />
       </div>
 
       <div class="form-group" style="margin-bottom: 1.75rem;">
-        <label for="confirm_password" class="form-label" style="font-weight: 700; font-size: 0.88rem;">
-          Confirm Password <span style="color: var(--color-danger);">*</span>
+        <label for="confirm_password" class="form-label">
+          Confirm Password <span style="color: #BE123C;">*</span>
         </label>
         <input
           type="password"
           id="confirm_password"
           name="confirm_password"
           class="form-control"
-          placeholder="••••••••"
+          placeholder="••••••••••••"
           required
-          style="min-height: 44px; font-size: 16px;"
         />
       </div>
 
-      <button type="submit" class="btn btn-primary btn-block" style="min-height: 44px; font-size: 1rem; font-weight: 700;">
-        Activate Account & Access Portal &rarr;
+      <button type="submit" class="btn-primary btn-block" style="min-height: 44px; font-size: 0.95rem; font-weight: 700;">
+        <span>Activate Account &amp; Access Portal &rarr;</span>
       </button>
     </form>
   </div>

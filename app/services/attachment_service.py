@@ -2,6 +2,7 @@ from datetime import datetime, timedelta, timezone
 from typing import Dict, Any, Tuple
 from werkzeug.datastructures import FileStorage
 from werkzeug.utils import secure_filename
+from flask import has_request_context, url_for
 from app.extensions import db
 from app.models.attachment import AttachmentRecord, AttachmentStatus
 from app.models.letter import IntroductoryLetter
@@ -143,9 +144,15 @@ class AttachmentService:
         liaison_name = config.get('LIAISON_HEAD_NAME') if config else None
         liaison_title = config.get('LIAISON_HEAD_TITLE') if config else None
         secret_key = config.get('SECRET_KEY', 'dev-secret-key-u-iap-2026') if config else 'dev-secret-key-u-iap-2026'
-
-        qr_token = generate_qr_token(attachment.student.index_number, secret_key)
-        qr_access_url = f"/portal/access/{attachment.student.index_number}?token={qr_token}"
+        qr_token = generate_qr_token(attachment.student.index_number, secret_key, attachment_id=attachment.id)
+        if has_request_context():
+            try:
+                qr_access_url = url_for('student.onboard', token=qr_token, _external=True)
+            except Exception:
+                qr_access_url = f"/student/onboard/{qr_token}"
+        else:
+            base_url = config.get('PORTAL_BASE_URL', 'https://portal.usted.edu.gh') if config else 'https://portal.usted.edu.gh'
+            qr_access_url = f"{base_url.rstrip('/')}/student/onboard/{qr_token}"
 
         pdf_bytes = PDFService.generate_introductory_letter(
             attachment,

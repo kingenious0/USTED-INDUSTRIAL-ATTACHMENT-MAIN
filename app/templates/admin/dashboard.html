@@ -1,48 +1,83 @@
 {% extends "base.html" %}
 
-{% block title %}System Administration — U-IAP{% endblock %}
+{% block title %}System Administration &amp; Audit Trail — U-IAP{% endblock %}
+{% block page_breadcrumb %}Administration / Security &amp; Audit{% endblock %}
 
 {% block content %}
 <div class="page-header">
   <div>
-    <h1 class="page-title">Unit Administration & Audit Center</h1>
-    <p class="page-subtitle">System metrics, institutional audit logs, and operational workflow configuration</p>
+    <h1 class="page-title">Unit Administration &amp; Audit Center</h1>
+    <p class="page-subtitle">Real-time system telemetry, immutable institutional audit events, and operational governance</p>
   </div>
-  <div style="display: flex; gap: 0.5rem;">
-    <a href="{{ url_for('admin.audit_logs') }}" class="btn btn-outline btn-sm">Full Audit Logs</a>
-    <a href="{{ url_for('admin.settings') }}" class="btn btn-primary btn-sm">Workflow Settings</a>
+  <div style="display: flex; gap: 0.6rem; flex-wrap: wrap;">
+    <a href="{{ url_for('admin.audit_logs') }}" class="btn btn-secondary btn-sm" style="display: inline-flex; align-items: center; gap: 6px;">
+      <span class="material-symbols-outlined" style="font-size: 16px;">receipt_long</span>
+      <span>Full Audit Logs</span>
+    </a>
+    <a href="{{ url_for('admin.settings') }}" class="btn btn-primary btn-sm" style="display: inline-flex; align-items: center; gap: 6px;">
+      <span class="material-symbols-outlined" style="font-size: 16px;">tune</span>
+      <span>Workflow Settings</span>
+    </a>
   </div>
 </div>
 
+<!-- 3 KPI Cards -->
 <div class="metrics-grid">
-  <div class="metric-card primary">
-    <span class="metric-label">Registered Portal Users</span>
-    <span class="metric-value">{{ total_users }}</span>
-    <span style="font-size: 0.78rem; color: var(--color-text-muted);">Staff, students, and supervisors</span>
+  <div class="modern-kpi-card" style="border-top: 3px solid var(--color-primary);">
+    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+      <div>
+        <div class="kpi-label">Registered Portal Users</div>
+        <div class="kpi-value">{{ total_users }}</div>
+        <div class="kpi-sub">Liaison officers, supervisors, and students</div>
+      </div>
+      <div style="width: 40px; height: 40px; border-radius: 8px; background: var(--color-surface); display: flex; align-items: center; justify-content: center; color: var(--color-primary);">
+        <span class="material-symbols-outlined" style="font-size: 22px;">group</span>
+      </div>
+    </div>
   </div>
 
-  <div class="metric-card highlight">
-    <span class="metric-label">Total Attachment Records</span>
-    <span class="metric-value">{{ total_attachments }}</span>
-    <span style="font-size: 0.78rem; color: var(--color-text-muted);">Cumulative lifecycle records</span>
+  <div class="modern-kpi-card" style="border-top: 3px solid var(--color-accent-gold);">
+    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+      <div>
+        <div class="kpi-label">Total Attachment Records</div>
+        <div class="kpi-value">{{ total_attachments }}</div>
+        <div class="kpi-sub">Cumulative lifecycle student placements</div>
+      </div>
+      <div style="width: 40px; height: 40px; border-radius: 8px; background: var(--color-surface); display: flex; align-items: center; justify-content: center; color: var(--color-accent-gold);">
+        <span class="material-symbols-outlined" style="font-size: 22px;">assignment</span>
+      </div>
+    </div>
   </div>
 
-  <div class="metric-card success">
-    <span class="metric-label">System Audit Events Recorded</span>
-    <span class="metric-value">{{ total_audits }}</span>
-    <span style="font-size: 0.78rem; color: var(--color-text-muted);">Security and workflow trail</span>
+  <div class="modern-kpi-card" style="border-top: 3px solid var(--color-success);">
+    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+      <div>
+        <div class="kpi-label">Audit Trail Events</div>
+        <div class="kpi-value">{{ total_audits }}</div>
+        <div class="kpi-sub">Immutable security &amp; authorization trail</div>
+      </div>
+      <div style="width: 40px; height: 40px; border-radius: 8px; background: var(--color-surface); display: flex; align-items: center; justify-content: center; color: var(--color-success);">
+        <span class="material-symbols-outlined" style="font-size: 22px;">security</span>
+      </div>
+    </div>
   </div>
 </div>
 
 <!-- Recent Audit Trail Inspection -->
-<div class="card">
-  <div class="card-header">
-    <h3 class="card-title">Recent System Audit Events</h3>
-    <a href="{{ url_for('admin.audit_logs') }}" class="btn btn-outline btn-sm">View All Logs &rarr;</a>
+<div class="modern-card">
+  <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+    <div>
+      <h3 class="card-title" style="font-size: 1rem; font-weight: 700; color: var(--color-text-main); margin: 0;">Recent System Audit Events</h3>
+      <p class="card-subtitle" style="font-size: 0.78rem; color: var(--color-text-muted); margin: 2px 0 0 0;">Latest security, document issuance, and workflow locking records</p>
+    </div>
+    <a href="{{ url_for('admin.audit_logs') }}" class="btn btn-secondary btn-sm" style="display: inline-flex; align-items: center; gap: 4px; font-size: 0.8rem;">
+      <span>View All Logs</span>
+      <span class="material-symbols-outlined" style="font-size: 14px;">arrow_forward</span>
+    </a>
   </div>
 
   <div class="table-responsive">
-    <table class="table">
+    <table class="table modern-table" style="margin-bottom: 0;">
       <thead>
         <tr>
           <th>Timestamp (UTC)</th>
@@ -56,24 +91,31 @@
       <tbody>
         {% for log in recent_audits %}
           <tr>
-            <td><small style="color:var(--color-text-muted);">{{ log.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</small></td>
+            <td><span style="font-family: var(--font-mono, monospace); font-size: 0.8rem; color: var(--color-text-muted);">{{ log.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</span></td>
             <td><strong>{{ log.actor_username or 'SYSTEM' }}</strong></td>
             <td>
-              <span class="badge {% if log.actor_role in ['admin', 'liaison_head'] %}badge-admin{% elif log.actor_role == 'liaison_officer' %}badge-liaison-officer{% else %}badge-secondary{% endif %}">
+              <span class="badge {% if log.actor_role in ['admin', 'liaison_head'] %}badge-danger{% elif log.actor_role == 'liaison_officer' %}badge-primary{% else %}badge-secondary{% endif %}" style="font-size: 0.72rem;">
                 {{ log.actor_role or 'system' }}
               </span>
             </td>
             <td>
-              <span class="badge {% if 'LOGIN' in log.action or 'LOCKED' in log.action %}badge-success{% elif 'CHANGE' in log.action or 'REPRINT' in log.action %}badge-warning{% else %}badge-primary{% endif %}">
+              <span class="badge {% if 'LOGIN' in log.action or 'LOCKED' in log.action %}badge-success{% elif 'CHANGE' in log.action or 'REPRINT' in log.action %}badge-warning{% else %}badge-secondary{% endif %}" style="font-size: 0.72rem;">
                 {{ log.action.replace('_', ' ') }}
               </span>
             </td>
-            <td>{{ log.target_type or '—' }}{% if log.target_id %} <small style="color:var(--color-text-muted);">#{{ log.target_id }}</small>{% endif %}</td>
-            <td><small style="color:var(--color-text-main);">{{ log | humanize_audit }}</small></td>
+            <td>
+              <span style="color: var(--color-text-muted); font-size: 0.84rem;">
+                {{ log.target_type or '—' }}{% if log.target_id %} <code style="font-family: var(--font-mono, monospace); font-size: 0.78rem;">#{{ log.target_id }}</code>{% endif %}
+              </span>
+            </td>
+            <td><span style="font-size: 0.84rem; color: var(--color-text-main);">{{ log | humanize_audit }}</span></td>
           </tr>
         {% else %}
           <tr>
-            <td colspan="6" style="text-align: center; color: var(--color-text-muted); padding: 2rem;">No audit records logged yet.</td>
+            <td colspan="6" style="text-align: center; color: var(--color-text-muted); padding: 2.5rem 1rem;">
+              <span class="material-symbols-outlined" style="font-size: 32px; color: #CBD5E1; display: block; margin-bottom: 0.5rem;">history_toggle_off</span>
+              No audit records logged yet.
+            </td>
           </tr>
         {% endfor %}
       </tbody>

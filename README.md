@@ -36,10 +36,12 @@ The system conforms to the approved PRD (Product Requirements Document), preserv
 ## Quick Start (Local Development)
 
 ### 1. Prerequisites
+
 - Python 3.12+
 - Pip
 
 ### 2. Setup Virtual Environment
+
 ```bash
 # In "USTED INDUSTRIAL ATTACHMENT(U-IAP MAIN)"
 python -m venv venv
@@ -48,18 +50,23 @@ python -m venv venv
 ```
 
 ### 3. Install Dependencies
+
 ```bash
 pip install -r requirements.txt
 ```
 
 ### 4. Initialize Database & Seed Demo Data
+
 ```bash
 python run.py
 ```
+
 This automatically initializes the SQLite database (`u_iap.db`), provisions schema tables, and seeds initial demo users and student master records.
 
 ### 5. Access the Portal
+
 Open your browser and navigate to:
+
 ```
 http://127.0.0.1:5000
 ```
@@ -68,24 +75,26 @@ http://127.0.0.1:5000
 
 ## Pre-Seeded Testing Accounts
 
-| Role | Username | Password | Notes |
-|---|---|---|---|
-| **Liaison Officer** | `liaison1` | `password123` | Can search students, verify identity, create attachments, reprint letters, and review acceptance scans |
-| **Liaison Head / Admin** | `admin1` | `password123` | Full administrative privileges, audit logs viewer, and policy toggle settings |
-| **Student (Level 300 IT)** | `student1` | `password123` | Linked to Index `USTED/2024/001` (Kofi Mensah Boateng) |
-| **Student (Level 200 Eng)** | `student2` | `password123` | Linked to Index `USTED/2024/002` (Abena Serwaa Osei) |
-| **Academic Supervisor** | `supervisor1` | `password123` | Assigned students roster and placement monitoring |
+| Role                              | Username        | Password        | Notes                                                                                                  |
+| --------------------------------- | --------------- | --------------- | ------------------------------------------------------------------------------------------------------ |
+| **Liaison Officer**         | `liaison1`    | `password123` | Can search students, verify identity, create attachments, reprint letters, and review acceptance scans |
+| **Liaison Head / Admin**    | `admin1`      | `password123` | Full administrative privileges, audit logs viewer, and policy toggle settings                          |
+| **Student (Level 300 IT)**  | `student1`    | `password123` | Linked to Index`USTED/2024/001` (Kofi Mensah Boateng)                                                |
+| **Student (Level 200 Eng)** | `student2`    | `password123` | Linked to Index`USTED/2024/002` (Abena Serwaa Osei)                                                  |
+| **Academic Supervisor**     | `supervisor1` | `password123` | Assigned students roster and placement monitoring                                                      |
 
 ---
 
 ## Running Automated Tests
 
 Run the full pytest suite:
+
 ```bash
 pytest tests/ -v
 ```
 
 Test coverage includes:
+
 - `test_auth.py`: Authentication, session security, and role-based access restrictions.
 - `test_liaison.py`: Index lookup, physical verification intake, attachment record provisioning, and letter generation.
 - `test_acceptance.py`: File upload validation, MIME sniffing, and Liaison review queue.

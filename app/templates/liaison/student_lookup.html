@@ -2,70 +2,93 @@
 
 {% block title %}Student Lookup & Verification — U-IAP{% endblock %}
 
+{% block page_breadcrumb %}Student Verification Checkpoint{% endblock %}
+
 {% block content %}
-<div class="page-header">
-  <div>
-    <h1 class="page-title">Liaison Office Verification Checkpoint</h1>
-    <p class="page-subtitle">Search enrolled student records by Index Number to initiate attachment documentation.</p>
-  </div>
-</div>
+<div class="max-w-2xl mx-auto py-8" style="max-width: 42rem; margin: 0 auto; padding: 1.5rem 0; display: flex; flex-direction: column; gap: 1.5rem;">
 
-<div class="card" style="border-top: 4px solid var(--color-primary); max-width: 850px; margin: 0 auto 2rem auto;">
-  <form method="GET" action="{{ url_for('liaison.student_lookup') }}" style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
-    <input type="text" name="q" value="{{ query }}" class="form-control" style="flex: 1; min-width: 260px;" placeholder="Enter University Index Number (e.g. USTED/2024/001) or Student Name" required autofocus>
-    <button type="submit" class="btn btn-primary" style="white-space: nowrap;">Search Student</button>
-  </form>
-  <p class="form-hint" style="margin-top: 0.65rem;">
-    Students across <strong>Levels 100, 200, 300, and 400</strong> are eligible to undertake Workplace Experience Learning.
-  </p>
-</div>
-
-{% if query %}
-  <div class="card" style="max-width: 850px; margin: 0 auto;">
-    <div class="card-header">
-      <h3 class="card-title">Search Results for "{{ query }}" ({{ students|length }} found)</h3>
+  <!-- Search Card -->
+  <div style="background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 0.75rem; padding: 1.5rem; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);">
+    <div style="display: flex; align-items: center; gap: 6px; font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: #64748B; margin-bottom: 0.35rem;">
+      <span>Liaison Desk</span>
+      <span class="material-symbols-outlined" style="font-size: 13px;">chevron_right</span>
+      <span style="color: var(--brand-maroon, #8C033B);">Intake Checkpoint</span>
     </div>
+    <h2 style="font-size: 1.15rem; font-weight: 700; color: #0F172A; margin: 0 0 0.25rem 0;">
+      Student Placement Intake Checkpoint
+    </h2>
+    <p style="font-size: 0.82rem; color: #64748B; margin: 0 0 1rem 0;">
+      Search enrolled student records by Index Number to issue physical placement credentials.
+    </p>
 
-    {% if students %}
-      <div class="table-responsive">
-        <table class="table">
-          <thead>
-            <tr>
-              <th>Index Number</th>
-              <th>Student Name</th>
-              <th>Programme & Department</th>
-              <th>Level</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for st in students %}
-              <tr>
-                <td><strong>{{ st.index_number }}</strong></td>
-                <td>{{ st.full_name }}</td>
-                <td>
-                  <strong style="color: var(--color-primary-dark);">{{ st.programme }}</strong><br/>
-                  <small style="color:var(--color-text-muted);">{{ st.department }}</small>
-                </td>
-                <td><span class="badge badge-secondary">Level {{ st.current_level }}</span></td>
-                <td>
-                  <a href="{{ url_for('liaison.verify_and_create_attachment', student_id=st.id) }}" class="btn btn-primary btn-sm">
-                    Verify & Initiate Attachment &rarr;
-                  </a>
-                </td>
-              </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
-    {% else %}
-      <div style="text-align: center; padding: 2.5rem 1rem; color: var(--color-text-muted);">
-        <h4 style="color: var(--color-text-main); margin-bottom: 0.5rem;">No Student Found</h4>
-        <p style="font-size: 0.9rem; max-width: 520px; margin: 0 auto; line-height: 1.5;">
-          Index Number <strong>"{{ query }}"</strong> does not match any record in the university master dataset. The Liaison Officer cannot proceed until the student's institutional registration is resolved with the Academic Affairs Directorate.
-        </p>
-      </div>
-    {% endif %}
+    <!-- Linear-style unified search box -->
+    <form method="GET" action="{{ url_for('liaison.student_lookup') }}" style="display: flex; gap: 0.5rem;">
+      <input type="text" name="q" value="{{ query or '' }}" 
+             placeholder="Enter Index Number (e.g. 5230100452 or USTED/2024/001)" 
+             style="height: 44px; flex: 1; padding: 0 0.875rem; border: 1px solid #CBD5E1; border-radius: 6px; font-family: var(--font-mono, monospace); font-size: 0.875rem; color: #0F172A; background: #FFFFFF; outline: none;" 
+             required autofocus />
+      <button type="submit" 
+              style="height: 44px; padding: 0 1.25rem; background: var(--brand-maroon, #8C033B); color: #FFFFFF; font-size: 0.875rem; font-weight: 600; border: none; border-radius: 6px; cursor: pointer; flex-shrink: 0; display: inline-flex; align-items: center; gap: 0.4rem; transition: background 0.15s ease;">
+        <span>Search Record</span>
+        <span>&rarr;</span>
+      </button>
+    </form>
+    <div style="font-size: 0.75rem; color: #94A3B8; margin-top: 0.65rem;">
+      Students across Levels 100, 200, 300, and 400 are eligible for placement verification.
+    </div>
   </div>
-{% endif %}
+
+  <!-- Student Record Preview Card (Revealed on match) -->
+  {% if query %}
+    <div style="background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 0.75rem; padding: 1.5rem; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);">
+      <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 0.875rem; border-bottom: 1px solid #E2E8F0; margin-bottom: 1rem;">
+        <h3 style="font-size: 0.95rem; font-weight: 700; color: #0F172A; margin: 0;">
+          Search Results for "{{ query }}"
+        </h3>
+        <span style="font-size: 0.75rem; font-weight: 600; background: #F1F5F9; color: #475569; padding: 2px 8px; border-radius: 4px;">
+          {{ students|length }} Match{{ 'es' if students|length != 1 else '' }} Found
+        </span>
+      </div>
+
+      {% if students %}
+        <div style="display: flex; flex-direction: column; gap: 1rem;">
+          {% for st in students %}
+            <div style="border: 1px solid #E2E8F0; border-radius: 8px; padding: 1.25rem; background: #F8FAFC; display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap;">
+              <div style="display: flex; flex-direction: column; gap: 0.35rem;">
+                <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                  <span style="font-family: var(--font-mono, monospace); font-weight: 700; font-size: 0.85rem; background: #FFFFFF; border: 1px solid #CBD5E1; color: var(--brand-maroon, #8C033B); padding: 2px 8px; border-radius: 4px;">
+                    {{ st.index_number }}
+                  </span>
+                  <span style="font-size: 0.75rem; font-weight: 600; background: #E2E8F0; color: #334155; padding: 2px 8px; border-radius: 4px;">
+                    Level {{ st.current_level }}
+                  </span>
+                </div>
+                <div style="font-size: 1.05rem; font-weight: 700; color: #0F172A;">
+                  {{ st.full_name }}
+                </div>
+                <div style="font-size: 0.82rem; color: #64748B;">
+                  <span style="font-weight: 600; color: #334155;">{{ st.programme }}</span> &bull; {{ st.department }}
+                </div>
+              </div>
+
+              <a href="{{ url_for('liaison.verify_and_create_attachment', student_id=st.id) }}" 
+                 style="height: 38px; padding: 0 1rem; background: var(--brand-maroon, #8C033B); color: #FFFFFF; font-size: 0.82rem; font-weight: 600; border-radius: 6px; text-decoration: none; display: inline-flex; align-items: center; gap: 0.4rem; white-space: nowrap; flex-shrink: 0; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+                <span>Verify &amp; Initiate</span>
+                <span>&rarr;</span>
+              </a>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div style="text-align: center; padding: 2.5rem 1rem; color: #64748B;">
+          <span class="material-symbols-outlined" style="font-size: 36px; color: #94A3B8; margin-bottom: 0.5rem; display: block;">person_off</span>
+          <h4 style="color: #0F172A; margin: 0 0 4px 0; font-size: 1rem; font-weight: 700;">No Student Found</h4>
+          <p style="font-size: 0.82rem; max-width: 440px; margin: 0 auto; line-height: 1.5; color: #64748B;">
+            Index Number <strong>"{{ query }}"</strong> does not match any record in the university master dataset. The Liaison Officer cannot proceed until the student's institutional registration is resolved with the Academic Affairs Directorate.
+          </p>
+        </div>
+      {% endif %}
+    </div>
+  {% endif %}
+</div>
 {% endblock %}

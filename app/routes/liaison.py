@@ -278,6 +278,17 @@ def review_acceptance(acceptance_id: int):
     """
     acceptance = AcceptanceRecord.query.get_or_404(acceptance_id)
 
+    pending_list = AcceptanceRecord.query.filter(
+        AcceptanceRecord.status.in_([
+            AcceptanceStatus.PENDING_REVIEW,
+            AcceptanceStatus.PENDING_VERIFICATION,
+            AcceptanceStatus.FLAGGED_BLURRY,
+            AcceptanceStatus.FLAGGED_INCOMPLETE
+        ])
+    ).order_by(AcceptanceRecord.created_at.desc()).limit(25).all()
+    if acceptance not in pending_list:
+        pending_list = [acceptance] + pending_list
+
     if request.method == 'POST':
         decision = request.form.get('decision')
         notes = request.form.get('review_notes', '').strip()
@@ -287,7 +298,7 @@ def review_acceptance(acceptance_id: int):
         if decision == 'approve':
             if not has_stamp or not has_signature:
                 flash('Cannot approve: Institutional policy requires verification of both physical supervisor signature and wet-ink company stamp.', 'danger')
-                return render_template('liaison/review_acceptance.html', acceptance=acceptance)
+                return render_template('liaison/review_acceptance.html', acceptance=acceptance, pending_list=pending_list)
             status = AcceptanceStatus.APPROVED
         elif decision == 'flag_blurry':
             status = AcceptanceStatus.FLAGGED_BLURRY
@@ -308,7 +319,7 @@ def review_acceptance(acceptance_id: int):
         flash(f'Acceptance form for {acceptance.attachment.student.full_name} reviewed with status: {status.upper()}.', 'success')
         return redirect(url_for('liaison.acceptance_queue'))
 
-    return render_template('liaison/review_acceptance.html', acceptance=acceptance)
+    return render_template('liaison/review_acceptance.html', acceptance=acceptance, pending_list=pending_list)
 
 
 @liaison_bp.route('/acceptance/scan/<int:acceptance_id>')

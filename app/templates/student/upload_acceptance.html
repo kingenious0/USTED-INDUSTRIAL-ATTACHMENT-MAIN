@@ -2,88 +2,94 @@
 
 {% block title %}Submit Acceptance Form & Location — USTED U-IAP{% endblock %}
 
+{% block page_breadcrumb %}Acceptance Form Upload{% endblock %}
+
 {% block content %}
-<div class="page-header" style="margin-bottom: 1.5rem;">
+<div style="max-width: 860px; margin: 0 auto; display: flex; flex-direction: column; gap: 1.5rem;">
+
+  <!-- Header -->
   <div>
-    <a href="{{ url_for('student.view_attachment', attachment_id=attachment.id) }}" style="font-size: 0.85rem; color: var(--color-text-muted); text-decoration: none;">&larr; Back to Attachment Dashboard</a>
-    <h1 class="page-title" style="margin-top: 0.25rem; color: var(--color-primary-dark); font-size: 1.65rem; font-weight: 800;">
-      Submit Host Acceptance & Workstation Geolocation
+    <a href="{{ url_for('student.dashboard') }}" style="font-size: 0.85rem; color: #64748B; text-decoration: none; display: inline-flex; align-items: center; gap: 4px; font-weight: 600; margin-bottom: 6px;">
+      <span class="material-symbols-outlined" style="font-size: 16px;">arrow_back</span>
+      <span>Back to Student Workspace</span>
+    </a>
+    <h1 style="font-family: 'Plus Jakarta Sans', sans-serif; color: #0F172A; font-size: 1.65rem; font-weight: 800; margin: 0; letter-spacing: -0.015em;">
+      Submit Host Acceptance &amp; Workstation Geolocation
     </h1>
-    <p class="page-subtitle" style="color: var(--color-text-muted); font-size: 0.9rem;">
+    <p style="color: #64748B; font-size: 0.88rem; margin: 4px 0 0 0;">
       Upload the physically stamped acceptance form and provide exact GIS location details for visiting academic supervisor navigation.
     </p>
   </div>
-</div>
 
-<div style="max-width: 860px; margin: 0 auto;">
   <!-- Physical Requirement Alert -->
-  <div class="card" style="margin-bottom: 1.5rem; background: var(--color-primary-subtle); border-left: 5px solid var(--color-primary); padding: 1.25rem;">
-    <div style="font-size: 0.88rem; color: var(--color-primary-dark);">
-      <strong style="font-size: 0.95rem;">🏛️ Mandatory Institutional Validation Requirement:</strong><br/>
+  <div class="modern-card" style="background: #FDF2F5; border: 1px solid #FECDD3; border-left: 4px solid #7E002F !important; padding: 1.25rem;">
+    <div style="font-size: 0.88rem; color: #7E002F; line-height: 1.5;">
+      <strong style="font-size: 0.95rem;">Mandatory Institutional Requirement:</strong><br/>
       The uploaded document scan/photo MUST clearly display the <strong>official host company wet-ink stamp</strong> and the <strong>authorized supervisor signature</strong>. Submissions without a physical stamp will be rejected by the Industrial Liaison Office.
     </div>
   </div>
 
-  <div class="card" style="box-shadow: var(--shadow-md); border-top: 5px solid var(--color-primary); padding: 2rem;">
+  <!-- Main Upload Card -->
+  <div class="modern-card" style="padding: 2rem;">
     <form method="POST" enctype="multipart/form-data" id="acceptanceForm">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
 
       <!-- Section 1: Company Particulars -->
-      <h3 style="color: var(--color-primary); font-size: 1.05rem; font-weight: 700; border-bottom: 2px solid var(--color-primary-subtle); padding-bottom: 0.5rem; margin-bottom: 1.25rem;">
+      <h3 style="font-family: 'Plus Jakarta Sans', sans-serif; color: #0F172A; font-size: 1.1rem; font-weight: 800; border-bottom: 1px solid #F1F5F9; padding-bottom: 0.5rem; margin: 0 0 1.25rem 0;">
         1. Host Organization Particulars
       </h3>
 
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; margin-bottom: 1.25rem;">
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.25rem; margin-bottom: 1.25rem;">
         <div class="form-group">
-          <label class="form-label" for="company_name" style="font-weight: 700;">
-            Organization / Company Name <span style="color:var(--color-danger)">*</span>
+          <label class="form-label" for="company_name" style="display: block; font-weight: 600; font-size: 0.85rem; color: #334155; margin-bottom: 6px;">
+            Organization / Company Name <span style="color:#BE123C;">*</span>
           </label>
-          <input type="text" id="company_name" name="company_name" class="form-control" required
+          <input type="text" id="company_name" name="company_name" class="modern-input" required
                  value="{{ attachment.acceptance.company_name if attachment.acceptance else (attachment.target_organization or '') }}"
-                 placeholder="e.g. Ghana Grid Company Ltd (GRIDCo)" style="min-height: 44px; font-size: 16px;">
+                 placeholder="e.g. Ghana Grid Company Ltd (GRIDCo)" style="width: 100%; height: 44px; padding: 10px 14px; border: 1px solid #CBD5E1; border-radius: 8px; font-size: 14px;">
         </div>
 
         <div class="form-group">
-          <label class="form-label" for="industry_sector" style="font-weight: 700;">
+          <label class="form-label" for="industry_sector" style="display: block; font-weight: 600; font-size: 0.85rem; color: #334155; margin-bottom: 6px;">
             Nature of Business / Industry Sector
           </label>
-          <input type="text" id="industry_sector" name="industry_sector" class="form-control"
+          <input type="text" id="industry_sector" name="industry_sector" class="modern-input"
                  value="{{ attachment.acceptance.industry_sector if attachment.acceptance else '' }}"
-                 placeholder="e.g. Telecommunications, Civil Engineering, Manufacturing" style="min-height: 44px; font-size: 16px;">
+                 placeholder="e.g. Telecommunications, Civil Engineering, Manufacturing" style="width: 100%; height: 44px; padding: 10px 14px; border: 1px solid #CBD5E1; border-radius: 8px; font-size: 14px;">
         </div>
       </div>
 
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; margin-bottom: 1.25rem;">
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.25rem; margin-bottom: 1.5rem;">
         <div class="form-group">
-          <label class="form-label" for="phone" style="font-weight: 700;">
-            Company Telephone / Reception <span style="color:var(--color-danger)">*</span>
+          <label class="form-label" for="phone" style="display: block; font-weight: 600; font-size: 0.85rem; color: #334155; margin-bottom: 6px;">
+            Company Telephone / Reception <span style="color:#BE123C;">*</span>
           </label>
-          <input type="tel" id="phone" name="phone" class="form-control" required
+          <input type="tel" id="phone" name="phone" class="modern-input" required
                  value="{{ attachment.acceptance.phone if attachment.acceptance else '' }}"
-                 placeholder="e.g. 0322012345 / 0244123456" style="min-height: 44px; font-size: 16px;">
+                 placeholder="e.g. 0322012345 / 0244123456" style="width: 100%; height: 44px; padding: 10px 14px; border: 1px solid #CBD5E1; border-radius: 8px; font-size: 14px;">
         </div>
 
         <div class="form-group">
-          <label class="form-label" for="email" style="font-weight: 700;">
+          <label class="form-label" for="email" style="display: block; font-weight: 600; font-size: 0.85rem; color: #334155; margin-bottom: 6px;">
             Company Email Address
           </label>
-          <input type="email" id="email" name="email" class="form-control"
+          <input type="email" id="email" name="email" class="modern-input"
                  value="{{ attachment.acceptance.email if attachment.acceptance else '' }}"
-                 placeholder="e.g. hr@company.com.gh" style="min-height: 44px; font-size: 16px;">
+                 placeholder="e.g. hr@company.com.gh" style="width: 100%; height: 44px; padding: 10px 14px; border: 1px solid #CBD5E1; border-radius: 8px; font-size: 14px;">
         </div>
       </div>
 
-      <!-- Section 2: Regional Zoning & GIS Location (PRD 3.0 Pipeline 4) -->
-      <h3 style="color: var(--color-primary); font-size: 1.05rem; font-weight: 700; border-bottom: 2px solid var(--color-primary-subtle); padding-bottom: 0.5rem; margin-top: 1.75rem; margin-bottom: 1.25rem;">
-        2. Regional Zoning & Exact Workstation Location
+      <!-- Section 2: Regional Zoning & GIS Location -->
+      <h3 style="font-family: 'Plus Jakarta Sans', sans-serif; color: #0F172A; font-size: 1.1rem; font-weight: 800; border-bottom: 1px solid #F1F5F9; padding-bottom: 0.5rem; margin: 1.75rem 0 1.25rem 0;">
+        2. Regional Zoning &amp; Exact Workstation Location
       </h3>
 
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; margin-bottom: 1.25rem;">
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.25rem; margin-bottom: 1.25rem;">
         <div class="form-group">
-          <label class="form-label" for="region" style="font-weight: 700;">
-            Ghanaian Administrative Region <span style="color:var(--color-danger)">*</span>
+          <label class="form-label" for="region" style="display: block; font-weight: 600; font-size: 0.85rem; color: #334155; margin-bottom: 6px;">
+            Ghanaian Administrative Region <span style="color:#BE123C;">*</span>
           </label>
-          <select id="region" name="region" class="form-control" required style="min-height: 44px; font-size: 16px;">
+          <select id="region" name="region" class="modern-input" required style="width: 100%; height: 44px; padding: 10px 14px; border: 1px solid #CBD5E1; border-radius: 8px; font-size: 14px; background: #FFFFFF;">
             <option value="">-- Select Region --</option>
             {% set current_reg = attachment.acceptance.region if attachment.acceptance else '' %}
             <option value="Ashanti Region" {% if current_reg == 'Ashanti Region' %}selected{% endif %}>Ashanti Region</option>
@@ -106,112 +112,114 @@
         </div>
 
         <div class="form-group">
-          <label class="form-label" for="district_town" style="font-weight: 700;">
-            District / Town / Suburb <span style="color:var(--color-danger)">*</span>
+          <label class="form-label" for="district_town" style="display: block; font-weight: 600; font-size: 0.85rem; color: #334155; margin-bottom: 6px;">
+            District / Town / Suburb <span style="color:#BE123C;">*</span>
           </label>
-          <input type="text" id="district_town" name="district_town" class="form-control" required
+          <input type="text" id="district_town" name="district_town" class="modern-input" required
                  value="{{ attachment.acceptance.district_town if attachment.acceptance else '' }}"
-                 placeholder="e.g. Asokwa / Adum / Tema Comm. 1" style="min-height: 44px; font-size: 16px;">
+                 placeholder="e.g. Asokwa / Adum / Tema Comm. 1" style="width: 100%; height: 44px; padding: 10px 14px; border: 1px solid #CBD5E1; border-radius: 8px; font-size: 14px;">
         </div>
       </div>
 
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; margin-bottom: 1.25rem;">
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.25rem; margin-bottom: 1.25rem;">
         <div class="form-group">
-          <label class="form-label" for="gps_address" style="font-weight: 700;">
+          <label class="form-label" for="gps_address" style="display: block; font-weight: 600; font-size: 0.85rem; color: #334155; margin-bottom: 6px;">
             Ghana Post Digital Address (GPS)
           </label>
-          <input type="text" id="gps_address" name="gps_address" class="form-control"
+          <input type="text" id="gps_address" name="gps_address" class="modern-input"
                  value="{{ attachment.acceptance.gps_address if attachment.acceptance else '' }}"
-                 placeholder="e.g. AK-039-2345" style="min-height: 44px; font-size: 16px; text-transform: uppercase;">
-          <small style="color: var(--color-text-muted); font-size: 0.78rem;">National digital property addressing code.</small>
+                 placeholder="e.g. AK-039-2345" style="width: 100%; height: 44px; padding: 10px 14px; border: 1px solid #CBD5E1; border-radius: 8px; font-size: 14px; text-transform: uppercase;">
+          <small style="color: #64748B; font-size: 0.78rem; display: block; margin-top: 4px;">National digital property addressing code.</small>
         </div>
 
         <div class="form-group">
-          <label class="form-label" for="landmark" style="font-weight: 700;">
+          <label class="form-label" for="landmark" style="display: block; font-weight: 600; font-size: 0.85rem; color: #334155; margin-bottom: 6px;">
             Nearest Landmark / Driving Direction
           </label>
-          <input type="text" id="landmark" name="landmark" class="form-control"
+          <input type="text" id="landmark" name="landmark" class="modern-input"
                  value="{{ attachment.acceptance.landmark if attachment.acceptance else '' }}"
-                 placeholder="e.g. Opposite Shell Filling Station, Near Police Barrier" style="min-height: 44px; font-size: 16px;">
+                 placeholder="e.g. Opposite Shell Filling Station, Near Police Barrier" style="width: 100%; height: 44px; padding: 10px 14px; border: 1px solid #CBD5E1; border-radius: 8px; font-size: 14px;">
         </div>
       </div>
 
       <!-- Geolocation Coordinates & Device Capture Button -->
-      <div style="background: var(--color-surface); padding: 1.25rem; border-radius: var(--radius-sm); border: 1px solid var(--color-border); margin-bottom: 1.5rem;">
+      <div style="background: #F8FAFC; padding: 1.25rem; border-radius: 10px; border: 1px solid #E2E8F0; margin-bottom: 1.5rem;">
         <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 0.75rem;">
           <div>
-            <strong style="font-size: 0.92rem; color: var(--color-primary-dark);">🛰️ Workstation GIS Coordinates</strong>
-            <div style="font-size: 0.8rem; color: var(--color-text-muted);">Enables one-tap Google Maps turn-by-turn navigation for your visiting supervisor.</div>
+            <strong style="font-size: 0.92rem; color: #0F172A;">Workstation GIS Coordinates</strong>
+            <div style="font-size: 0.8rem; color: #64748B;">Enables one-tap Google Maps turn-by-turn navigation for your visiting supervisor.</div>
           </div>
-          <button type="button" class="btn btn-secondary btn-sm" onclick="captureCoordinates()" id="geoBtn" style="font-weight: 700; min-height: 38px;">
-            📍 Capture My Device Location
+          <button type="button" class="btn-modern-secondary btn-modern-sm" onclick="captureCoordinates()" id="geoBtn">
+            <span class="material-symbols-outlined" style="font-size: 16px;">my_location</span>
+            <span>Capture My Device Location</span>
           </button>
         </div>
         <div id="geoStatus" style="font-size: 0.82rem; margin-bottom: 0.75rem; display: none;"></div>
 
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
           <div>
-            <label for="latitude" style="font-size: 0.8rem; font-weight: 600; color: var(--color-text-muted);">Latitude</label>
-            <input type="number" step="any" id="latitude" name="latitude" class="form-control"
+            <label for="latitude" style="font-size: 0.8rem; font-weight: 600; color: #475569; display: block; margin-bottom: 4px;">Latitude</label>
+            <input type="number" step="any" id="latitude" name="latitude" class="modern-input"
                    value="{{ attachment.acceptance.latitude if attachment.acceptance and attachment.acceptance.latitude else '' }}"
-                   placeholder="e.g. 6.67451" style="min-height: 40px; font-size: 14px;"/>
+                   placeholder="e.g. 6.67451" style="width: 100%; height: 40px; padding: 8px 12px; border: 1px solid #CBD5E1; border-radius: 6px; font-size: 14px;"/>
           </div>
           <div>
-            <label for="longitude" style="font-size: 0.8rem; font-weight: 600; color: var(--color-text-muted);">Longitude</label>
-            <input type="number" step="any" id="longitude" name="longitude" class="form-control"
+            <label for="longitude" style="font-size: 0.8rem; font-weight: 600; color: #475569; display: block; margin-bottom: 4px;">Longitude</label>
+            <input type="number" step="any" id="longitude" name="longitude" class="modern-input"
                    value="{{ attachment.acceptance.longitude if attachment.acceptance and attachment.acceptance.longitude else '' }}"
-                   placeholder="e.g. -1.57142" style="min-height: 40px; font-size: 14px;"/>
+                   placeholder="e.g. -1.57142" style="width: 100%; height: 40px; padding: 8px 12px; border: 1px solid #CBD5E1; border-radius: 6px; font-size: 14px;"/>
           </div>
         </div>
       </div>
 
       <!-- Section 3: Workplace Supervisor -->
-      <h3 style="color: var(--color-primary); font-size: 1.05rem; font-weight: 700; border-bottom: 2px solid var(--color-primary-subtle); padding-bottom: 0.5rem; margin-top: 1.75rem; margin-bottom: 1.25rem;">
+      <h3 style="font-family: 'Plus Jakarta Sans', sans-serif; color: #0F172A; font-size: 1.1rem; font-weight: 800; border-bottom: 1px solid #F1F5F9; padding-bottom: 0.5rem; margin: 1.75rem 0 1.25rem 0;">
         3. Assigned Industry Host Supervisor Details
       </h3>
 
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; margin-bottom: 1.25rem;">
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.25rem; margin-bottom: 1.5rem;">
         <div class="form-group">
-          <label class="form-label" for="supervisor_name" style="font-weight: 700;">
-            Industry Supervisor Name & Title
+          <label class="form-label" for="supervisor_name" style="display: block; font-weight: 600; font-size: 0.85rem; color: #334155; margin-bottom: 6px;">
+            Industry Supervisor Name &amp; Title
           </label>
-          <input type="text" id="supervisor_name" name="supervisor_name" class="form-control"
+          <input type="text" id="supervisor_name" name="supervisor_name" class="modern-input"
                  value="{{ attachment.acceptance.supervisor_name if attachment.acceptance else '' }}"
-                 placeholder="e.g. Ing. Michael Appiah (Head of Engineering)" style="min-height: 44px; font-size: 16px;">
+                 placeholder="e.g. Ing. Michael Appiah (Head of Engineering)" style="width: 100%; height: 44px; padding: 10px 14px; border: 1px solid #CBD5E1; border-radius: 8px; font-size: 14px;">
         </div>
 
         <div class="form-group">
-          <label class="form-label" for="supervisor_phone" style="font-weight: 700;">
+          <label class="form-label" for="supervisor_phone" style="display: block; font-weight: 600; font-size: 0.85rem; color: #334155; margin-bottom: 6px;">
             Industry Supervisor Phone (MTN / Telecel / AT)
           </label>
-          <input type="tel" id="supervisor_phone" name="supervisor_phone" class="form-control"
+          <input type="tel" id="supervisor_phone" name="supervisor_phone" class="modern-input"
                  value="{{ attachment.acceptance.supervisor_phone if attachment.acceptance else '' }}"
-                 placeholder="e.g. 0244987654" style="min-height: 44px; font-size: 16px;">
-          <small style="color: var(--color-text-muted); font-size: 0.78rem;">Must be a valid Ghanaian mobile number.</small>
+                 placeholder="e.g. 0244987654" style="width: 100%; height: 44px; padding: 10px 14px; border: 1px solid #CBD5E1; border-radius: 8px; font-size: 14px;">
+          <small style="color: #64748B; font-size: 0.78rem; display: block; margin-top: 4px;">Must be a valid Ghanaian mobile number.</small>
         </div>
       </div>
 
       <!-- Section 4: Document File Upload -->
-      <h3 style="color: var(--color-primary); font-size: 1.05rem; font-weight: 700; border-bottom: 2px solid var(--color-primary-subtle); padding-bottom: 0.5rem; margin-top: 1.75rem; margin-bottom: 1.25rem;">
+      <h3 style="font-family: 'Plus Jakarta Sans', sans-serif; color: #0F172A; font-size: 1.1rem; font-weight: 800; border-bottom: 1px solid #F1F5F9; padding-bottom: 0.5rem; margin: 1.75rem 0 1.25rem 0;">
         4. Stamped Acceptance Form Document
       </h3>
 
       <div class="form-group" style="margin-bottom: 2rem;">
-        <label class="form-label" for="acceptance_scan" style="font-weight: 700;">
-          Select Stamped Scan / High-Resolution Photo <span style="color:var(--color-danger)">*</span>
+        <label class="form-label" for="acceptance_scan" style="display: block; font-weight: 600; font-size: 0.85rem; color: #334155; margin-bottom: 6px;">
+          Select Stamped Scan / High-Resolution Photo <span style="color:#BE123C;">*</span>
         </label>
-        <input type="file" id="acceptance_scan" name="acceptance_scan" class="form-control" required accept=".pdf, .png, .jpg, .jpeg" style="min-height: 44px; font-size: 15px; padding: 0.5rem;">
-        <p class="form-hint" style="font-size: 0.82rem; color: var(--color-text-muted); margin-top: 0.35rem;">
+        <input type="file" id="acceptance_scan" name="acceptance_scan" required accept=".pdf, .png, .jpg, .jpeg" 
+               style="width: 100%; height: 44px; padding: 8px 12px; border: 1px dashed #CBD5E1; border-radius: 8px; font-size: 14px; background: #F8FAFC;">
+        <p style="font-size: 0.82rem; color: #64748B; margin-top: 6px;">
           Accepted formats: <strong>PDF, PNG, JPG, JPEG</strong> (Max: <strong>10 MB</strong>). Ensure wet-ink stamp, company letterhead, and supervisor signature are sharply visible.
         </p>
       </div>
 
-      <div style="display: flex; justify-content: flex-end; gap: 1rem; align-items: center;">
-        <a href="{{ url_for('student.view_attachment', attachment_id=attachment.id) }}" class="btn btn-secondary">
+      <div style="display: flex; justify-content: flex-end; gap: 1rem; align-items: center; border-top: 1px solid #F1F5F9; padding-top: 1.25rem;">
+        <a href="{{ url_for('student.dashboard') }}" class="btn-modern-secondary">
           Cancel
         </a>
-        <button type="submit" class="btn btn-primary" style="min-height: 44px; font-size: 0.95rem; font-weight: 700; padding: 0.65rem 1.75rem;">
-          Upload & Submit for Liaison Verification &rarr;
+        <button type="submit" class="btn-modern-primary" style="padding: 11px 24px;">
+          <span>Upload &amp; Submit for Liaison Verification &rarr;</span>
         </button>
       </div>
     </form>
@@ -227,13 +235,13 @@ function captureCoordinates() {
 
   if (!navigator.geolocation) {
     statusEl.style.display = 'block';
-    statusEl.style.color = 'var(--color-danger)';
+    statusEl.style.color = '#BE123C';
     statusEl.innerHTML = '⚠️ Geolocation is not supported by your device/browser. Please type coordinates manually.';
     return;
   }
 
   statusEl.style.display = 'block';
-  statusEl.style.color = 'var(--color-primary)';
+  statusEl.style.color = '#7E002F';
   statusEl.innerHTML = '⏳ Acquiring GPS lock from device satellite/network sensor...';
   btn.disabled = true;
 
@@ -241,12 +249,12 @@ function captureCoordinates() {
     (position) => {
       latInput.value = position.coords.latitude.toFixed(6);
       lngInput.value = position.coords.longitude.toFixed(6);
-      statusEl.style.color = 'var(--color-success)';
+      statusEl.style.color = '#15803D';
       statusEl.innerHTML = `✓ Exact GPS captured (Accuracy: within &plusmn;${Math.round(position.coords.accuracy)} meters).`;
       btn.disabled = false;
     },
     (error) => {
-      statusEl.style.color = 'var(--color-danger)';
+      statusEl.style.color = '#BE123C';
       statusEl.innerHTML = `⚠️ Geolocation error (${error.message}). Please permit location access or enter coordinates manually.`;
       btn.disabled = false;
     },

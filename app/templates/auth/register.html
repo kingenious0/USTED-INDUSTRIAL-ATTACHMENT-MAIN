@@ -1,118 +1,121 @@
 {% extends "base.html" %}
 
-{% block title %}Remote Student Onboarding — USTED Industrial Attachment Portal (U-IAP){% endblock %}
+{% block title %}Remote Student Registration — USTED U-IAP{% endblock %}
 
 {% block content %}
-<div style="max-width: 520px; margin: 2rem auto;">
-  <div class="card" style="border-top: 5px solid var(--color-primary); padding: 2.25rem 2rem;">
-    <div style="text-align: center; margin-bottom: 1.5rem;">
-      <div style="width: 64px; height: 64px; margin: 0 auto 0.75rem auto;">
+<div style="min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 2rem 1rem; background: #F8FAFC;">
+  <div class="modern-card" style="width: 100%; max-width: 480px; padding: 2.5rem 2.25rem;">
+    
+    <div style="text-align: center; margin-bottom: 2rem;">
+      <div style="width: 64px; height: 64px; margin: 0 auto 1rem auto;">
         <img src="{{ url_for('static', filename='img/crest.svg') }}" alt="USTED Crest" width="64" height="64"/>
       </div>
-      <h1 style="color: var(--color-primary-dark); font-size: 1.5rem; font-weight: 800; letter-spacing: -0.01em; margin-bottom: 0.25rem;">
-        Remote Student Registration
+      <h1 style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 1.5rem; font-weight: 800; color: #0F172A; margin: 0 0 6px 0; letter-spacing: -0.015em;">
+        Student Self-Registration
       </h1>
-      <p style="color: var(--color-text-muted); font-size: 0.88rem;">
-        Self-onboard using your official USTED University Index Number.
+      <p style="font-size: 0.88rem; color: #64748B; margin: 0;">
+        Create your portal login using your verified University Index Number.
       </p>
     </div>
 
     <!-- Notice Box -->
-    <div style="background: var(--color-primary-subtle); border-left: 4px solid var(--color-primary); padding: 0.85rem 1rem; border-radius: 4px; margin-bottom: 1.5rem; font-size: 0.82rem; color: var(--color-primary-dark); line-height: 1.5;">
-      <strong>Institutional Verification Notice:</strong> Your index number must exist in the official USTED student master database. If you have not been verified at the Liaison desk, your attachment will undergo asynchronous physical verification.
+    <div style="background: #FDF2F5; border-left: 4px solid #7E002F; padding: 12px 14px; border-radius: 6px; margin-bottom: 1.5rem; font-size: 0.82rem; color: #7E002F; line-height: 1.5;">
+      <strong>Institutional Notice:</strong> Your index number must exist in the official USTED student master database. If you already have your Introductory Letter QR, please scan it to activate immediately.
     </div>
 
     <form method="POST" action="{{ url_for('auth.register') }}">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
 
       <div class="form-group" style="margin-bottom: 1.25rem;">
-        <label for="index_number" class="form-label" style="font-weight: 700; font-size: 0.88rem;">
-          University Index Number <span style="color: var(--color-danger);">*</span>
+        <label for="index_number" style="display: block; font-weight: 600; font-size: 0.85rem; color: #334155; margin-bottom: 6px;">
+          University Index Number <span style="color: #BE123C;">*</span>
         </label>
-        <input
-          type="text"
-          id="index_number"
-          name="index_number"
-          class="form-control"
-          placeholder="e.g. 5230100452"
-          value="{{ index_number or '' }}"
-          required
-          style="min-height: 44px; font-size: 16px;"
-        />
+        <div style="position: relative;">
+          <input
+            type="text"
+            id="index_number"
+            name="index_number"
+            class="modern-input"
+            placeholder="e.g. 5201040001"
+            value="{{ index_number or '' }}"
+            required
+            style="width: 100%; height: 44px; padding: 10px 14px; border: 1px solid #CBD5E1; border-radius: 8px; font-size: 14px;"
+          />
+        </div>
       </div>
 
       <div class="form-group" style="margin-bottom: 1.25rem;">
-        <label for="phone" class="form-label" style="font-weight: 700; font-size: 0.88rem;">
-          Ghanaian Mobile Phone Number <span style="color: var(--color-danger);">*</span>
+        <label for="phone" style="display: block; font-weight: 600; font-size: 0.85rem; color: #334155; margin-bottom: 4px;">
+          Ghanaian Mobile Phone Number <span style="color: #BE123C;">*</span>
         </label>
-        <span style="display: block; font-size: 0.78rem; color: var(--color-text-muted); margin-bottom: 0.35rem;">
+        <span style="display: block; font-size: 0.78rem; color: #64748B; margin-bottom: 6px;">
           Must begin with 020, 024, 054, 055, 059, etc.
         </span>
         <input
           type="tel"
           id="phone"
           name="phone"
-          class="form-control"
+          class="modern-input"
           placeholder="e.g. 0244123456"
           value="{{ phone or '' }}"
           required
-          style="min-height: 44px; font-size: 16px;"
+          style="width: 100%; height: 44px; padding: 10px 14px; border: 1px solid #CBD5E1; border-radius: 8px; font-size: 14px;"
         />
       </div>
 
       <div class="form-group" style="margin-bottom: 1.25rem;">
-        <label for="email" class="form-label" style="font-weight: 700; font-size: 0.88rem;">
+        <label for="email" style="display: block; font-weight: 600; font-size: 0.85rem; color: #334155; margin-bottom: 6px;">
           Institutional / Personal Email
         </label>
         <input
           type="email"
           id="email"
           name="email"
-          class="form-control"
-          placeholder="e.g. yourname@st.usted.edu.gh"
+          class="modern-input"
+          placeholder="e.g. student@st.usted.edu.gh"
           value="{{ email or '' }}"
-          style="min-height: 44px; font-size: 16px;"
+          style="width: 100%; height: 44px; padding: 10px 14px; border: 1px solid #CBD5E1; border-radius: 8px; font-size: 14px;"
         />
       </div>
 
       <div class="form-group" style="margin-bottom: 1.25rem;">
-        <label for="password" class="form-label" style="font-weight: 700; font-size: 0.88rem;">
-          Password <span style="color: var(--color-danger);">*</span>
+        <label for="password" style="display: block; font-weight: 600; font-size: 0.85rem; color: #334155; margin-bottom: 6px;">
+          Password <span style="color: #BE123C;">*</span>
         </label>
         <input
           type="password"
           id="password"
           name="password"
-          class="form-control"
+          class="modern-input"
           placeholder="Minimum 6 characters"
           required
-          style="min-height: 44px; font-size: 16px;"
+          style="width: 100%; height: 44px; padding: 10px 14px; border: 1px solid #CBD5E1; border-radius: 8px; font-size: 14px;"
         />
       </div>
 
       <div class="form-group" style="margin-bottom: 1.75rem;">
-        <label for="confirm_password" class="form-label" style="font-weight: 700; font-size: 0.88rem;">
-          Confirm Password <span style="color: var(--color-danger);">*</span>
+        <label for="confirm_password" style="display: block; font-weight: 600; font-size: 0.85rem; color: #334155; margin-bottom: 6px;">
+          Confirm Password <span style="color: #BE123C;">*</span>
         </label>
         <input
           type="password"
           id="confirm_password"
           name="confirm_password"
-          class="form-control"
-          placeholder="••••••••"
+          class="modern-input"
+          placeholder="••••••••••••"
           required
-          style="min-height: 44px; font-size: 16px;"
+          style="width: 100%; height: 44px; padding: 10px 14px; border: 1px solid #CBD5E1; border-radius: 8px; font-size: 14px;"
         />
       </div>
 
-      <button type="submit" class="btn btn-primary btn-block" style="min-height: 44px; font-size: 1rem; font-weight: 700;">
-        Register & Enter Student Portal &rarr;
+      <button type="submit" class="btn-modern-primary" style="width: 100%; height: 44px; font-size: 15px; font-weight: 700;">
+        <span>Register &amp; Enter Portal &rarr;</span>
       </button>
     </form>
 
-    <div style="margin-top: 1.5rem; text-align: center; font-size: 0.85rem;">
-      <span style="color: var(--color-text-muted);">Already have an account?</span>
-      <a href="{{ url_for('auth.login') }}" style="color: var(--color-primary); font-weight: 700; margin-left: 0.25rem;">Sign In</a>
+    <div style="margin-top: 1.75rem; text-align: center; font-size: 0.85rem; border-top: 1px solid #F1F5F9; padding-top: 1.25rem;">
+      <span style="color: #64748B;">Already have an account?</span>
+      <a href="{{ url_for('auth.login') }}" style="color: #7E002F; font-weight: 700; margin-left: 0.25rem;">Sign In</a>
     </div>
   </div>
 </div>

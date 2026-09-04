@@ -1,53 +1,64 @@
 {% extends "base.html" %}
 
 {% block title %}Supervision — {{ attachment.student.full_name }} — USTED U-IAP{% endblock %}
+{% block page_breadcrumb %}Academic Supervision / Student Profile{% endblock %}
 
 {% block content %}
 <div class="page-header" style="margin-bottom: 1.5rem;">
   <div>
-    <a href="{{ url_for('supervisor.dashboard') }}" style="font-size: 0.85rem; color: var(--color-text-muted); text-decoration: none;">&larr; Back to Supervision Roster</a>
-    <h1 class="page-title" style="margin-top: 0.35rem; color: var(--color-primary-dark); font-size: 1.65rem; font-weight: 800;">
-      Student Supervision Profile
+    <a href="{{ url_for('supervisor.dashboard') }}" style="font-size: 0.82rem; color: var(--color-text-muted); text-decoration: none; display: inline-flex; align-items: center; gap: 4px; margin-bottom: 0.35rem;">
+      <span class="material-symbols-outlined" style="font-size: 16px;">arrow_back</span>
+      <span>Back to Supervision Roster</span>
+    </a>
+    <h1 class="page-title" style="font-size: 1.5rem; font-weight: 800; color: var(--color-text-main);">
+      {{ attachment.student.full_name }}
     </h1>
-    <p class="page-subtitle" style="color: var(--color-text-muted); font-size: 0.9rem;">
-      {{ attachment.student.full_name }} ({{ attachment.student.index_number }}) &bull; {{ attachment.student.programme }}
+    <p class="page-subtitle" style="color: var(--color-text-muted); font-size: 0.88rem; margin-top: 0.2rem;">
+      Index: <strong>{{ attachment.student.index_number }}</strong> &bull; {{ attachment.student.programme }} &bull; Level {{ attachment.student.level }}
     </p>
   </div>
-  <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
-    <a href="{{ url_for('supervisor.log_visit', attachment_id=attachment.id) }}" class="btn btn-primary btn-sm" style="font-weight: 700;">
-      ➕ Log Field Visit
+  <div style="display: flex; gap: 0.6rem; flex-wrap: wrap; align-items: center;">
+    <a href="{{ url_for('supervisor.log_visit', attachment_id=attachment.id) }}" class="btn btn-primary btn-sm" style="display: inline-flex; align-items: center; gap: 6px;">
+      <span class="material-symbols-outlined" style="font-size: 16px;">add_circle</span>
+      <span>Log Field Visit</span>
     </a>
     {% if nav_url %}
-    <a href="{{ nav_url }}" target="_blank" rel="noopener noreferrer" class="btn btn-secondary btn-sm" style="font-weight: 700; color: #0284c7; border-color: #38bdf8;">
-      🗺️ Navigate via Google Maps &rarr;
+    <a href="{{ nav_url }}" target="_blank" rel="noopener noreferrer" class="btn btn-secondary btn-sm" style="display: inline-flex; align-items: center; gap: 6px;">
+      <span class="material-symbols-outlined" style="font-size: 16px; color: #0284C7;">navigation</span>
+      <span>Navigate via Google Maps &rarr;</span>
     </a>
     {% endif %}
-    <a href="{{ url_for('student.download_compiled_report', attachment_id=attachment.id) }}" class="btn btn-outline btn-sm">
-      Download Compiled Logbook (PDF)
+    <a href="{{ url_for('student.download_compiled_report', attachment_id=attachment.id) }}" class="btn btn-secondary btn-sm" style="display: inline-flex; align-items: center; gap: 6px;">
+      <span class="material-symbols-outlined" style="font-size: 16px;">download</span>
+      <span>Download Compiled Logbook (PDF)</span>
     </a>
   </div>
 </div>
 
-<div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem;">
-  <div>
+<div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem; align-items: start;">
+  <div style="display: flex; flex-direction: column; gap: 1.5rem;">
     <!-- Placement Information -->
-    <div class="card" style="margin-bottom: 1.5rem; border-top: 4px solid var(--color-primary);">
+    <div class="modern-card">
       <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
-        <h3 class="card-title" style="color: var(--color-primary-dark); font-weight: 700;">Placement & Workplace Details</h3>
+        <div>
+          <h3 class="card-title" style="font-size: 1rem; font-weight: 700; color: var(--color-text-main); margin: 0;">Placement &amp; Workplace Details</h3>
+          <p class="card-subtitle" style="font-size: 0.78rem; color: var(--color-text-muted); margin: 2px 0 0 0;">Verified workplace parameters from validated acceptance documentation</p>
+        </div>
         {% if nav_url %}
-        <a href="{{ nav_url }}" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-secondary" style="color: #0284c7; font-weight: 700;">
-          🗺️ Open in Google Maps
+        <a href="{{ nav_url }}" target="_blank" rel="noopener noreferrer" class="btn btn-secondary btn-sm" style="display: inline-flex; align-items: center; gap: 4px; font-size: 0.78rem;">
+          <span class="material-symbols-outlined" style="font-size: 14px; color: #0284C7;">pin_drop</span>
+          <span>Google Maps</span>
         </a>
         {% endif %}
       </div>
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; font-size: 0.9rem; padding: 1.25rem;">
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; font-size: 0.88rem; padding: 1.25rem 1.5rem;">
         <div>
-          <span style="color:var(--color-text-muted); font-size:0.8rem; display:block;">Host Organization:</span>
-          <strong style="color: var(--color-primary-dark);">{{ attachment.target_organization or (attachment.acceptance.company_name if attachment.acceptance else 'Pending') }}</strong>
+          <span style="color: var(--color-text-muted); font-size: 0.75rem; text-transform: uppercase; font-weight: 600; display: block; margin-bottom: 2px;">Host Organization</span>
+          <strong style="color: var(--color-text-main); font-size: 0.95rem;">{{ attachment.target_organization or (attachment.acceptance.company_name if attachment.acceptance else 'Pending') }}</strong>
         </div>
         <div>
-          <span style="color:var(--color-text-muted); font-size:0.8rem; display:block;">Region & District/Town:</span>
-          <span>
+          <span style="color: var(--color-text-muted); font-size: 0.75rem; text-transform: uppercase; font-weight: 600; display: block; margin-bottom: 2px;">Region &amp; District/Town</span>
+          <span style="color: var(--color-text-main);">
             {% if attachment.acceptance and attachment.acceptance.region %}
               <strong>{{ attachment.acceptance.region }}</strong> &bull; {{ attachment.acceptance.district_town or 'Main Town' }}
             {% else %}
@@ -56,28 +67,28 @@
           </span>
         </div>
         <div>
-          <span style="color:var(--color-text-muted); font-size:0.8rem; display:block;">Ghana Post GPS / Landmark:</span>
+          <span style="color: var(--color-text-muted); font-size: 0.75rem; text-transform: uppercase; font-weight: 600; display: block; margin-bottom: 2px;">Ghana Post GPS / Landmark</span>
           <span>
             {% if attachment.acceptance and attachment.acceptance.gps_address %}
-              <code style="color: #0284c7; font-weight: 700;">{{ attachment.acceptance.gps_address }}</code>
-              {% if attachment.acceptance.landmark %} (Near {{ attachment.acceptance.landmark }}){% endif %}
+              <code style="font-family: var(--font-mono, monospace); color: var(--color-primary); font-weight: 700; background: #F8FAFC; padding: 2px 6px; border-radius: 4px; border: 1px solid #E2E8F0;">{{ attachment.acceptance.gps_address }}</code>
+              {% if attachment.acceptance.landmark %} <span style="color: var(--color-text-muted); font-size: 0.8rem;">(Near {{ attachment.acceptance.landmark }})</span>{% endif %}
             {% else %}
               <span style="color: var(--color-text-muted);">Not provided</span>
             {% endif %}
           </span>
         </div>
         <div>
-          <span style="color:var(--color-text-muted); font-size:0.8rem; display:block;">Attachment Period:</span>
-          <span>{{ attachment.commencement_date.strftime('%d/%m/%Y') }} to {{ attachment.end_date.strftime('%d/%m/%Y') }} ({{ attachment.duration_weeks }} Wks)</span>
+          <span style="color: var(--color-text-muted); font-size: 0.75rem; text-transform: uppercase; font-weight: 600; display: block; margin-bottom: 2px;">Attachment Period</span>
+          <span style="color: var(--color-text-main);">{{ attachment.commencement_date.strftime('%d/%m/%Y') }} to {{ attachment.end_date.strftime('%d/%m/%Y') }} ({{ attachment.duration_weeks }} Weeks)</span>
         </div>
         <div>
-          <span style="color:var(--color-text-muted); font-size:0.8rem; display:block;">Student Contact:</span>
-          <span>{{ attachment.student.phone or 'N/A' }} | {{ attachment.student.email or 'N/A' }}</span>
+          <span style="color: var(--color-text-muted); font-size: 0.75rem; text-transform: uppercase; font-weight: 600; display: block; margin-bottom: 2px;">Student Contact</span>
+          <span style="color: var(--color-text-main);">{{ attachment.student.phone or 'N/A' }} | {{ attachment.student.email or 'N/A' }}</span>
         </div>
         {% if attachment.acceptance %}
           <div>
-            <span style="color:var(--color-text-muted); font-size:0.8rem; display:block;">Workplace Supervisor:</span>
-            <strong>{{ attachment.acceptance.supervisor_name or 'Not recorded' }}</strong>
+            <span style="color: var(--color-text-muted); font-size: 0.75rem; text-transform: uppercase; font-weight: 600; display: block; margin-bottom: 2px;">Workplace Supervisor</span>
+            <strong style="color: var(--color-text-main);">{{ attachment.acceptance.supervisor_name or 'Not recorded' }}</strong>
             <div style="font-size: 0.8rem; color: var(--color-text-muted);">Tel: {{ attachment.acceptance.supervisor_phone or '—' }}</div>
           </div>
         {% endif %}
@@ -85,19 +96,23 @@
     </div>
 
     <!-- Institutional Supervision Visits Log -->
-    <div class="card" style="margin-bottom: 1.5rem; border-top: 4px solid var(--color-accent-gold);">
+    <div class="modern-card">
       <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
-        <h3 class="card-title" style="color: var(--color-primary-dark); font-weight: 700;">
-          Institutional Supervisory Visits ({{ visits|length if visits else 0 }})
-        </h3>
-        <a href="{{ url_for('supervisor.log_visit', attachment_id=attachment.id) }}" class="btn btn-primary btn-sm" style="font-weight: 700;">
-          ➕ Record Visit
+        <div>
+          <h3 class="card-title" style="font-size: 1rem; font-weight: 700; color: var(--color-text-main); margin: 0;">
+            Institutional Supervisory Visits ({{ visits|length if visits else 0 }})
+          </h3>
+          <p class="card-subtitle" style="font-size: 0.78rem; color: var(--color-text-muted); margin: 2px 0 0 0;">Formal university field audit log and evaluation entries</p>
+        </div>
+        <a href="{{ url_for('supervisor.log_visit', attachment_id=attachment.id) }}" class="btn btn-primary btn-sm" style="display: inline-flex; align-items: center; gap: 4px;">
+          <span class="material-symbols-outlined" style="font-size: 16px;">add</span>
+          <span>Record Visit</span>
         </a>
       </div>
       <div class="table-responsive">
-        <table class="table" style="font-size: 0.88rem;">
+        <table class="table modern-table" style="font-size: 0.88rem; margin-bottom: 0;">
           <thead>
-            <tr style="background: var(--color-surface);">
+            <tr>
               <th>Visit Date</th>
               <th>Mode</th>
               <th>Presence Check</th>
@@ -108,36 +123,43 @@
           <tbody>
             {% for v in visits %}
             <tr>
-              <td><strong>{{ v.visit_date.strftime('%d/%m/%Y') }}</strong></td>
+              <td><strong style="font-family: var(--font-mono, monospace); color: var(--color-text-main);">{{ v.visit_date.strftime('%d/%m/%Y') }}</strong></td>
               <td>
-                <span class="badge" style="background: var(--color-primary-subtle); color: var(--color-primary); font-weight: 600;">
+                <span class="badge badge-secondary" style="font-size: 0.75rem;">
                   {{ v.visit_type.replace('_', ' ').title() }}
                 </span>
               </td>
               <td>
-                <div>Student: {% if v.student_present %}<span style="color: var(--color-success); font-weight: 700;">✓ Present</span>{% else %}<span style="color: var(--color-danger); font-weight: 700;">✗ Absent</span>{% endif %}</div>
-                <div style="font-size: 0.78rem; color: var(--color-text-muted);">Host Contact: {% if v.supervisor_contacted %}Yes{% else %}No{% endif %}</div>
+                <div style="display: flex; align-items: center; gap: 6px;">
+                  {% if v.student_present %}
+                    <span class="badge badge-success" style="font-size: 0.72rem;">✓ Present</span>
+                  {% else %}
+                    <span class="badge badge-danger" style="font-size: 0.72rem;">✗ Absent</span>
+                  {% endif %}
+                </div>
+                <div style="font-size: 0.78rem; color: var(--color-text-muted); margin-top: 2px;">Host Met: {% if v.supervisor_contacted %}Yes{% else %}No{% endif %}</div>
               </td>
               <td style="max-width: 250px;">
-                <div style="font-size: 0.85rem;">{{ v.general_remarks }}</div>
+                <div style="font-size: 0.85rem; color: var(--color-text-main);">{{ v.general_remarks }}</div>
                 {% if v.action_items %}
-                <div style="font-size: 0.78rem; color: var(--color-text-muted); margin-top: 0.2rem;">
-                  <strong>Action:</strong> {{ v.action_items }}
+                <div style="font-size: 0.78rem; color: var(--color-text-muted); margin-top: 0.25rem;">
+                  <strong style="color: var(--color-text-main);">Action:</strong> {{ v.action_items }}
                 </div>
                 {% endif %}
               </td>
               <td>
                 {% if v.follow_up_needed %}
-                <span class="badge" style="background: #fee2e2; color: #b91c1c; font-weight: 700;">⚠️ Urgent Follow-Up</span>
+                  <span class="badge badge-danger" style="font-size: 0.72rem;">⚠️ Follow-Up</span>
                 {% else %}
-                <span style="color: var(--color-text-muted); font-size: 0.8rem;">Normal</span>
+                  <span style="color: var(--color-text-muted); font-size: 0.8rem;">Normal</span>
                 {% endif %}
               </td>
             </tr>
             {% else %}
             <tr>
-              <td colspan="5" style="text-align: center; color: var(--color-text-muted); padding: 1.5rem;">
-                No supervisory visits recorded yet. Click "Record Visit" after interacting with the student/workplace.
+              <td colspan="5" style="text-align: center; color: var(--color-text-muted); padding: 2.5rem 1rem;">
+                <span class="material-symbols-outlined" style="font-size: 32px; color: #CBD5E1; display: block; margin-bottom: 0.5rem;">fact_check</span>
+                No supervisory visits recorded yet. Click "Record Visit" to log an inspection.
               </td>
             </tr>
             {% endfor %}
@@ -147,38 +169,45 @@
     </div>
 
     <!-- Weekly Activity Status Table -->
-    <div class="card">
+    <div class="modern-card">
       <div class="card-header">
-        <h3 class="card-title" style="color: var(--color-primary-dark); font-weight: 700;">Weekly Logbook Status</h3>
+        <h3 class="card-title" style="font-size: 1rem; font-weight: 700; color: var(--color-text-main); margin: 0;">Weekly Logbook Status</h3>
+        <p class="card-subtitle" style="font-size: 0.78rem; color: var(--color-text-muted); margin: 2px 0 0 0;">Monitoring sheet locking and verification status</p>
       </div>
       <div class="table-responsive">
-        <table class="table">
+        <table class="table modern-table" style="margin-bottom: 0;">
           <thead>
             <tr>
               <th>Week</th>
               <th>Period</th>
               <th>Status</th>
               <th>Locked Timestamp</th>
-              <th>Action</th>
+              <th style="text-align: right;">Action</th>
             </tr>
           </thead>
           <tbody>
             {% for week in attachment.weekly_activities %}
               <tr>
                 <td><strong>Week {{ week.week_number }}</strong></td>
-                <td><small>{{ week.start_date.strftime('%d/%m') }} - {{ week.end_date.strftime('%d/%m') }}</small></td>
+                <td><small style="color: var(--color-text-muted);">{{ week.start_date.strftime('%d/%m') }} – {{ week.end_date.strftime('%d/%m') }}</small></td>
                 <td>
                   {% if week.is_locked %}
-                    <span class="badge badge-success">Locked (Read-Only)</span>
+                    <span class="badge badge-success" style="font-size: 0.75rem;">Locked (Read-Only)</span>
                   {% else %}
-                    <span class="badge badge-secondary">Draft / Logging</span>
+                    <span class="badge badge-secondary" style="font-size: 0.75rem;">Draft / In Progress</span>
                   {% endif %}
                 </td>
-                <td><small style="color:var(--color-text-muted);">{{ week.locked_at.strftime('%d/%m/%Y %H:%M') if week.locked_at else '—' }}</small></td>
-                <td>
-                  <a href="{{ url_for('student.download_weekly_sheet', week_id=week.id) }}" class="btn btn-outline btn-sm">
-                    View Weekly Sheet
+                <td><small style="color: var(--color-text-muted); font-family: var(--font-mono, monospace);">{{ week.locked_at.strftime('%d/%m/%Y %H:%M') if week.locked_at else '—' }}</small></td>
+                <td style="text-align: right;">
+                  <a href="{{ url_for('student.download_weekly_sheet', week_id=week.id) }}" class="btn btn-secondary btn-sm" style="font-size: 0.78rem;">
+                    View Sheet
                   </a>
+                </td>
+              </tr>
+            {% else %}
+              <tr>
+                <td colspan="5" style="text-align: center; color: var(--color-text-muted); padding: 1.5rem;">
+                  No weekly activity records initialized for this attachment.
                 </td>
               </tr>
             {% endfor %}
@@ -188,42 +217,46 @@
     </div>
   </div>
 
-  <!-- Right Column: Acceptance Form Status & Note -->
-  <div>
-    <div class="card" style="border-top: 4px solid var(--color-primary); margin-bottom: 1.5rem;">
+  <!-- Right Column -->
+  <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+    <div class="modern-card">
       <div class="card-header">
-        <h3 class="card-title" style="color: var(--color-primary-dark); font-weight: 700;">Acceptance Verification</h3>
+        <h3 class="card-title" style="font-size: 1rem; font-weight: 700; color: var(--color-text-main); margin: 0;">Acceptance Verification</h3>
       </div>
-
-      <div style="padding: 1rem;">
+      <div style="padding: 1.25rem 1.5rem;">
         {% if attachment.acceptance %}
           <div style="margin-bottom: 0.75rem;">
-            <span class="badge {% if attachment.acceptance.is_approved %}badge-success{% else %}badge-warning{% endif %}" style="font-weight: 700;">
+            <span class="badge {% if attachment.acceptance.is_approved %}badge-success{% else %}badge-warning{% endif %}" style="font-size: 0.8rem; padding: 4px 10px;">
               {{ attachment.acceptance.status.replace('_', ' ').upper() }}
             </span>
           </div>
-          <p style="font-size: 0.85rem; color: var(--color-text-muted); margin-bottom: 1rem;">
-            Wet-ink company stamp and authorized signature verified by Liaison Unit.
+          <p style="font-size: 0.84rem; color: var(--color-text-muted); margin-bottom: 1rem; line-height: 1.5;">
+            Official employer wet-ink company stamp and authorized signatory verification audit performed by Liaison Directorate.
           </p>
-          <a href="{{ url_for('liaison.view_scan', acceptance_id=attachment.acceptance.id) }}" target="_blank" class="btn btn-outline btn-sm" style="width: 100%; text-align: center;">
-            Inspect Uploaded Acceptance Scan
+          <a href="{{ url_for('liaison.view_scan', acceptance_id=attachment.acceptance.id) }}" target="_blank" class="btn btn-secondary btn-sm" style="width: 100%; justify-content: center; display: inline-flex; align-items: center; gap: 6px;">
+            <span class="material-symbols-outlined" style="font-size: 16px;">visibility</span>
+            <span>Inspect Uploaded Scan</span>
           </a>
         {% else %}
-          <p style="font-size: 0.85rem; color: var(--color-text-muted);">Acceptance Form has not been verified yet.</p>
+          <p style="font-size: 0.84rem; color: var(--color-text-muted); margin: 0;">Acceptance Form has not been verified yet.</p>
         {% endif %}
       </div>
     </div>
 
     <!-- Confidential Evaluation Notice -->
-    <div class="card" style="background: var(--color-surface); border: 1px solid var(--color-border); padding: 1.25rem;">
-      <h4 style="font-size: 0.9rem; font-weight: 700; color: var(--color-primary); margin-bottom: 0.5rem;">
-        🔒 Confidential Assessment Notice
-      </h4>
-      <p style="font-size: 0.82rem; color: var(--color-text-muted); line-height: 1.5; margin: 0 0 0.75rem 0;">
-        Per USTED policy, the 20-item Workplace Supervisor Assessment Form remains a confidential physical artifact sealed in an envelope by the host employer. Scoring is never collected via public student interfaces.
+    <div class="modern-card" style="background: #F8FAFC; border: 1px solid #E2E8F0; padding: 1.25rem 1.5rem;">
+      <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 0.6rem;">
+        <span class="material-symbols-outlined" style="font-size: 20px; color: var(--color-primary);">lock</span>
+        <h4 style="font-size: 0.92rem; font-weight: 700; color: var(--color-text-main); margin: 0;">
+          Confidential Assessment
+        </h4>
+      </div>
+      <p style="font-size: 0.82rem; color: var(--color-text-muted); line-height: 1.55; margin: 0 0 1rem 0;">
+        Per USTED statutory regulations, the 20-item Workplace Supervisor Assessment Form remains a confidential physical artifact sealed in an envelope by the host employer. Scoring is never collected via public student interfaces.
       </p>
-      <a href="{{ url_for('student.download_assessment_form', attachment_id=attachment.id) }}" class="btn btn-outline btn-sm" style="width: 100%; text-align: center; font-size: 0.8rem;">
-        📄 Download Assessment Rubric (PDF)
+      <a href="{{ url_for('student.download_assessment_form', attachment_id=attachment.id) }}" class="btn btn-secondary btn-sm" style="width: 100%; justify-content: center; display: inline-flex; align-items: center; gap: 6px; font-size: 0.8rem;">
+        <span class="material-symbols-outlined" style="font-size: 16px;">description</span>
+        <span>Download Assessment Rubric (PDF)</span>
       </a>
     </div>
   </div>

@@ -4,51 +4,27 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
   <title>{% block title %}U-IAP — Workplace Experience Learning Portal{% endblock %}</title>
-  <!-- Institutional Fonts & Tabler Core Framework -->
+  
+  <!-- Modern Institutional Fonts (Plus Jakarta Sans & Inter) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/core@latest/dist/css/tabler.min.css">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
   {% block extra_head %}{% endblock %}
 </head>
-<body class="app-body layout-boxed">
 
-  <!-- Role Switcher & Live Preview Banner (Frictionless Scraper & Role Explorer) -->
-  <aside class="role-switcher-banner" aria-label="Role Switcher and Scraper Preview Controls">
-    <div class="role-switcher-container">
-      <div class="role-switcher-title">
-        <span class="pulse-dot" aria-hidden="true"></span>
-        <span>Role Preview (No Login Required):</span>
-      </div>
-      <div class="role-switcher-pills">
-        <a href="{{ url_for('auth.switch_role', role='student') }}" class="role-pill-btn {% if current_user.is_authenticated and current_user.role == 'student' %}active{% endif %}" title="Switch to Student persona">
-          <span>👨‍🎓</span><span>Student (Elliot)</span>
-        </a>
-        <a href="{{ url_for('auth.switch_role', role='liaison') }}" class="role-pill-btn {% if current_user.is_authenticated and current_user.role == 'liaison_officer' %}active{% endif %}" title="Switch to Liaison Officer persona">
-          <span>🏛️</span><span>Liaison Officer</span>
-        </a>
-        <a href="{{ url_for('auth.switch_role', role='admin') }}" class="role-pill-btn {% if current_user.is_authenticated and current_user.role == 'liaison_head' %}active{% endif %}" title="Switch to Liaison Head persona">
-          <span>⚙️</span><span>Liaison Head</span>
-        </a>
-        <a href="{{ url_for('auth.switch_role', role='supervisor') }}" class="role-pill-btn {% if current_user.is_authenticated and current_user.role == 'academic_supervisor' %}active{% endif %}" title="Switch to Academic Supervisor persona">
-          <span>👨‍🏫</span><span>Supervisor</span>
-        </a>
-      </div>
-      <div class="role-switcher-active-tag">
-        {% if current_user.is_authenticated %}
-          <span>Viewing: <strong>{{ current_user.full_name }}</strong> ({{ current_user.role.replace('_', ' ').title() }})</span>
-        {% else %}
-          <span>Viewing: <strong>Public Visitor</strong></span>
-        {% endif %}
-      </div>
-    </div>
-  </aside>
+{% set is_auth_screen = (request.endpoint in ['auth.login', 'auth.register', 'student.onboard', 'auth.activate']) %}
+<body class="app-body {% if is_auth_screen %}auth-layout{% endif %} {% if current_user.is_authenticated and current_user.is_student %}has-bottom-nav{% endif %}">
+
+{% if not is_auth_screen %}
+  <!-- Authenticated Application Shell -->
 
   <!-- Mobile Top Bar (< 1024px) -->
   <header class="mobile-topbar" role="banner">
     <button type="button" class="sidebar-toggle-btn" id="sidebarToggle" aria-label="Open Navigation Sidebar" aria-expanded="false">
-      <span class="hamburger-icon" aria-hidden="true">&#9776;</span>
+      <span class="material-symbols-outlined" style="font-size: 24px;">menu</span>
     </button>
     <a href="{{ url_for('main.index') }}" class="mobile-brand-link">
       <img src="{{ url_for('static', filename='img/crest.svg') }}" alt="USTED Crest" width="30" height="30" class="mobile-crest"/>
@@ -59,11 +35,11 @@
     </a>
     <div class="mobile-topbar-right">
       {% if current_user.is_authenticated %}
-        <span class="mobile-user-role role-pill role-{{ current_user.role }}">
+        <span class="role-pill role-{{ current_user.role }}">
           {{ current_user.role.split('_')[0] }}
         </span>
       {% else %}
-        <a href="{{ url_for('auth.switch_role', role='student') }}" class="btn btn-secondary btn-sm" style="padding: 0.25rem 0.6rem; font-size: 0.78rem;">Explore &rarr;</a>
+        <a href="{{ url_for('auth.login') }}" class="btn btn-secondary btn-sm" style="padding: 0.25rem 0.6rem; font-size: 0.78rem;">Sign In &rarr;</a>
       {% endif %}
     </div>
   </header>
@@ -71,57 +47,24 @@
   <!-- Sidebar Backdrop (for Mobile Drawer) -->
   <div class="sidebar-backdrop" id="sidebarBackdrop" aria-hidden="true"></div>
 
-  <!-- Institutional Left Sidebar Navigation -->
+  <!-- Modern Clean Sidebar Navigation (dashboard-02 Standard) -->
   <aside class="app-sidebar" id="appSidebar" role="navigation" aria-label="Main Sidebar Navigation">
     <div class="sidebar-header">
       <a href="{{ url_for('main.index') }}" class="sidebar-brand">
         <div class="sidebar-crest-box">
-          <img src="{{ url_for('static', filename='img/crest.svg') }}" alt="USTED Crest" width="40" height="40"/>
+          <img src="{{ url_for('static', filename='img/crest.svg') }}" alt="USTED Crest" width="32" height="32"/>
         </div>
         <div class="sidebar-brand-text">
-          <span class="sidebar-brand-title">U-IAP PORTAL</span>
-          <span class="sidebar-brand-sub">USTED &bull; Liaison Unit</span>
+          <span class="sidebar-brand-title">USTED U-IAP</span>
+          <span class="sidebar-brand-sub">Industrial Liaison</span>
         </div>
       </a>
       <button type="button" class="sidebar-close-btn" id="sidebarClose" aria-label="Close navigation sidebar">
-        &times;
+        <span class="material-symbols-outlined" style="font-size: 20px;">close</span>
       </button>
     </div>
 
-    <!-- Active User Profile Card -->
-    {% if current_user.is_authenticated %}
-      <div class="sidebar-user-card">
-        <div class="sidebar-user-avatar">
-          {{ current_user.full_name[:1] }}
-        </div>
-        <div class="sidebar-user-info">
-          <span class="sidebar-user-name" title="{{ current_user.full_name }}">{{ current_user.full_name }}</span>
-          <span class="role-pill role-{{ current_user.role }}">{{ current_user.role.replace('_', ' ') }}</span>
-        </div>
-      </div>
-    {% endif %}
-
-    <!-- Fast Role Switcher for Scrapers and Role Explorer -->
-    <div class="sidebar-role-toggle-group" aria-label="Role Switcher">
-      <div class="sidebar-role-toggle-title">
-        <span class="pulse-dot" style="width: 6px; height: 6px;" aria-hidden="true"></span>
-        <span>SWITCH ROLE / UI</span>
-      </div>
-      <div class="sidebar-role-buttons-grid">
-        <a href="{{ url_for('auth.switch_role', role='student') }}" class="sidebar-role-btn {% if current_user.is_authenticated and current_user.role == 'student' %}active{% endif %}">
-          <span>👨‍🎓 Student</span>
-        </a>
-        <a href="{{ url_for('auth.switch_role', role='liaison') }}" class="sidebar-role-btn {% if current_user.is_authenticated and current_user.role == 'liaison_officer' %}active{% endif %}">
-          <span>🏛️ Liaison</span>
-        </a>
-        <a href="{{ url_for('auth.switch_role', role='admin') }}" class="sidebar-role-btn {% if current_user.is_authenticated and current_user.role == 'liaison_head' %}active{% endif %}">
-          <span>⚙️ Admin</span>
-        </a>
-        <a href="{{ url_for('auth.switch_role', role='supervisor') }}" class="sidebar-role-btn {% if current_user.is_authenticated and current_user.role == 'academic_supervisor' %}active{% endif %}">
-          <span>👨‍🏫 Supervisor</span>
-        </a>
-      </div>
-    </div>
+    <!-- Identity De-duplication Rule: User name & role are anchored strictly in top nav header -->
 
     <!-- Sidebar Navigation Links -->
     <nav class="sidebar-nav">
@@ -129,135 +72,219 @@
         {% if current_user.is_student %}
           <div class="nav-section-label">STUDENT WORKSPACE</div>
           <a href="{{ url_for('student.dashboard') }}" class="sidebar-nav-item {% if request.endpoint == 'student.dashboard' %}active{% endif %}">
-            <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" width="18" height="18"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
-            <span>My Dashboard</span>
+            <span class="material-symbols-outlined nav-icon">dashboard</span>
+            <span>My Workspace</span>
           </a>
           {% if current_user.student_master and current_user.student_master.attachments.count() > 0 %}
             {% set student_att = current_user.student_master.attachments.first() %}
             <a href="{{ url_for('student.view_attachment', attachment_id=student_att.id) }}" class="sidebar-nav-item {% if request.endpoint == 'student.view_attachment' %}active{% endif %}">
-              <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" width="18" height="18"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-              <span>Attachment Overview</span>
+              <span class="material-symbols-outlined nav-icon">description</span>
+              <span>Attachment Details</span>
             </a>
-            {% if student_att.can_log_activities() %}
-              <a href="{{ url_for('student.activities', attachment_id=student_att.id) }}" class="sidebar-nav-item {% if request.endpoint == 'student.activities' %}active{% endif %}">
-                <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" width="18" height="18"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
-                <span>eLogSheet Workspace</span>
-              </a>
-            {% endif %}
             <a href="{{ url_for('student.upload_acceptance', attachment_id=student_att.id) }}" class="sidebar-nav-item {% if request.endpoint == 'student.upload_acceptance' %}active{% endif %}">
-              <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" width="18" height="18"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+              <span class="material-symbols-outlined nav-icon">upload_file</span>
               <span>Acceptance Upload</span>
             </a>
+            {% if student_att.can_log_activities() %}
+              <a href="{{ url_for('student.launch_elogsheet', attachment_id=student_att.id) }}" target="_blank" rel="noopener noreferrer" class="sidebar-nav-item highlight-nav-item">
+                <span class="material-symbols-outlined nav-icon">open_in_new</span>
+                <span>Open eLogSheet &rarr;</span>
+              </a>
+            {% endif %}
           {% endif %}
+
         {% elif current_user.is_liaison %}
           <div class="nav-section-label">LIAISON OPERATIONS</div>
           <a href="{{ url_for('liaison.dashboard') }}" class="sidebar-nav-item {% if request.endpoint == 'liaison.dashboard' %}active{% endif %}">
-            <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" width="18" height="18"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"/></svg>
-            <span>Operations Dashboard</span>
+            <span class="material-symbols-outlined nav-icon">dashboard</span>
+            <span>Operations Console</span>
           </a>
           <a href="{{ url_for('liaison.student_lookup') }}" class="sidebar-nav-item {% if request.endpoint in ['liaison.student_lookup', 'liaison.verify_and_create_attachment'] %}active{% endif %}">
-            <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" width="18" height="18"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"/></svg>
+            <span class="material-symbols-outlined nav-icon">person_search</span>
             <span>Verify Student Intake</span>
           </a>
           <a href="{{ url_for('liaison.attachments_list') }}" class="sidebar-nav-item {% if request.endpoint in ['liaison.attachments_list', 'liaison.view_attachment_detail'] %}active{% endif %}">
-            <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" width="18" height="18"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+            <span class="material-symbols-outlined nav-icon">list_alt</span>
             <span>Attachments Roster</span>
           </a>
           <a href="{{ url_for('liaison.acceptance_queue') }}" class="sidebar-nav-item {% if request.endpoint in ['liaison.acceptance_queue', 'liaison.review_acceptance'] %}active{% endif %}">
-            <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" width="18" height="18"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
+            <span class="material-symbols-outlined nav-icon">approval</span>
             <span>Acceptance Queue</span>
           </a>
+          <a href="{{ url_for('liaison.zonal_mapping') }}" class="sidebar-nav-item {% if request.endpoint == 'liaison.zonal_mapping' %}active{% endif %}">
+            <span class="material-symbols-outlined nav-icon">map</span>
+            <span>Zonal Mapping</span>
+          </a>
+
           {% if current_user.is_admin %}
             <div class="nav-section-label">ADMINISTRATION</div>
             <a href="{{ url_for('admin.dashboard') }}" class="sidebar-nav-item {% if request.endpoint == 'admin.dashboard' %}active{% endif %}">
-              <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" width="18" height="18"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
-              <span>Security & Audit Trail</span>
+              <span class="material-symbols-outlined nav-icon">security</span>
+              <span>Security &amp; Audit Trail</span>
             </a>
             <a href="{{ url_for('admin.settings') }}" class="sidebar-nav-item {% if request.endpoint == 'admin.settings' %}active{% endif %}">
-              <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" width="18" height="18"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+              <span class="material-symbols-outlined nav-icon">tune</span>
               <span>System Policies</span>
             </a>
           {% endif %}
+
         {% elif current_user.is_supervisor %}
           <div class="nav-section-label">ACADEMIC SUPERVISION</div>
-          <a href="{{ url_for('supervisor.dashboard') }}" class="sidebar-nav-item {% if request.endpoint in ['supervisor.dashboard', 'supervisor.student_detail'] %}active{% endif %}">
-            <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" width="18" height="18"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+          <a href="{{ url_for('supervisor.dashboard') }}" class="sidebar-nav-item {% if request.endpoint in ['supervisor.dashboard', 'supervisor.view_assigned_student'] %}active{% endif %}">
+            <span class="material-symbols-outlined nav-icon">assignment_ind</span>
             <span>Assigned Students</span>
           </a>
         {% endif %}
+
       {% else %}
-        <div class="nav-section-label">PUBLIC PORTAL & EXPLORER</div>
+        <div class="nav-section-label">PORTAL</div>
         <a href="{{ url_for('main.index') }}" class="sidebar-nav-item {% if request.endpoint == 'main.index' %}active{% endif %}">
-          <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" width="18" height="18"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+          <span class="material-symbols-outlined nav-icon">home</span>
           <span>Portal Home</span>
         </a>
-        <a href="{{ url_for('auth.switch_role', role='student') }}" class="sidebar-nav-item">
-          <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" width="18" height="18"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
-          <span>Enter as Student (Elliot)</span>
-        </a>
-        <a href="{{ url_for('auth.switch_role', role='liaison') }}" class="sidebar-nav-item">
-          <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" width="18" height="18"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
-          <span>Enter as Liaison Officer</span>
-        </a>
-        <a href="{{ url_for('auth.switch_role', role='admin') }}" class="sidebar-nav-item">
-          <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" width="18" height="18"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
-          <span>Enter as Liaison Head (Admin)</span>
-        </a>
-        <a href="{{ url_for('auth.switch_role', role='supervisor') }}" class="sidebar-nav-item">
-          <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" width="18" height="18"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
-          <span>Enter as Supervisor</span>
+        <a href="{{ url_for('auth.login') }}" class="sidebar-nav-item {% if request.endpoint == 'auth.login' %}active{% endif %}">
+          <span class="material-symbols-outlined nav-icon">login</span>
+          <span>Sign In</span>
         </a>
       {% endif %}
     </nav>
 
-    <!-- Sidebar Footer / Logout -->
+    <!-- Sidebar Footer with Clean Sign Out -->
     <div class="sidebar-footer">
       {% if current_user.is_authenticated %}
         <a href="{{ url_for('auth.logout') }}" class="sidebar-logout-btn">
-          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="18" height="18"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
-          <span>Log Out</span>
+          <span class="material-symbols-outlined" style="font-size: 18px;">logout</span>
+          <span>Sign Out</span>
+        </a>
+      {% else %}
+        <a href="{{ url_for('auth.login') }}" class="sidebar-logout-btn">
+          <span class="material-symbols-outlined" style="font-size: 18px;">login</span>
+          <span>Sign In</span>
         </a>
       {% endif %}
       <div class="sidebar-inst-tag">
-        <span>USTED &bull; U-IAP v3.0</span>
+        <span>USTED &bull; U-IAP v4.0</span>
       </div>
     </div>
   </aside>
 
   <!-- Main Viewport Shell -->
   <div class="app-main-layout">
+    <!-- Clean Top Workspace Header -->
+    <header class="app-top-header">
+      <div class="header-left">
+        <button type="button" class="header-toggle-sidebar" aria-label="Toggle Navigation Drawer">
+          <span class="material-symbols-outlined" style="font-size: 20px;">menu</span>
+        </button>
+        <div class="header-breadcrumb">
+          <span class="header-inst">USTED</span>
+          <span class="header-sep">/</span>
+          <span class="header-active-page">{% block page_breadcrumb %}Workplace Experience Learning{% endblock %}</span>
+        </div>
+      </div>
+      <div class="header-right">
+        {% if current_user.is_authenticated %}
+          <div class="header-user-dropdown" style="position: relative;">
+            <button type="button" class="header-user-badge" id="userMenuBtn" onclick="toggleUserDropdown(event)" aria-expanded="false" aria-haspopup="true" style="cursor: pointer; border: 1px solid var(--border-subtle); background: #F8FAFC; transition: all 0.15s ease;">
+              <span class="user-initial">{{ current_user.full_name[:1] }}</span>
+              <span class="user-fullname">{{ current_user.full_name }}</span>
+              <span class="role-pill role-{{ current_user.role }}">{{ current_user.role.split('_')[0].title() }}</span>
+              <span class="material-symbols-outlined" style="font-size: 16px; color: #94A3B8; margin-left: 2px;">expand_more</span>
+            </button>
+            <div class="user-dropdown-menu" id="userDropdownMenu" style="display: none; position: absolute; right: 0; top: calc(100% + 6px); width: 220px; background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 8px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05); z-index: 50; padding: 6px 0;">
+              <div style="padding: 8px 14px; border-bottom: 1px solid #F1F5F9;">
+                <div style="font-size: 0.82rem; font-weight: 700; color: #0F172A; line-height: 1.2;">{{ current_user.full_name }}</div>
+                <div style="font-size: 0.72rem; color: #64748B; margin-top: 2px;">{{ current_user.role.replace('_', ' ').title() }}</div>
+                <div style="font-size: 0.72rem; color: #065F46; font-weight: 600; margin-top: 4px; display: flex; align-items: center; gap: 4px;">
+                  <span style="width: 6px; height: 6px; border-radius: 50%; background: #10B981; display: inline-block;"></span>
+                  <span>2024/2025 Active Session</span>
+                </div>
+              </div>
+              <a href="{{ url_for('auth.logout') }}" style="display: flex; align-items: center; gap: 8px; padding: 8px 14px; font-size: 0.8rem; font-weight: 600; color: #DC2626; text-decoration: none; transition: background 0.15s ease;" onmouseover="this.style.background='#FEF2F2'" onmouseout="this.style.background='transparent'">
+                <span class="material-symbols-outlined" style="font-size: 16px;">logout</span>
+                <span>Sign Out</span>
+              </a>
+            </div>
+          </div>
+        {% else %}
+          <a href="{{ url_for('auth.login') }}" class="btn-stitch-primary btn-stitch-sm" style="text-decoration: none;">
+            <span>Sign In</span>
+          </a>
+        {% endif %}
+      </div>
+    </header>
+
     <main class="main-wrapper" id="mainContent">
+{% else %}
+  <!-- Dedicated, Clean Auth Viewport (No Sidebar / No Clutter) -->
+  <main class="auth-main-container" id="mainContent">
+{% endif %}
+
       <!-- Flash Alerts Container -->
       {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
-          <div class="flash-container">
+          <div class="flash-container" {% if is_auth_screen %}style="max-width: 520px; margin: 1.5rem auto 0 auto; padding: 0 1rem;"{% endif %}>
             {% for category, message in messages %}
               <div class="flash-alert {{ category }}" role="alert">
+                <span class="material-symbols-outlined" style="font-size: 18px;">info</span>
                 <span>{{ message }}</span>
-                <button type="button" class="alert-close" style="background:none; border:none; font-size:1.2rem; cursor:pointer; color:inherit;" aria-label="Dismiss alert">&times;</button>
+                <button type="button" class="alert-close" onclick="this.parentElement.remove();" aria-label="Dismiss alert">&times;</button>
               </div>
             {% endfor %}
           </div>
         {% endif %}
       {% endwith %}
 
+      <!-- Single Main Content Block -->
       {% block content %}{% endblock %}
+
+{% if not is_auth_screen %}
     </main>
 
-    <!-- Institutional Footer -->
+    <!-- Institutional Modern Footer -->
     <footer class="footer">
       <div class="footer-container">
         <div>
           <strong>University of Skills Training and Entrepreneurial Development (USTED)</strong><br/>
-          <span>Industrial Liaison & Workplace Experience Learning (WEL) Office</span>
+          <span style="font-size: 0.8rem; color: #64748B;">Industrial Liaison &amp; Workplace Experience Learning (WEL) Directorate</span>
         </div>
         <div class="footer-right">
           <span>U-IAP Operational Portal</span><br/>
-          <span>&copy; {{ current_year }} USTED. All rights reserved.</span>
+          <span style="font-size: 0.8rem; color: #64748B;">&copy; 2026 USTED. All rights reserved.</span>
         </div>
       </div>
     </footer>
+
+    {% if current_user.is_authenticated and current_user.is_student %}
+      <!-- Mobile Persistent Bottom Navigation Bar (< 1024px) -->
+      <nav class="mobile-bottom-nav" aria-label="Student Mobile Navigation">
+        <a href="{{ url_for('student.dashboard') }}" class="bottom-nav-item {% if request.endpoint == 'student.dashboard' %}active{% endif %}">
+          <span class="material-symbols-outlined">dashboard</span>
+          <span>Workspace</span>
+        </a>
+        {% if current_user.student_master and current_user.student_master.attachments.count() > 0 %}
+          {% set student_att = current_user.student_master.attachments.first() %}
+          <a href="{{ url_for('student.view_attachment', attachment_id=student_att.id) }}" class="bottom-nav-item {% if request.endpoint == 'student.view_attachment' %}active{% endif %}">
+            <span class="material-symbols-outlined">description</span>
+            <span>Details</span>
+          </a>
+          <a href="{{ url_for('student.upload_acceptance', attachment_id=student_att.id) }}" class="bottom-nav-item {% if request.endpoint == 'student.upload_acceptance' %}active{% endif %}">
+            <span class="material-symbols-outlined">upload_file</span>
+            <span>Acceptance</span>
+          </a>
+          {% if student_att.can_log_activities() %}
+            <a href="{{ url_for('student.launch_elogsheet', attachment_id=student_att.id) }}" target="_blank" rel="noopener noreferrer" class="bottom-nav-item">
+              <span class="material-symbols-outlined">edit_note</span>
+              <span>eLogSheet</span>
+            </a>
+          {% endif %}
+        {% endif %}
+      </nav>
+    {% endif %}
   </div>
+{% else %}
+  </main>
+{% endif %}
 
   <script src="{{ url_for('static', filename='js/main.js') }}"></script>
   {% block extra_scripts %}{% endblock %}

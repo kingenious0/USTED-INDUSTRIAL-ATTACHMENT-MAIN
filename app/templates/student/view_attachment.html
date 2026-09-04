@@ -1,32 +1,39 @@
 {% extends "base.html" %}
 
 {% block title %}Attachment #{{ attachment.id }} Details — USTED U-IAP{% endblock %}
+{% block page_breadcrumb %}Attachment #{{ attachment.id }} Details{% endblock %}
 
 {% block content %}
-<div class="page-header" style="margin-bottom: 1.5rem;">
+<div class="page-header">
   <div>
-    <a href="{{ url_for('student.dashboard') }}" style="font-size: 0.85rem; color: var(--color-text-muted); text-decoration: none;">&larr; Back to Workspace</a>
-    <h1 class="page-title" style="margin-top: 0.25rem; color: var(--color-primary-dark); font-size: 1.65rem; font-weight: 800;">
+    <a href="{{ url_for('student.dashboard') }}" style="font-size: 0.82rem; font-weight: 600; color: #64748B; text-decoration: none; display: inline-flex; align-items: center; gap: 4px; margin-bottom: 6px;">
+      <span class="material-symbols-outlined" style="font-size: 16px;">arrow_back</span>
+      <span>Back to Student Workspace</span>
+    </a>
+    <h1 class="page-title">
       Attachment #{{ attachment.id }} Overview
     </h1>
-    <p class="page-subtitle" style="color: var(--color-text-muted); font-size: 0.9rem;">
-      Academic Year: {{ attachment.academic_year }} &bull; Status:
-      <span class="badge" style="background: var(--color-primary-subtle); color: var(--color-primary); font-weight: 700;">
+    <p class="page-subtitle">
+      Academic Year: <strong>{{ attachment.academic_year }}</strong> &bull; Status:
+      <span class="badge badge-primary">
         {{ attachment.status.replace('_', ' ').upper() }}
       </span>
     </p>
   </div>
   <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center;">
     {% if can_log %}
-      <a href="{{ url_for('student.launch_elogsheet', attachment_id=attachment.id) }}" target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-sm" style="font-weight: 700; box-shadow: 0 2px 8px rgba(140,3,59,0.25);">
-        🚀 Launch eLogBook (SSO) &rarr;
+      <a href="{{ url_for('student.launch_elogsheet', attachment_id=attachment.id) }}" target="_blank" rel="noopener noreferrer" class="btn-primary btn-sm">
+        <span class="material-symbols-outlined" style="font-size: 16px;">open_in_new</span>
+        <span>Launch eLogBook (SSO)</span>
       </a>
-      <a href="{{ url_for('student.activities', attachment_id=attachment.id) }}" class="btn btn-secondary btn-sm">
-        Weekly Logbook
+      <a href="{{ url_for('student.activities', attachment_id=attachment.id) }}" class="btn-secondary btn-sm">
+        <span class="material-symbols-outlined" style="font-size: 16px;">menu_book</span>
+        <span>Weekly Logbook</span>
       </a>
     {% endif %}
-    <a href="{{ url_for('student.download_compiled_report', attachment_id=attachment.id) }}" class="btn btn-outline btn-sm">
-      Compiled Logbook (PDF)
+    <a href="{{ url_for('student.download_compiled_report', attachment_id=attachment.id) }}" class="btn-secondary btn-sm">
+      <span class="material-symbols-outlined" style="font-size: 16px;">download</span>
+      <span>Compiled Logbook (PDF)</span>
     </a>
   </div>
 </div>
@@ -35,18 +42,18 @@
   <!-- Left Column: Details & Documents -->
   <div>
     <!-- Placement Information Card -->
-    <div class="card" style="border-top: 4px solid var(--color-primary); margin-bottom: 1.5rem;">
+    <div class="modern-card">
       <div class="card-header">
-        <h3 class="card-title" style="color: var(--color-primary-dark); font-weight: 700;">Placement Information</h3>
+        <h3 class="card-title">Placement &amp; Workplace Particulars</h3>
       </div>
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; font-size: 0.9rem; padding: 1.25rem;">
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; font-size: 0.88rem;">
         <div>
-          <span style="color: var(--color-text-muted); font-size: 0.8rem; display: block;">Host Organization:</span>
-          <strong style="color: var(--color-primary-dark);">{{ attachment.target_organization or (attachment.acceptance.company_name if attachment.acceptance else 'Not Yet Confirmed') }}</strong>
+          <span style="color: #64748B; font-size: 0.78rem; display: block; text-transform: uppercase; font-weight: 600; margin-bottom: 2px;">Host Organization</span>
+          <strong style="color: #0F172A; font-size: 0.95rem;">{{ attachment.target_organization or (attachment.acceptance.company_name if attachment.acceptance else 'Not Yet Confirmed') }}</strong>
         </div>
         <div>
-          <span style="color: var(--color-text-muted); font-size: 0.8rem; display: block;">Location / Region:</span>
-          <span>
+          <span style="color: #64748B; font-size: 0.78rem; display: block; text-transform: uppercase; font-weight: 600; margin-bottom: 2px;">Location &amp; Region</span>
+          <span style="color: #334155; font-weight: 600;">
             {% if attachment.acceptance and attachment.acceptance.region %}
               <strong>{{ attachment.acceptance.region }}</strong> &bull; {{ attachment.acceptance.district_town or 'Town' }}
             {% else %}
@@ -55,25 +62,25 @@
           </span>
         </div>
         <div>
-          <span style="color: var(--color-text-muted); font-size: 0.8rem; display: block;">Commencement Date:</span>
-          <span>{{ attachment.commencement_date.strftime('%d %B, %Y') }}</span>
+          <span style="color: #64748B; font-size: 0.78rem; display: block; text-transform: uppercase; font-weight: 600; margin-bottom: 2px;">Commencement Date</span>
+          <span style="color: #334155;">{{ attachment.commencement_date.strftime('%d %B, %Y') }}</span>
         </div>
         <div>
-          <span style="color: var(--color-text-muted); font-size: 0.8rem; display: block;">Expected End Date:</span>
-          <span>{{ attachment.end_date.strftime('%d %B, %Y') }} ({{ attachment.duration_weeks }} Weeks)</span>
+          <span style="color: #64748B; font-size: 0.78rem; display: block; text-transform: uppercase; font-weight: 600; margin-bottom: 2px;">Expected End Date</span>
+          <span style="color: #334155;">{{ attachment.end_date.strftime('%d %B, %Y') }} ({{ attachment.duration_weeks }} Weeks)</span>
         </div>
         <div>
-          <span style="color: var(--color-text-muted); font-size: 0.8rem; display: block;">Visiting Academic Supervisor:</span>
-          <span>{{ attachment.academic_supervisor.full_name if attachment.academic_supervisor else 'Pending Zonal Allocation' }}</span>
+          <span style="color: #64748B; font-size: 0.78rem; display: block; text-transform: uppercase; font-weight: 600; margin-bottom: 2px;">Visiting Academic Supervisor</span>
+          <span style="color: #334155; font-weight: 600;">{{ attachment.academic_supervisor.full_name if attachment.academic_supervisor else 'Pending Zonal Allocation' }}</span>
         </div>
         <div>
-          <span style="color: var(--color-text-muted); font-size: 0.8rem; display: block;">Ghana Post GPS / Landmark:</span>
+          <span style="color: #64748B; font-size: 0.78rem; display: block; text-transform: uppercase; font-weight: 600; margin-bottom: 2px;">Ghana Post GPS / Landmark</span>
           <span>
             {% if attachment.acceptance and attachment.acceptance.gps_address %}
-              <code style="color: #0284c7; font-weight: 700;">{{ attachment.acceptance.gps_address }}</code>
-              {% if attachment.acceptance.landmark %} ({{ attachment.acceptance.landmark }}){% endif %}
+              <code style="color: #0284C7; font-weight: 700; background: #F0F9FF; padding: 2px 6px; border-radius: 4px;">{{ attachment.acceptance.gps_address }}</code>
+              {% if attachment.acceptance.landmark %} <small style="color: #64748B;">({{ attachment.acceptance.landmark }})</small>{% endif %}
             {% else %}
-              <span style="color: var(--color-text-muted);">Not provided</span>
+              <span style="color: #94A3B8;">Not provided</span>
             {% endif %}
           </span>
         </div>
@@ -81,57 +88,60 @@
     </div>
 
     <!-- Official Documents Hub -->
-    <div class="card" style="border-top: 4px solid var(--color-accent-gold); margin-bottom: 1.5rem;">
+    <div class="modern-card">
       <div class="card-header">
-        <h3 class="card-title" style="color: var(--color-primary-dark); font-weight: 700;">Official Placement Documents</h3>
+        <h3 class="card-title">Official Placement Documents</h3>
       </div>
       <div class="table-responsive">
-        <table class="table" style="font-size: 0.88rem;">
+        <table class="modern-table">
           <thead>
             <tr>
               <th>Document</th>
               <th>Format</th>
               <th>Status</th>
-              <th>Action</th>
+              <th style="text-align: right;">Action</th>
             </tr>
           </thead>
           <tbody>
             <tr>
               <td>
-                <strong>Official Introductory Letter</strong>
-                <div style="font-size: 0.78rem; color: var(--color-text-muted);">Includes 24-hr authentication QR code for employer.</div>
+                <div style="font-weight: 700; color: #0F172A;">Official Introductory Letter</div>
+                <div style="font-size: 0.78rem; color: #64748B;">Includes 24-hr authentication QR code for employer.</div>
               </td>
-              <td><span class="badge" style="background: #e2e8f0; color: #334155;">PDF</span></td>
+              <td><span class="badge badge-secondary">PDF</span></td>
               <td><span class="badge badge-success">Generated</span></td>
-              <td>
-                <a href="{{ url_for('student.download_letter', attachment_id=attachment.id) }}" class="btn btn-outline btn-sm">
-                  Download (PDF)
+              <td style="text-align: right;">
+                <a href="{{ url_for('student.download_letter', attachment_id=attachment.id) }}" class="btn-secondary btn-sm">
+                  <span class="material-symbols-outlined" style="font-size: 14px;">download</span>
+                  <span>Download</span>
                 </a>
               </td>
             </tr>
             <tr>
               <td>
-                <strong>Physical Acceptance Form Template</strong>
-                <div style="font-size: 0.78rem; color: var(--color-text-muted);">Blank template for employer wet-ink company endorsement.</div>
+                <div style="font-weight: 700; color: #0F172A;">Physical Acceptance Form Template</div>
+                <div style="font-size: 0.78rem; color: #64748B;">Blank template for employer wet-ink company endorsement.</div>
               </td>
-              <td><span class="badge" style="background: #e2e8f0; color: #334155;">PDF</span></td>
-              <td><span class="badge" style="background: var(--color-primary-subtle); color: var(--color-primary);">Template</span></td>
-              <td>
-                <a href="{{ url_for('student.download_blank_acceptance_form', attachment_id=attachment.id) }}" class="btn btn-outline btn-sm">
-                  Download (PDF)
+              <td><span class="badge badge-secondary">PDF</span></td>
+              <td><span class="badge badge-primary">Official Form</span></td>
+              <td style="text-align: right;">
+                <a href="{{ url_for('student.download_blank_acceptance_form', attachment_id=attachment.id) }}" class="btn-secondary btn-sm">
+                  <span class="material-symbols-outlined" style="font-size: 14px;">download</span>
+                  <span>Download</span>
                 </a>
               </td>
             </tr>
             <tr>
               <td>
-                <strong>Confidential Assessment Rubric</strong>
-                <div style="font-size: 0.78rem; color: var(--color-text-muted);">20-item Workplace Supervisor Assessment Form (sealed return).</div>
+                <div style="font-weight: 700; color: #0F172A;">Confidential Assessment Rubric</div>
+                <div style="font-size: 0.78rem; color: #64748B;">20-item Workplace Supervisor Assessment Form (sealed return).</div>
               </td>
-              <td><span class="badge" style="background: #fee2e2; color: #b91c1c;">PDF</span></td>
-              <td><span class="badge" style="background: #fee2e2; color: #b91c1c;">Confidential</span></td>
-              <td>
-                <a href="{{ url_for('student.download_assessment_form', attachment_id=attachment.id) }}" class="btn btn-outline btn-sm">
-                  Download (PDF)
+              <td><span class="badge badge-secondary">PDF</span></td>
+              <td><span class="badge badge-warning">Confidential</span></td>
+              <td style="text-align: right;">
+                <a href="{{ url_for('student.download_assessment_form', attachment_id=attachment.id) }}" class="btn-secondary btn-sm">
+                  <span class="material-symbols-outlined" style="font-size: 14px;">download</span>
+                  <span>Download</span>
                 </a>
               </td>
             </tr>
@@ -143,65 +153,71 @@
 
   <!-- Right Column: Acceptance Form Status & Actions -->
   <div>
-    <div class="card" style="border-top: 4px solid var(--color-primary); margin-bottom: 1.5rem; padding: 1.25rem;">
-      <div class="card-header" style="padding: 0 0 0.75rem 0; margin-bottom: 0.75rem; border-bottom: 1px solid var(--color-border);">
-        <h3 class="card-title" style="color: var(--color-primary-dark); font-weight: 700;">Acceptance Verification Status</h3>
+    <div class="modern-card">
+      <div class="card-header">
+        <h3 class="card-title">Acceptance Verification</h3>
       </div>
 
       {% if attachment.acceptance %}
-        <div style="margin-bottom: 0.75rem;">
-          <span class="badge {% if attachment.acceptance.is_approved %}badge-success{% elif attachment.acceptance.is_flagged %}badge-danger{% else %}badge-warning{% endif %}" style="font-size: 0.85rem; padding: 0.35rem 0.75rem; font-weight: 700;">
+        <div style="margin-bottom: 1rem;">
+          <span class="badge {% if attachment.acceptance.is_approved %}badge-success{% elif attachment.acceptance.is_flagged %}badge-danger{% else %}badge-warning{% endif %}">
             {{ attachment.acceptance.status.replace('_', ' ').upper() }}
           </span>
         </div>
 
-        <p style="font-size: 0.88rem; margin-bottom: 0.5rem;">
-          <strong>Organization:</strong> {{ attachment.acceptance.company_name }}<br/>
-          <strong>Location:</strong> {{ attachment.acceptance.region or 'Ghana' }} ({{ attachment.acceptance.district_town or 'Town' }})<br/>
-          <strong>GPS:</strong> {{ attachment.acceptance.gps_address or 'None' }}<br/>
-          <strong>Uploaded:</strong> {{ attachment.acceptance.created_at.strftime('%d %b, %Y') }}
-        </p>
+        <div style="font-size: 0.85rem; line-height: 1.6; color: #334155; margin-bottom: 1rem; background: #F8FAFC; padding: 12px; border-radius: 8px; border: 1px solid #E2E8F0;">
+          <div><strong style="color: #0F172A;">Organization:</strong> {{ attachment.acceptance.company_name }}</div>
+          <div><strong style="color: #0F172A;">Location:</strong> {{ attachment.acceptance.region or 'Ghana' }} ({{ attachment.acceptance.district_town or 'Town' }})</div>
+          <div><strong style="color: #0F172A;">GPS Pin:</strong> {{ attachment.acceptance.gps_address or 'None' }}</div>
+          <div><strong style="color: #0F172A;">Uploaded On:</strong> {{ attachment.acceptance.created_at.strftime('%d %b, %Y') }}</div>
+        </div>
 
         {% if attachment.acceptance.review_notes %}
-          <div style="background: #fffbeb; border-left: 3px solid #f59e0b; padding: 0.65rem; border-radius: 4px; font-size: 0.82rem; margin: 0.75rem 0;">
+          <div style="background: #FEF3C7; border-left: 3px solid #D97706; padding: 10px 12px; border-radius: 6px; font-size: 0.82rem; color: #92400E; margin-bottom: 1rem;">
             <strong>Liaison Unit Feedback:</strong><br/>
             {{ attachment.acceptance.review_notes }}
           </div>
         {% endif %}
 
-        <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 1rem;">
-          <a href="{{ url_for('student.view_uploaded_scan', attachment_id=attachment.id, acceptance_id=attachment.acceptance.id) }}" target="_blank" class="btn btn-outline btn-sm" style="text-align: center;">
-            Inspect Uploaded File
+        <div style="display: flex; flex-direction: column; gap: 0.6rem;">
+          <a href="{{ url_for('student.view_uploaded_scan', attachment_id=attachment.id, acceptance_id=attachment.acceptance.id) }}" target="_blank" class="btn-secondary btn-sm" style="width: 100%;">
+            <span class="material-symbols-outlined" style="font-size: 16px;">visibility</span>
+            <span>Inspect Uploaded File</span>
           </a>
-          <a href="{{ url_for('student.upload_acceptance', attachment_id=attachment.id) }}" class="btn btn-primary btn-sm" style="text-align: center; font-weight: 700;">
-            Update / Re-Upload Scan
+          <a href="{{ url_for('student.upload_acceptance', attachment_id=attachment.id) }}" class="btn-primary btn-sm" style="width: 100%;">
+            <span class="material-symbols-outlined" style="font-size: 16px;">upload_file</span>
+            <span>Update / Re-Upload Scan</span>
           </a>
         </div>
       {% else %}
-        <p style="font-size: 0.88rem; color: var(--color-text-muted); margin-bottom: 1rem;">
-          You have not uploaded the endorsed Acceptance Form yet.
+        <p style="font-size: 0.85rem; color: #64748B; margin-bottom: 1.25rem; line-height: 1.5;">
+          You have not uploaded your signed &amp; stamped Acceptance Form yet.
         </p>
-        <div style="display: flex; flex-direction: column; gap: 0.5rem;">
-          <a href="{{ url_for('student.download_blank_acceptance_form', attachment_id=attachment.id) }}" class="btn btn-outline btn-sm" style="text-align: center;">
-            Download Blank Form
+        <div style="display: flex; flex-direction: column; gap: 0.6rem;">
+          <a href="{{ url_for('student.download_blank_acceptance_form', attachment_id=attachment.id) }}" class="btn-secondary btn-sm" style="width: 100%;">
+            <span class="material-symbols-outlined" style="font-size: 16px;">download</span>
+            <span>Download Blank Form</span>
           </a>
-          <a href="{{ url_for('student.upload_acceptance', attachment_id=attachment.id) }}" class="btn btn-primary btn-sm" style="text-align: center; font-weight: 700;">
-            Upload Form Scan & GPS
+          <a href="{{ url_for('student.upload_acceptance', attachment_id=attachment.id) }}" class="btn-primary btn-sm" style="width: 100%;">
+            <span class="material-symbols-outlined" style="font-size: 16px;">upload_file</span>
+            <span>Upload Form Scan &amp; GPS</span>
           </a>
         </div>
       {% endif %}
     </div>
 
     <!-- Confidential Policy Notice -->
-    <div class="card" style="background: var(--color-surface); border: 1px solid var(--color-border); padding: 1.25rem;">
-      <h4 style="font-size: 0.9rem; font-weight: 700; color: var(--color-primary); margin-bottom: 0.5rem;">
-        🔒 Institutional Assessment Rule
+    <div class="modern-card" style="background: #FDF2F5; border-color: #FCE7F0;">
+      <h4 style="font-size: 0.88rem; font-weight: 700; color: #7E002F; margin: 0 0 6px 0; display: flex; align-items: center; gap: 6px;">
+        <span class="material-symbols-outlined" style="font-size: 18px;">lock</span>
+        <span>Institutional Assessment Rule</span>
       </h4>
-      <p style="font-size: 0.82rem; color: var(--color-text-muted); line-height: 1.5; margin: 0 0 0.75rem 0;">
-        Per USTED policy, the 20-item Workplace Supervisor Assessment Form remains a confidential physical artifact sealed in an envelope by the host employer. Scoring is never collected via student web forms.
+      <p style="font-size: 0.82rem; color: #7E002F; line-height: 1.5; margin: 0 0 10px 0;">
+        Per USTED academic policy, the 20-item Workplace Supervisor Assessment Form remains a confidential physical artifact sealed in an envelope by the host employer. Scoring is never collected via student web forms.
       </p>
-      <a href="{{ url_for('student.download_assessment_form', attachment_id=attachment.id) }}" class="btn btn-outline btn-sm" style="width: 100%; text-align: center; font-size: 0.8rem;">
-        📄 Download Assessment Rubric (PDF)
+      <a href="{{ url_for('student.download_assessment_form', attachment_id=attachment.id) }}" class="btn-secondary btn-sm" style="width: 100%; font-size: 0.78rem;">
+        <span class="material-symbols-outlined" style="font-size: 15px;">description</span>
+        <span>Download Assessment Rubric (PDF)</span>
       </a>
     </div>
   </div>

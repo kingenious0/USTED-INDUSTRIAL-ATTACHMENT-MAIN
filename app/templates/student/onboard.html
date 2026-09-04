@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+
+{% block title %}Activate Student Portal — USTED U-IAP{% endblock %}
+
+{% block content %}
+<div style="min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 2.5rem 1rem; background: #F8FAFC;">
+  <div class="modern-card" style="width: 100%; max-width: 520px; padding: 2.5rem 2.25rem;">
+    <!-- Brand Header -->
+    <div style="text-align: center; margin-bottom: 2rem;">
+      <div style="width: 64px; height: 64px; margin: 0 auto 1rem auto;">
+        <img src="{{ url_for('static', filename='img/crest.svg') }}" alt="USTED Crest" width="64" height="64" />
+      </div>
+      <div style="display: inline-flex; align-items: center; gap: 6px; background: #ECFDF5; border: 1px solid #A7F3D0; color: #065F46; padding: 4px 12px; border-radius: 9999px; font-size: 11.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.75rem;">
+        <span class="material-symbols-outlined" style="font-size: 15px;">verified</span>
+        <span>QR Gateway Verified</span>
+      </div>
+      <h1 style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 1.5rem; font-weight: 800; color: #0F172A; margin: 0 0 6px 0; letter-spacing: -0.015em;">
+        Activate Student Portal
+      </h1>
+      <p style="font-size: 0.88rem; color: #64748B; margin: 0;">
+        Workplace Experience Learning (WEL) &bull; Master Roster Match
+      </p>
+    </div>
+
+    <!-- Pre-filled Information Card -->
+    <div style="background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 8px; padding: 1.25rem; margin-bottom: 1.5rem;">
+      <div style="font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: #7E002F; margin-bottom: 0.75rem;">
+        Retrieved Student Record
+      </div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+        <div>
+          <span style="font-size: 0.75rem; color: #64748B; display: block;">Full Name</span>
+          <strong style="font-size: 0.95rem; color: #0F172A;">{{ student.full_name }}</strong>
+        </div>
+        <div>
+          <span style="font-size: 0.75rem; color: #64748B; display: block;">Index Number</span>
+          <strong style="font-size: 0.95rem; color: #7E002F;">{{ student.index_number }}</strong>
+        </div>
+        <div style="grid-column: span 2;">
+          <span style="font-size: 0.75rem; color: #64748B; display: block;">Programme &amp; Level</span>
+          <strong style="font-size: 0.9rem; color: #0F172A;">Level {{ student.current_level }} &bull; {{ student.programme }}</strong>
+        </div>
+      </div>
+      {% if attachment %}
+        <div style="margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px dashed #CBD5E1; font-size: 0.8rem; color: #64748B; display: flex; justify-content: space-between;">
+          <span><strong>Duration:</strong> {{ attachment.duration_weeks }} Weeks</span>
+          <span><strong>Academic Year:</strong> {{ attachment.academic_year }}</span>
+        </div>
+      {% endif %}
+    </div>
+
+    <!-- Setup Form -->
+    <form method="POST" action="{{ url_for('student.onboard', token=token) }}" class="modern-auth-form" novalidate>
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+
+      <!-- Mobile Phone Input -->
+      <div class="form-group" style="margin-bottom: 1.25rem;">
+        <label for="phoneInput" class="form-label">
+          Ghanaian Mobile Phone Number <span style="color: #BE123C;">*</span>
+        </label>
+        <span style="display: block; font-size: 0.78rem; color: #64748B; margin-bottom: 6px;">
+          For Liaison SMS alerts &amp; supervisor coordination
+        </span>
+        <input type="tel" id="phoneInput" name="phone" class="form-control" 
+               placeholder="024XXXXXXX or 050XXXXXXX" value="{{ phone or '' }}" required autofocus />
+      </div>
+
+      <!-- Password Input -->
+      <div class="form-group" style="margin-bottom: 1.25rem;">
+        <label for="passwordInput" class="form-label">
+          Create Account Password <span style="color: #BE123C;">*</span>
+        </label>
+        <input type="password" id="passwordInput" name="password" class="form-control" 
+               placeholder="Minimum 8 characters" minlength="8" required />
+      </div>
+
+      <!-- Confirm Password -->
+      <div class="form-group" style="margin-bottom: 1.75rem;">
+        <label for="confirmPasswordInput" class="form-label">
+          Confirm Password <span style="color: #BE123C;">*</span>
+        </label>
+        <input type="password" id="confirmPasswordInput" name="confirm_password" class="form-control" 
+               placeholder="Re-enter password" minlength="8" required />
+      </div>
+
+      <!-- Submit Button -->
+      <button type="submit" class="btn-primary btn-block" style="min-height: 44px; font-weight: 700; font-size: 0.95rem;">
+        <span>Activate Account &amp; Access Portal &rarr;</span>
+      </button>
+    </form>
+
+    <div style="margin-top: 1.75rem; text-align: center; font-size: 0.85rem; border-top: 1px solid #F1F5F9; padding-top: 1.25rem;">
+      <span style="color: #64748B;">Already activated your account?</span>
+      <a href="{{ url_for('auth.login', index_number=student.index_number) }}" style="color: #7E002F; font-weight: 700; margin-left: 0.25rem; text-decoration: none;">
+        Sign in here
+      </a>
+    </div>
+  </div>
+</div>
+{% endblock %}

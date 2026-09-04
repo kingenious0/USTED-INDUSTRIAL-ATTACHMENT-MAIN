@@ -2,18 +2,113 @@ from flask import (
     Blueprint, render_template, redirect, url_for, flash, request, abort,
     send_file, current_app, Response
 )
-from flask_login import login_required, current_user
+from flask_login import login_required, current_user, login_user
 import io
 from app.extensions import db
+from app.models.user import User, UserRole
+from app.models.student_master import StudentMaster
 from app.models.attachment import AttachmentRecord, AttachmentStatus
 from app.models.activity import WeeklyActivity, DailyActivity
 from app.models.acceptance import AcceptanceRecord
+from app.models.audit import AuditAction
 from app.services.attachment_service import AttachmentService
+from app.services.audit_service import AuditService
 from app.services.pdf_service import PDFService
 from app.utils.decorators import student_required
-from app.utils.tokens import generate_elogbook_sso_jwt
+from app.utils.tokens import decode_qr_onboard_token, validate_and_normalize_ghana_phone, generate_elogbook_sso_jwt
 
 student_bp = Blueprint('student', __name__)
+
+
+@student_bp.route('/onboard/<token>', methods=['GET', 'POST'])
+def onboard(token: str):
+    """
+    PRD 4.0 Core QR Student Onboarding Gateway.
+    Scanned from the physical/digital Introductory Letter QR code.
+    Identifies the student and attachment securely without exposing credentials.
+    """
+    is_valid, data, err_msg = decode_qr_onboard_token(token, current_app.config['SECRET_KEY'])
+    if not is_valid or not data:
+        flash(err_msg or "This student onboarding link is invalid or has expired. Please contact the Industrial Liaison Office.", "danger")
+        return redirect(url_for('auth.login'))
+
+    index_number = data.get('index_number')
+    attachment_id = data.get('attachment_id')
+
+    student = StudentMaster.query.filter_by(index_number=index_number).first()
+    if not student:
+        flash("Student master record was not found for this onboarding code. Please contact the Industrial Liaison Office.", "danger")
+        return redirect(url_for('auth.login'))
+
+    attachment = None
+    if attachment_id:
+        attachment = AttachmentRecord.query.get(attachment_id)
+    if not attachment and student.attachments.count() > 0:
+        attachment = student.attachments.order_by(AttachmentRecord.created_at.desc()).first()
+
+    # Case B — Student account already exists
+    existing_user = User.query.filter((User.username == index_number) | (User.student_master_id == student.id)).first()
+    if existing_user:
+        flash(f"An account has already been created for Index Number {index_number}. Please log in.", "info")
+        return redirect(url_for('auth.login', index_number=index_number))
+
+    if request.method == 'POST':
+        phone = request.form.get('phone', '').strip()
+        password = request.form.get('password', '')
+        confirm_password = request.form.get('confirm_password', '')
+
+        # Validate Ghanaian mobile phone
+        valid_phone, normalized_phone, phone_err = validate_and_normalize_ghana_phone(phone)
+        if not valid_phone:
+            flash(phone_err, "danger")
+            return render_template('student/onboard.html', student=student, attachment=attachment, token=token, phone=phone)
+
+        # Validate password strength & match
+        if len(password) < 8:
+            flash("Password must be at least 8 characters long.", "danger")
+            return render_template('student/onboard.html', student=student, attachment=attachment, token=token, phone=phone)
+
+        if password != confirm_password:
+            flash("Passwords do not match. Please re-enter your password.", "danger")
+            return render_template('student/onboard.html', student=student, attachment=attachment, token=token, phone=phone)
+
+        # Re-check race condition
+        if User.query.filter((User.username == index_number) | (User.student_master_id == student.id)).first():
+            flash(f"An account has already been registered for Index Number {index_number}. Please sign in.", "info")
+            return redirect(url_for('auth.login', index_number=index_number))
+
+        user = User(
+            username=index_number,
+            email=student.email or f"{index_number}@st.usted.edu.gh",
+            full_name=student.full_name,
+            role=UserRole.STUDENT,
+            is_active=True,
+            student_master_id=student.id
+        )
+        user.set_password(password)
+        student.phone = normalized_phone
+        db.session.add(user)
+        db.session.commit()
+
+        login_user(user)
+        AuditService.log(
+            action=AuditAction.USER_LOGIN,
+            actor=user,
+            target_type='User',
+            target_id=user.id,
+            details={'method': 'qr_onboarding', 'index_number': index_number, 'phone': normalized_phone}
+        )
+
+        flash(f"Account created successfully! Welcome to U-IAP, {student.full_name}.", "success")
+        return redirect(url_for('student.dashboard'))
+
+    return render_template(
+        'student/onboard.html',
+        student=student,
+        attachment=attachment,
+        token=token,
+        phone=student.phone or ''
+    )
 
 
 def _get_student_attachment_or_404(attachment_id: int) -> AttachmentRecord:
@@ -30,7 +125,7 @@ def _get_student_attachment_or_404(attachment_id: int) -> AttachmentRecord:
 def dashboard():
     student_master = current_user.student_master
     if not student_master:
-        flash("Your user profile is not linked to a university student master record. Please visit the Industrial Liaison Unit.", "warning")
+        flash("Your user profile is not linked to a university student master record. Please visit the Industrial Liaison Office.", "warning")
         return render_template('student/dashboard.html', student=None, attachments=[])
 
     attachments = AttachmentRecord.query.filter_by(student_id=student_master.id).order_by(AttachmentRecord.created_at.desc()).all()
@@ -38,13 +133,15 @@ def dashboard():
 
     require_approval = current_app.config.get('REQUIRE_ACCEPTANCE_APPROVAL_BEFORE_LOGGING', False)
     can_log = active_attachment.can_log_activities(require_approval) if active_attachment else False
+    elogsheet_url = current_app.config.get('ELOGSHEET_URL', 'https://elogsheet.usted.edu.gh')
 
     return render_template(
         'student/dashboard.html',
         student=student_master,
         attachments=attachments,
         active_attachment=active_attachment,
-        can_log=can_log
+        can_log=can_log,
+        elogsheet_url=elogsheet_url
     )
 
 
@@ -360,7 +457,11 @@ def launch_elogsheet(attachment_id: int):
     secret_key = current_app.config.get('SECRET_KEY', 'dev-secret-key-u-iap-2026')
     sso_token = generate_elogbook_sso_jwt(student, attachment, secret_key, expires_in=120)
 
-    external_base = current_app.config.get('EXTERNAL_ELOGBOOK_URL', 'https://usted-elogbook.vercel.app').rstrip('/')
+    external_base = (
+        current_app.config.get('ELOGSHEET_URL')
+        or current_app.config.get('EXTERNAL_ELOGBOOK_URL')
+        or 'https://elogsheet.usted.edu.gh'
+    ).rstrip('/')
     sso_redirect_url = f"{external_base}?sso_token={sso_token}"
 
     flash("Redirecting to your secure external eLogBook session...", "info")

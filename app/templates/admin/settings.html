@@ -1,36 +1,56 @@
 {% extends "base.html" %}
 
-{% block title %}System Settings & Policy Governance — U-IAP{% endblock %}
+{% block title %}System Settings &amp; Policy Governance — U-IAP{% endblock %}
+{% block page_breadcrumb %}Administration / Policy Governance{% endblock %}
 
 {% block content %}
-<div class="page-header">
+<div class="page-header" style="margin-bottom: 1.5rem;">
   <div>
-    <a href="{{ url_for('admin.dashboard') }}" style="font-size: 0.85rem; color: var(--color-text-muted);">&larr; Back to Admin Dashboard</a>
-    <h1 class="page-title" style="margin-top: 0.25rem;">System Configuration & Policy Governance</h1>
-    <p class="page-subtitle">Configurable workflow parameters preserving institutional decision authority</p>
+    <a href="{{ url_for('admin.dashboard') }}" style="font-size: 0.82rem; color: var(--color-text-muted); text-decoration: none; display: inline-flex; align-items: center; gap: 4px; margin-bottom: 0.35rem;">
+      <span class="material-symbols-outlined" style="font-size: 16px;">arrow_back</span>
+      <span>Back to Admin Dashboard</span>
+    </a>
+    <h1 class="page-title" style="font-size: 1.5rem; font-weight: 800; color: var(--color-text-main);">
+      System Configuration &amp; Policy Governance
+    </h1>
+    <p class="page-subtitle" style="font-size: 0.88rem; color: var(--color-text-muted); margin-top: 0.2rem;">
+      Configurable workflow parameters preserving institutional decision authority and compliance boundaries
+    </p>
   </div>
 </div>
 
-<div style="max-width: 800px; margin: 0 auto;">
-  <div class="card" style="border-top: 4px solid var(--color-primary);">
-    <form method="POST">
-      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-
-      <h3 style="font-size: 1.1rem; color: var(--color-primary-dark); margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--color-border);">
+<div style="max-width: 760px; margin: 0 auto;">
+  <div class="modern-card">
+    <div class="card-header" style="border-bottom: 1px solid #E2E8F0;">
+      <h3 class="card-title" style="font-size: 1.05rem; font-weight: 700; color: var(--color-text-main); margin: 0;">
         Acceptance Form Status Governance
       </h3>
+      <p class="card-subtitle" style="font-size: 0.78rem; color: var(--color-text-muted); margin: 2px 0 0 0;">
+        Institutional workflow threshold determining when daily logging unlocks for students
+      </p>
+    </div>
 
-      <div style="background: var(--color-surface-bg); border-left: 4px solid var(--color-accent-gold); padding: 1rem 1.25rem; border-radius: var(--radius); margin-bottom: 1.25rem; font-size: 0.88rem; line-height: 1.5; border: 1px solid var(--color-border); border-left-width: 4px;">
-        <strong style="color: var(--color-primary-dark);">Governing Principle:</strong><br/>
-        The system must not silently decide university institutional policy. This toggle allows the Liaison Unit to switch between <strong>Option A</strong> (strict pre-approval required before logging begins) and <strong>Option B</strong> (logging proceeds immediately while staff reviews asynchronously).
+    <form method="POST" style="padding: 1.5rem 1.75rem;">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+
+      <div style="background: #F8FAFC; border: 1px solid #E2E8F0; border-left: 4px solid var(--color-accent-gold); padding: 1rem 1.25rem; border-radius: 8px; margin-bottom: 1.5rem; font-size: 0.86rem; line-height: 1.55;">
+        <div style="display: flex; align-items: center; gap: 6px; font-weight: 700; color: var(--color-text-main); margin-bottom: 4px;">
+          <span class="material-symbols-outlined" style="font-size: 18px; color: var(--color-accent-gold);">gavel</span>
+          <span>Governing Institutional Principle</span>
+        </div>
+        <span style="color: var(--color-text-muted);">
+          The portal must not silently decide university institutional policy. This toggle empowers the Industrial Liaison Unit to switch between <strong>Option A</strong> (strict pre-approval required before logging begins) and <strong>Option B</strong> (logging proceeds immediately while staff reviews asynchronously).
+        </span>
       </div>
 
-      <div class="form-group">
-        <label style="display: flex; align-items: flex-start; gap: 0.75rem; cursor: pointer;">
-          <input type="checkbox" name="require_acceptance_approval" value="1" {% if require_approval %}checked{% endif %} style="margin-top: 0.25rem; transform: scale(1.2); accent-color: var(--color-primary);">
+      <div class="form-group" style="margin-bottom: 1.5rem;">
+        <label style="display: flex; align-items: flex-start; gap: 0.85rem; cursor: pointer; padding: 1.15rem; border: 1px solid #E2E8F0; border-radius: 8px; background: #FFFFFF; transition: border-color 0.15s ease;">
+          <input type="checkbox" name="require_acceptance_approval" value="1" {% if require_approval %}checked{% endif %} style="margin-top: 0.25rem; width: 18px; height: 18px; accent-color: var(--color-primary); cursor: pointer;">
           <div>
-            <strong style="color: var(--color-primary-dark); font-size: 0.95rem;">Require Liaison Approval Before Enabling Student Activity Logging (Option A)</strong>
-            <p style="font-size: 0.82rem; color: var(--color-text-muted); margin-top: 0.25rem;">
+            <strong style="color: var(--color-text-main); font-size: 0.95rem; display: block;">
+              Require Liaison Approval Before Enabling Student Activity Logging (Option A)
+            </strong>
+            <p style="font-size: 0.82rem; color: var(--color-text-muted); margin: 0.35rem 0 0 0; line-height: 1.5;">
               When enabled, students cannot enter daily activities until a Liaison Officer reviews and approves their uploaded Acceptance Form scan and verifies the official wet-ink company stamp.
               When disabled (Option B), students can log activities immediately after uploading their scan while Liaison reviews asynchronously.
             </p>
@@ -38,8 +58,11 @@
         </label>
       </div>
 
-      <div style="margin-top: 2rem; display: flex; justify-content: flex-end;">
-        <button type="submit" class="btn btn-primary">Save Operational Policy</button>
+      <div style="display: flex; justify-content: flex-end; padding-top: 1.25rem; border-top: 1px solid #E2E8F0;">
+        <button type="submit" class="btn btn-primary" style="display: inline-flex; align-items: center; gap: 6px;">
+          <span class="material-symbols-outlined" style="font-size: 16px;">save</span>
+          <span>Save Operational Policy</span>
+        </button>
       </div>
     </form>
   </div>

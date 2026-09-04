@@ -251,11 +251,11 @@ class PDFService:
                     Paragraph("<b>OFFICIAL DIGITAL ONBOARDING & VERIFICATION GATEWAY</b>", styles['TableCellBold']),
                     Spacer(1, 2),
                     Paragraph(
-                        "Scan this QR code using a smartphone camera within 24 hours to initiate your secure "
-                        "U-IAP portal account, upload acceptance details, and access your eLogBook.",
+                        "Scan this QR code using a smartphone camera to create your secure "
+                        "U-IAP portal account, track your attachment status, and upload your official Acceptance Form.",
                         styles['TableCell']
                     ),
-                    Paragraph(f"<font size=6 color='#64748B'>Gateway: {qr_access_url}</font>", styles['TableCell'])
+                    Paragraph(f"<font size=6 color='#64748B'>Onboarding URL: {qr_access_url}</font>", styles['TableCell'])
                 ]
 
                 t_qr = Table([[d, qr_cell_content]], colWidths=[65, 435])
