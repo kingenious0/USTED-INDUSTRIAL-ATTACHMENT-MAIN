@@ -1,134 +1,93 @@
 {% extends "base.html" %}
 
-{% block title %}Acceptance Form Review Queue — U-IAP{% endblock %}
-{% block page_breadcrumb %}Acceptance Queue{% endblock %}
+{% block title %}Acceptance Form Review Desk — USTED U-IAP{% endblock %}
+{% block page_breadcrumb %}Acceptance Form Review Desk{% endblock %}
 
 {% block content %}
-<div class="page-header">
-  <div>
-    <h1 class="page-title">Acceptance Form Review Queue</h1>
-    <p class="page-subtitle">Verify host employer endorsement, physical supervisor signature, and official wet-ink stamp</p>
-  </div>
+<!-- Page Header -->
+<div class="aq-header">
+  <h1 class="aq-title">Acceptance Form Review Desk</h1>
+  <p class="aq-subtitle">Verify host employer endorsement, physical supervisor signature, and wet-ink circular stamp.</p>
 </div>
 
-<!-- Pending Queue -->
-<div class="modern-card" style="margin-bottom: 2rem;">
-  <div class="card-header">
-    <div style="display: flex; align-items: center; gap: 8px;">
-      <span class="material-symbols-outlined" style="color: #D97706; font-size: 22px;">pending_actions</span>
-      <h3 class="card-title">Pending Institutional Verification ({{ pending_items|length }})</h3>
-    </div>
-    <span class="badge badge-warning">{{ pending_items|length }} Awaiting Review</span>
-  </div>
-
-  <div class="table-responsive">
-    <table class="modern-table">
-      <thead>
-        <tr>
-          <th>Student Details</th>
-          <th>Index Number</th>
-          <th>Host Organization</th>
-          <th>Location &amp; Phone</th>
-          <th>Upload Date</th>
-          <th style="text-align: right;">Action</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for item in pending_items %}
-          <tr>
-            <td>
-              <strong style="color: #0F172A; font-size: 0.9rem;">{{ item.attachment.student.full_name }}</strong>
-              <div style="font-size: 0.78rem; color: #64748B;">{{ item.attachment.student.programme }}</div>
-            </td>
-            <td>
-              <code style="font-family: 'JetBrains Mono', monospace; font-weight: 700; color: #7E002F;">{{ item.attachment.student.index_number }}</code>
-            </td>
-            <td>
-              <strong style="color: #1E293B;">{{ item.organization_name }}</strong>
-              <div style="font-size: 0.78rem; color: #64748B;">{{ item.organization_type or 'General' }}</div>
-            </td>
-            <td>
-              <div>{{ item.location }}</div>
-              <small style="color: #64748B;">{{ item.telephone }}</small>
-            </td>
-            <td>
-              <small style="color: #64748B; font-weight: 500;">{{ item.created_at.strftime('%d/%m/%Y %H:%M') }}</small>
-            </td>
-            <td style="text-align: right;">
-              <div style="display: inline-flex; gap: 6px; align-items: center;">
-                <a href="{{ url_for('liaison.view_scan', acceptance_id=item.id) }}" target="_blank" class="btn-secondary btn-sm">
-                  <span class="material-symbols-outlined" style="font-size: 15px;">visibility</span>
-                  <span>Scan</span>
-                </a>
-                <form method="POST" action="{{ url_for('liaison.verify_and_activate_acceptance', acceptance_id=item.id) }}" style="display: inline; margin: 0;">
-                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-                  <button type="submit" class="btn-primary btn-sm">
-                    <span class="material-symbols-outlined" style="font-size: 15px;">check_circle</span>
-                    <span>Verify Acceptance &amp; Activate Attachment</span>
-                  </button>
-                </form>
-                <a href="{{ url_for('liaison.review_acceptance', acceptance_id=item.id) }}" class="btn-secondary btn-sm">
-                  <span>Review &rarr;</span>
-                </a>
-              </div>
-            </td>
-          </tr>
-        {% else %}
-          <tr>
-            <td colspan="6" style="text-align: center; color: #64748B; padding: 3rem 1rem;">
-              <span class="material-symbols-outlined" style="font-size: 40px; color: #94A3B8; display: block; margin-bottom: 8px;">task_alt</span>
-              <strong>All caught up!</strong>
-              <p style="font-size: 0.82rem; margin: 4px 0 0 0;">No Acceptance Forms currently awaiting verification.</p>
-            </td>
-          </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
+<!-- Tabs (Modeled after Mercury "Needs Approval / Paid" tabs) -->
+<div class="aq-tabs-bar" role="tablist">
+  <button type="button" class="aq-tab-btn active" id="tabBtnNeedsVerification" role="tab" aria-selected="true" aria-controls="tabNeedsVerification">
+    <span>Needs Verification</span>
+    <span class="aq-tab-badge" id="badgeNeedsVerification">{{ pending_items|length }}</span>
+  </button>
+  <button type="button" class="aq-tab-btn" id="tabBtnRecentlyProcessed" role="tab" aria-selected="false" aria-controls="tabRecentlyProcessed">
+    <span>Recently Processed</span>
+    <span class="aq-tab-badge" id="badgeRecentlyProcessed">{{ reviewed_items|length }}</span>
+  </button>
 </div>
 
-<!-- Recently Reviewed Queue -->
-{% if reviewed_items %}
-  <div class="modern-card">
-    <div class="card-header">
-      <div style="display: flex; align-items: center; gap: 8px;">
-        <span class="material-symbols-outlined" style="color: #64748B; font-size: 22px;">history</span>
-        <h3 class="card-title">Recently Reviewed Submissions</h3>
-      </div>
-      <span class="badge badge-secondary">{{ reviewed_items|length }} Processed</span>
-    </div>
-    <div class="table-responsive">
-      <table class="modern-table">
-        <thead>
+<!-- TAB 1: Needs Verification Table Container -->
+<div id="tabNeedsVerification" role="tabpanel" aria-labelledby="tabBtnNeedsVerification">
+  <div class="aq-table-card">
+    <div class="aq-table-scroll">
+      <table class="aq-table">
+        <thead class="aq-table-header">
           <tr>
-            <th>Student</th>
-            <th>Organization</th>
-            <th>Decision Status</th>
-            <th>Reviewed By</th>
-            <th>Date</th>
-            <th style="text-align: right;">Action</th>
+            <th style="width: 26%;">STUDENT &amp; PROGRAMME</th>
+            <th style="width: 14%;">INDEX NO.</th>
+            <th style="width: 24%;">HOST ORGANIZATION</th>
+            <th style="width: 18%;">LOCATION &amp; CONTACT</th>
+            <th style="width: 10%;">SUBMISSION DATE</th>
+            <th style="width: 8%; text-align: right;">ACTION</th>
           </tr>
         </thead>
         <tbody>
-          {% for r in reviewed_items %}
+          {% for item in pending_items %}
+            <tr class="aq-table-row">
+              <td class="aq-td">
+                <div class="aq-student-name">{{ item.attachment.student.full_name }}</div>
+                <div class="aq-student-prog">{{ item.attachment.student.programme }}</div>
+              </td>
+              <td class="aq-td">
+                <span class="aq-index-badge">{{ item.attachment.student.index_number }}</span>
+              </td>
+              <td class="aq-td">
+                <div class="aq-host-org" title="{{ item.organization_name }}">{{ item.organization_name }}</div>
+              </td>
+              <td class="aq-td">
+                <div class="aq-location" title="{{ item.location }}{% if item.region %}, {{ item.region }}{% endif %}">
+                  {{ item.location }}
+                </div>
+                <div class="aq-phone">{{ item.telephone }}</div>
+              </td>
+              <td class="aq-td">
+                <span class="aq-sub-date">{{ item.created_at.strftime('%d/%m/%Y') }}</span>
+              </td>
+              <td class="aq-td" style="text-align: right;">
+                <button type="button"
+                        class="aq-btn-audit btn-trigger-audit"
+                        data-id="{{ item.id }}"
+                        data-student="{{ item.attachment.student.full_name }}"
+                        data-index="{{ item.attachment.student.index_number }}"
+                        data-programme="{{ item.attachment.student.programme }}"
+                        data-org="{{ item.organization_name }}"
+                        data-location="{{ item.location }}"
+                        data-region="{{ item.region or 'Southern Zone' }}"
+                        data-phone="{{ item.telephone }}"
+                        data-supervisor="{{ item.workplace_supervisor_name or 'Pending Verification' }}"
+                        data-supervisor-phone="{{ item.workplace_supervisor_phone or item.telephone }}"
+                        data-gps="{{ item.gps_address or 'Not Registered' }}"
+                        data-coords="{% if item.latitude and item.longitude %}{{ '%.5f'|format(item.latitude) }}, {{ '%.5f'|format(item.longitude) }}{% else %}Coordinates not pinned{% endif %}"
+                        data-date="{{ item.created_at.strftime('%d/%m/%Y %H:%M') }}"
+                        data-scan-url="{{ url_for('liaison.view_scan', acceptance_id=item.id) }}"
+                        data-approve-url="{{ url_for('liaison.verify_and_activate_acceptance', acceptance_id=item.id) }}"
+                        data-review-url="{{ url_for('liaison.review_acceptance', acceptance_id=item.id) }}">
+                  <span>Audit Submission &rarr;</span>
+                </button>
+              </td>
+            </tr>
+          {% else %}
             <tr>
-              <td>
-                <strong style="color: #0F172A;">{{ r.attachment.student.full_name }}</strong>
-                <div style="font-size: 0.78rem; color: #64748B;">{{ r.attachment.student.index_number }}</div>
-              </td>
-              <td>{{ r.organization_name }}</td>
-              <td>
-                <span class="badge {% if r.is_approved %}badge-success{% elif r.is_flagged %}badge-danger{% else %}badge-secondary{% endif %}">
-                  {{ r.status.replace('_', ' ') }}
-                </span>
-              </td>
-              <td>{{ r.reviewed_by.full_name if r.reviewed_by else 'Liaison Officer' }}</td>
-              <td><small style="color: #64748B;">{{ r.reviewed_at.strftime('%d/%m/%Y') if r.reviewed_at else '—' }}</small></td>
-              <td style="text-align: right;">
-                <a href="{{ url_for('liaison.review_acceptance', acceptance_id=r.id) }}" class="btn-secondary btn-sm">
-                  <span class="material-symbols-outlined" style="font-size: 15px;">find_replace</span>
-                  <span>Re-examine</span>
-                </a>
+              <td colspan="6" class="aq-empty-box">
+                <span class="material-symbols-outlined aq-empty-icon">task_alt</span>
+                <p class="aq-empty-title">&check; All caught up!</p>
+                <p class="aq-empty-desc">No Acceptance Forms currently awaiting verification.</p>
               </td>
             </tr>
           {% endfor %}
@@ -136,5 +95,322 @@
       </table>
     </div>
   </div>
-{% endif %}
+</div>
+
+<!-- TAB 2: Recently Processed Table Container -->
+<div id="tabRecentlyProcessed" role="tabpanel" aria-labelledby="tabBtnRecentlyProcessed" style="display: none;">
+  <div class="aq-table-card">
+    <div class="aq-table-scroll">
+      <table class="aq-table">
+        <thead class="aq-table-header">
+          <tr>
+            <th style="width: 26%;">STUDENT &amp; PROGRAMME</th>
+            <th style="width: 14%;">INDEX NO.</th>
+            <th style="width: 24%;">HOST ORGANIZATION</th>
+            <th style="width: 14%;">DECISION STATUS</th>
+            <th style="width: 14%;">REVIEWED BY &amp; DATE</th>
+            <th style="width: 8%; text-align: right;">ACTION</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in reviewed_items %}
+            <tr class="aq-table-row">
+              <td class="aq-td">
+                <div class="aq-student-name">{{ r.attachment.student.full_name }}</div>
+                <div class="aq-student-prog">{{ r.attachment.student.programme }}</div>
+              </td>
+              <td class="aq-td">
+                <span class="aq-index-badge">{{ r.attachment.student.index_number }}</span>
+              </td>
+              <td class="aq-td">
+                <div class="aq-host-org" title="{{ r.organization_name }}">{{ r.organization_name }}</div>
+              </td>
+              <td class="aq-td">
+                {% if r.is_approved %}
+                  <span class="aq-badge-approved">
+                    <span class="material-symbols-outlined" style="font-size: 13px;">check_circle</span>
+                    <span>APPROVED</span>
+                  </span>
+                {% elif r.is_flagged %}
+                  <span class="aq-badge-flagged">
+                    <span class="material-symbols-outlined" style="font-size: 13px;">flag</span>
+                    <span>{{ r.status.replace('_', ' ').upper() }}</span>
+                  </span>
+                {% else %}
+                  <span class="aq-badge-pending">
+                    <span>{{ r.status.replace('_', ' ').upper() }}</span>
+                  </span>
+                {% endif %}
+              </td>
+              <td class="aq-td">
+                <div style="font-size: 0.75rem; font-weight: 600; color: #1E293B;">
+                  {{ r.reviewed_by.full_name if r.reviewed_by else 'Liaison Officer' }}
+                </div>
+                <div class="aq-sub-date">
+                  {{ r.reviewed_at.strftime('%d/%m/%Y') if r.reviewed_at else '—' }}
+                </div>
+              </td>
+              <td class="aq-td" style="text-align: right;">
+                <a href="{{ url_for('liaison.review_acceptance', acceptance_id=r.id) }}" class="aq-btn-audit">
+                  <span class="material-symbols-outlined" style="font-size: 14px;">find_replace</span>
+                  <span>Re-examine &rarr;</span>
+                </a>
+              </td>
+            </tr>
+          {% else %}
+            <tr>
+              <td colspan="6" class="aq-empty-box">
+                <span class="material-symbols-outlined aq-empty-icon">history</span>
+                <p class="aq-empty-title">No Recently Processed Forms</p>
+                <p class="aq-empty-desc">Processed acceptance records will appear here for audit trail and re-examination.</p>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- AUDIT INSPECTION DRAWER / SLIDE-OVER (Modeled after Mercury Right Drawer) -->
+<div class="aq-backdrop" id="aqBackdrop"></div>
+
+<aside class="aq-drawer" id="aqDrawer" aria-modal="true" role="dialog" aria-hidden="true" aria-labelledby="drawerTitle">
+  <!-- Panel Header -->
+  <div class="aq-drawer-header">
+    <div class="aq-drawer-title-wrap">
+      <h2 class="aq-drawer-title" id="drawerTitle">Acceptance Form Audit: Elliot Paakow Entsiwah</h2>
+      <div class="aq-drawer-status-pill" id="drawerStatusPill">
+        <span class="material-symbols-outlined" style="font-size: 13px;">schedule</span>
+        <span>AWAITING WET-INK AUDIT</span>
+      </div>
+    </div>
+    <button type="button" class="aq-drawer-close" id="drawerCloseBtn" aria-label="Close Inspection Drawer">
+      <span class="material-symbols-outlined">close</span>
+    </button>
+  </div>
+
+  <!-- Panel Body (Scrollable) -->
+  <div class="aq-drawer-body">
+    <!-- Student & Workplace Metadata Grid -->
+    <div class="aq-drawer-meta-grid">
+      <div class="aq-meta-item">
+        <span class="aq-meta-label">Student Index &amp; Class</span>
+        <span class="aq-meta-val" id="drawerMetaIndex">—</span>
+      </div>
+      <div class="aq-meta-item">
+        <span class="aq-meta-label">Host Organization</span>
+        <span class="aq-meta-val" id="drawerMetaOrg">—</span>
+      </div>
+      <div class="aq-meta-item">
+        <span class="aq-meta-label">Workplace Supervisor</span>
+        <span class="aq-meta-val" id="drawerMetaSupervisor">—</span>
+      </div>
+      <div class="aq-meta-item">
+        <span class="aq-meta-label">Location / Suburb</span>
+        <span class="aq-meta-val" id="drawerMetaLocation">—</span>
+      </div>
+      <div class="aq-meta-item">
+        <span class="aq-meta-label">Ghana Post GPS &amp; PIN</span>
+        <span class="aq-meta-val" id="drawerMetaGps">—</span>
+      </div>
+      <div class="aq-meta-item">
+        <span class="aq-meta-label">Uploaded On</span>
+        <span class="aq-meta-val" id="drawerMetaDate">—</span>
+      </div>
+    </div>
+
+    <!-- Scanned Document Preview Container -->
+    <div class="aq-preview-container">
+      <div class="aq-preview-header">
+        <span class="aq-preview-title">
+          <span class="material-symbols-outlined" style="font-size: 14px; color: #94A3B8;">document_scanner</span>
+          <span>Uploaded Endorsement Form Scan</span>
+        </span>
+        <a href="#" target="_blank" class="aq-preview-zoom-btn" id="drawerZoomBtn">
+          <span class="material-symbols-outlined" style="font-size: 13px;">open_in_new</span>
+          <span>Open Full Scan &nearr;</span>
+        </a>
+      </div>
+      <div class="aq-preview-content">
+        <iframe id="drawerScanIframe" class="aq-preview-iframe" src="about:blank" title="Uploaded Acceptance Form Scan"></iframe>
+      </div>
+    </div>
+
+    <!-- Verification Checklist -->
+    <div class="aq-checklist-card">
+      <h4 class="aq-checklist-title">
+        <span class="material-symbols-outlined" style="font-size: 16px; color: #8C033B;">verified_user</span>
+        <span>Institutional Verification Checklist</span>
+      </h4>
+      <div class="aq-checklist-items">
+        <label class="aq-check-label">
+          <input type="checkbox" class="aq-check-input" id="checkStamp" checked>
+          <span>
+            <strong style="color: #0F172A;">Physical Circular Company Stamp Clearly Visible</strong>
+            <span style="display: block; font-size: 11px; color: #64748B;">Official entity wet-ink circular impression must be authentic, sharp, and legibly positioned.</span>
+          </span>
+        </label>
+        <label class="aq-check-label">
+          <input type="checkbox" class="aq-check-input" id="checkSignature" checked>
+          <span>
+            <strong style="color: #0F172A;">Authorized Workplace Supervisor Signature</strong>
+            <span style="display: block; font-size: 11px; color: #64748B;">Wet-ink physical countersignature from accredited industry mentor or human resources lead.</span>
+          </span>
+        </label>
+        <label class="aq-check-label">
+          <input type="checkbox" class="aq-check-input" id="checkGps" checked>
+          <span>
+            <strong style="color: #0F172A;">Workstation GPS Coordinates Validated</strong>
+            <span style="display: block; font-size: 11px; color: #64748B;">Registered workplace coordinates verified for faculty zonal supervision routing.</span>
+          </span>
+        </label>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom Operational Action Bar -->
+  <div class="aq-drawer-footer">
+    <form method="POST" id="drawerApproveForm" action="#" style="display: contents;">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <input type="hidden" name="review_notes" value="Verified official workplace supervisor endorsement and company wet-ink stamp.">
+      <button type="submit" class="aq-btn-primary" id="drawerApproveBtn" title="Verify Acceptance &amp; Activate Attachment">
+        <span class="material-symbols-outlined" style="font-size: 16px;">check_circle</span>
+        <span>&check; Approve &amp; Issue eLogSheet Access</span>
+        <span style="display:none;">Verify Acceptance &amp; Activate Attachment</span>
+      </button>
+    </form>
+    <a href="#" class="aq-btn-secondary" id="drawerRejectBtn">
+      <span class="material-symbols-outlined" style="font-size: 16px;">cancel</span>
+      <span>Reject / Request Rescan</span>
+    </a>
+  </div>
+</aside>
+
+<!-- Client Script for Tabs and Slide-Over Drawer Interaction -->
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  // Tab Switching
+  const tabBtnNeeds = document.getElementById('tabBtnNeedsVerification');
+  const tabBtnRecent = document.getElementById('tabBtnRecentlyProcessed');
+  const panelNeeds = document.getElementById('tabNeedsVerification');
+  const panelRecent = document.getElementById('tabRecentlyProcessed');
+
+  if (tabBtnNeeds && tabBtnRecent && panelNeeds && panelRecent) {
+    tabBtnNeeds.addEventListener('click', function () {
+      tabBtnNeeds.classList.add('active');
+      tabBtnNeeds.setAttribute('aria-selected', 'true');
+      tabBtnRecent.classList.remove('active');
+      tabBtnRecent.setAttribute('aria-selected', 'false');
+
+      panelNeeds.style.display = 'block';
+      panelRecent.style.display = 'none';
+    });
+
+    tabBtnRecent.addEventListener('click', function () {
+      tabBtnRecent.classList.add('active');
+      tabBtnRecent.setAttribute('aria-selected', 'true');
+      tabBtnNeeds.classList.remove('active');
+      tabBtnNeeds.setAttribute('aria-selected', 'false');
+
+      panelRecent.style.display = 'block';
+      panelNeeds.style.display = 'none';
+    });
+  }
+
+  // Mercury Slide-Over Drawer
+  const backdrop = document.getElementById('aqBackdrop');
+  const drawer = document.getElementById('aqDrawer');
+  const closeBtn = document.getElementById('drawerCloseBtn');
+
+  const drawerTitle = document.getElementById('drawerTitle');
+  const drawerMetaIndex = document.getElementById('drawerMetaIndex');
+  const drawerMetaOrg = document.getElementById('drawerMetaOrg');
+  const drawerMetaSupervisor = document.getElementById('drawerMetaSupervisor');
+  const drawerMetaLocation = document.getElementById('drawerMetaLocation');
+  const drawerMetaGps = document.getElementById('drawerMetaGps');
+  const drawerMetaDate = document.getElementById('drawerMetaDate');
+
+  const drawerZoomBtn = document.getElementById('drawerZoomBtn');
+  const drawerScanIframe = document.getElementById('drawerScanIframe');
+  const drawerApproveForm = document.getElementById('drawerApproveForm');
+  const drawerRejectBtn = document.getElementById('drawerRejectBtn');
+
+  function openDrawer(btn) {
+    const student = btn.dataset.student || 'Student';
+    const index = btn.dataset.index || '';
+    const prog = btn.dataset.programme || '';
+    const org = btn.dataset.org || 'Host Organization';
+    const supervisor = btn.dataset.supervisor || 'Pending';
+    const supervisorPhone = btn.dataset.supervisorPhone || '';
+    const location = btn.dataset.location || '';
+    const region = btn.dataset.region || '';
+    const gps = btn.dataset.gps || 'Not Registered';
+    const coords = btn.dataset.coords || '';
+    const date = btn.dataset.date || '';
+    const scanUrl = btn.dataset.scanUrl || '#';
+    const approveUrl = btn.dataset.approveUrl || '#';
+    const reviewUrl = btn.dataset.reviewUrl || '#';
+
+    // Populate Drawer Header & Meta
+    drawerTitle.textContent = 'Acceptance Form Audit: ' + student;
+    drawerMetaIndex.innerHTML = '<code>' + index + '</code> &bull; <span style="font-size:11px;color:#64748B;">' + prog + '</span>';
+    drawerMetaOrg.textContent = org;
+    drawerMetaSupervisor.textContent = supervisor + (supervisorPhone ? ' (' + supervisorPhone + ')' : '');
+    drawerMetaLocation.textContent = location + (region ? ' (' + region + ')' : '');
+    drawerMetaGps.innerHTML = '<span>' + gps + '</span><br><span style="font-size:10px;color:#64748B;font-family:monospace;">' + coords + '</span>';
+    drawerMetaDate.textContent = date;
+
+    // Populate Scan preview
+    drawerScanIframe.src = scanUrl;
+    drawerZoomBtn.href = scanUrl;
+
+    // Populate Actions
+    drawerApproveForm.action = approveUrl;
+    drawerRejectBtn.href = reviewUrl;
+
+    // Reset Checklist
+    document.getElementById('checkStamp').checked = true;
+    document.getElementById('checkSignature').checked = true;
+    document.getElementById('checkGps').checked = true;
+
+    // Open Animation
+    backdrop.classList.add('active');
+    drawer.classList.add('active');
+    drawer.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeDrawer() {
+    backdrop.classList.remove('active');
+    drawer.classList.remove('active');
+    drawer.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+    setTimeout(function () {
+      drawerScanIframe.src = 'about:blank';
+    }, 250);
+  }
+
+  // Attach button triggers
+  document.querySelectorAll('.btn-trigger-audit').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      openDrawer(this);
+    });
+  });
+
+  if (closeBtn) {
+    closeBtn.addEventListener('click', closeDrawer);
+  }
+
+  if (backdrop) {
+    backdrop.addEventListener('click', closeDrawer);
+  }
+
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && drawer.classList.contains('active')) {
+      closeDrawer();
+    }
+  });
+});
+</script>
 {% endblock %}

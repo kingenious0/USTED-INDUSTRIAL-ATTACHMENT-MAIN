@@ -3,72 +3,110 @@
 {% block title %}Sign In — USTED Industrial Attachment Portal (U-IAP){% endblock %}
 
 {% block content %}
-<div class="auth-sana-viewport">
+<div class="robin-auth-container">
 
-  <!-- 1. Top Capsule Navigation Bar (Sana AI Reference Standard) -->
-  <header class="auth-sana-header">
-    <a href="{{ url_for('main.index') }}" class="auth-sana-brand">
-      <div style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; background: #FFF; border: 1.5px solid #E2E8F0; border-radius: 12px; padding: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
-        <img src="{{ url_for('static', filename='img/crest.svg') }}" alt="USTED Crest" width="30" height="30" />
+  <!-- ========================================================================
+       1. Left Hero Panel (45% on Desktop >= 1024px, Solid USTED Deep Wine #6B022D)
+       ======================================================================== -->
+  <aside class="robin-hero-panel" aria-label="USTED Institutional Information">
+    <!-- Top Branding -->
+    <div class="robin-hero-branding">
+      <div class="robin-crest-badge">
+        <img src="{{ url_for('static', filename='img/crest.svg') }}" alt="USTED Crest" width="34" height="34" />
       </div>
-      <div>
-        <span style="font-weight: 800; font-size: 1.05rem; color: #0F172A; letter-spacing: -0.02em; display: block; line-height: 1.1;">USTED U-IAP</span>
-        <span style="font-size: 0.72rem; color: #64748B; font-weight: 600;">Industrial Attachment Portal</span>
+      <div class="robin-brand-text">
+        <div class="robin-hero-title">USTED U-IAP</div>
+        <div class="robin-hero-dept">Industrial Liaison Directorate</div>
       </div>
-    </a>
-
-    <!-- Center Floating Capsule Pill Navbar -->
-    <nav class="auth-pill-nav" aria-label="Portal Quick Links">
-      <button type="button" class="auth-pill-link" onclick="openSanaModal('modalOverview')">Overview</button>
-      <button type="button" class="auth-pill-link" onclick="openSanaModal('modalGuidelines')">Guidelines</button>
-      <button type="button" class="auth-pill-link" onclick="openSanaModal('modalPrivacy')">Privacy &amp; Terms</button>
-      <button type="button" class="auth-pill-link" onclick="openSanaModal('modalFaq')">FAQ</button>
-    </nav>
-
-    <!-- Right Academic Session Status -->
-    <div style="display: flex; align-items: center; gap: 0.75rem;">
-      <span style="font-size: 0.75rem; color: #065F46; font-weight: 700; background: #ECFDF5; border: 1px solid #A7F3D0; padding: 5px 14px; border-radius: 9999px; display: inline-flex; align-items: center; gap: 6px;">
-        <span style="width: 7px; height: 7px; border-radius: 50%; background: #10B981;"></span>
-        2024/2025 Session
-      </span>
     </div>
-  </header>
 
-  <!-- 2. Main 2-Column Showcase Canvas -->
-  <main class="auth-sana-grid">
+    <!-- Middle (Focused & Confident) -->
+    <div class="robin-hero-main">
+      <h1 class="robin-hero-heading">
+        Streamlining field practicum, from placement to sign-off.
+      </h1>
+      <p class="robin-hero-subheading">
+        The official gateway for students, visiting supervisors, and liaison officers across all accredited academic zones.
+      </p>
+    </div>
 
-    <!-- Left Form & Interaction Column -->
-    <div class="auth-sana-left">
-      <h1 class="sana-heading">Welcome to U-IAP</h1>
-      <p class="sana-subheading">Workplace Experience Learning</p>
+    <!-- Bottom Institutional Footer -->
+    <div class="robin-hero-footer">
+      <div class="robin-hero-footer-dept">Directorate of Academic Practicum &amp; Industrial Liaison</div>
+      <div class="robin-hero-footer-copy">&copy; 2026 USTED. All rights reserved.</div>
+    </div>
+  </aside>
 
-      <!-- Pill Segmented Switcher (Sign In vs Activation) -->
-      <div class="sana-mode-toggle" role="tablist" aria-label="Authentication Mode">
-        <button type="button" id="tabSignInBtn" class="sana-mode-btn active" role="tab" aria-selected="true" onclick="switchAuthTab('signin')">
-          Sign In
+  <!-- ========================================================================
+       2. Right Form Panel (55% on Desktop, Clean Canvas #FFFFFF or #F8FAFC)
+       ======================================================================== -->
+  <section class="robin-form-panel" aria-label="Sign In & Activation Form">
+    <div class="robin-form-box">
+
+      <!-- Mobile-only Top Branding (displayed when left hero collapses under 1024px) -->
+      <div class="robin-mobile-brand">
+        <div class="robin-crest-badge" style="width: 42px; height: 42px; padding: 5px;">
+          <img src="{{ url_for('static', filename='img/crest.svg') }}" alt="USTED Crest" width="30" height="30" />
+        </div>
+        <div>
+          <span style="font-weight: 800; font-size: 1.05rem; color: #0F172A; display: block; line-height: 1.15; font-family: 'Plus Jakarta Sans', sans-serif;">USTED U-IAP</span>
+          <span style="font-size: 0.72rem; color: #64748B; font-weight: 600;">Industrial Attachment Portal</span>
+        </div>
+      </div>
+
+      <!-- Segmented Pill Control (Sign In vs Activation) -->
+      <div class="robin-segmented-control" role="tablist" aria-label="Authentication Mode">
+        <button type="button" id="tabSignIn" class="robin-segment-btn active" role="tab" aria-selected="true" onclick="switchAuthTab('signin')">
+          Student / Staff Sign In
         </button>
-        <button type="button" id="tabActivationBtn" class="sana-mode-btn" role="tab" aria-selected="false" onclick="switchAuthTab('activation')">
+        <button type="button" id="tabActivation" class="robin-segment-btn" role="tab" aria-selected="false" onclick="switchAuthTab('activation')">
           First-Time Activation
         </button>
       </div>
 
-      <!-- TAB 1: SIGN IN FORM -->
-      <div id="sectionSignIn">
-        <form method="POST" action="{{ url_for('auth.login') }}" style="display: flex; flex-direction: column; gap: 1.25rem;">
+      <!-- Flash Alerts (Right-aligned inside form column) -->
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          <div style="margin-bottom: 1.25rem;">
+            {% for category, message in messages %}
+              <div class="flash-alert {{ category }}" role="alert" style="margin-bottom: 0.5rem; display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; border-radius: 8px; font-size: 0.8125rem;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <span class="material-symbols-outlined" style="font-size: 18px;">info</span>
+                  <span>{{ message }}</span>
+                </div>
+                <button type="button" class="alert-close" onclick="this.parentElement.remove();" aria-label="Dismiss alert" style="background:none; border:none; cursor:pointer; font-size:18px; color:inherit;">&times;</button>
+              </div>
+            {% endfor %}
+          </div>
+        {% endif %}
+      {% endwith %}
+
+      <!-- ====================================================================
+           VIEW A: SIGN IN
+           ==================================================================== -->
+      <div id="viewSignIn">
+        <h2 class="robin-heading">Sign In to U-IAP</h2>
+        <p class="robin-helper">Enter your university student index number or staff credentials.</p>
+
+        <form method="POST" action="{{ url_for('auth.login') }}">
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
 
-          <div>
-            <label for="username" style="display: block; font-size: 0.72rem; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.4rem; padding-left: 0.75rem;">
-              Student Index Number or Staff ID
+          <!-- Field 1: Student Index No. or Staff ID -->
+          <div style="margin-bottom: 1rem;">
+            <label for="username" class="robin-label">
+              Student Index No. or Staff ID
             </label>
-            <input type="text" id="username" name="username" required autofocus autocomplete="username"
-                   placeholder="e.g. 5230100452 or liaison1"
-                   class="sana-pill-input" />
+            <div class="robin-input-wrap" style="margin-bottom: 0;">
+              <input type="text" id="username" name="username" required autofocus autocomplete="username"
+                     placeholder="e.g. 5230100452"
+                     class="robin-input" />
+            </div>
           </div>
 
-          <div>
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem; padding-left: 0.75rem; padding-right: 0.5rem;">
-              <label for="password" style="font-size: 0.72rem; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.06em; margin: 0;">
+          <!-- Field 2: Password (with "Forgot Password?" right-aligned link) -->
+          <div style="margin-bottom: 1.25rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+              <label for="password" class="robin-label" style="margin-bottom: 0;">
                 Password
               </label>
               <a href="#" onclick="openSanaModal('modalForgot'); return false;" 
@@ -76,85 +114,115 @@
                 Forgot Password?
               </a>
             </div>
-            <input type="password" id="password" name="password" required autocomplete="current-password"
-                   placeholder="••••••••••••"
-                   class="sana-pill-input" />
+            <div class="robin-input-wrap" style="margin-bottom: 0;">
+              <input type="password" id="password" name="password" required autocomplete="current-password"
+                     placeholder="••••••••••••"
+                     class="robin-input robin-input-password" />
+              <button type="button" class="robin-eye-btn" onclick="togglePasswordVisibility('password', this)" aria-label="Toggle password visibility" tabindex="-1">
+                <span class="material-symbols-outlined" style="font-size: 19px;">visibility</span>
+              </button>
+            </div>
           </div>
 
-          <button type="submit" class="sana-btn-submit">
-            <span>Continue to Portal</span>
-            <span class="material-symbols-outlined" style="font-size: 18px;">arrow_forward</span>
+          <!-- Action Button: Full-width in Institutional Maroon -->
+          <button type="submit" class="robin-btn-primary">
+            <span>Sign In to Portal</span>
+            <span style="font-size: 16px;">&rarr;</span>
           </button>
         </form>
 
         <div style="margin-top: 1.5rem; text-align: center;">
-          <span style="font-size: 0.82rem; color: #64748B;">
+          <span style="font-size: 0.8125rem; color: #64748B;">
             First-time student without a password? 
             <button type="button" onclick="switchAuthTab('activation')" style="background: none; border: none; color: #8C033B; font-weight: 700; cursor: pointer; padding: 0; text-decoration: underline;">
-              Activate account
+              Activate Student Account
             </button>
           </span>
         </div>
       </div>
 
-      <!-- TAB 2: FIRST-TIME ACTIVATION FORM -->
-      <div id="sectionActivation" style="display: none;">
-        <div style="margin-bottom: 1.25rem;">
-          <p style="font-size: 0.85rem; color: #64748B; margin: 0;">
-            Verify your official USTED Student Master record to initialize your password.
-          </p>
+      <!-- ====================================================================
+           VIEW B: FIRST-TIME ACTIVATION (SIGN UP)
+           ==================================================================== -->
+      <div id="viewActivation" style="display: none;">
+        <h2 class="robin-heading">Activate Student Account</h2>
+        
+        <!-- Notice Pill -->
+        <div class="robin-notice-pill">
+          <span class="material-symbols-outlined" style="font-size: 18px; color: #D97706;">verified_user</span>
+          <span>Restricted to enrolled USTED students in the master dataset.</span>
         </div>
 
-        <form method="POST" action="{{ url_for('auth.register') }}" style="display: flex; flex-direction: column; gap: 1.15rem;">
+        <form method="POST" action="{{ url_for('auth.register') }}">
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
 
-          <div>
-            <label for="act_index_number" style="display: block; font-size: 0.72rem; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.4rem; padding-left: 0.75rem;">
+          <!-- Field 1: Student Index Number -->
+          <div style="margin-bottom: 1rem;">
+            <label for="act_index_number" class="robin-label">
               Student Index Number
             </label>
-            <input type="text" id="act_index_number" name="index_number" required
-                   placeholder="e.g. 5230100452"
-                   class="sana-pill-input" style="font-family: monospace;" />
+            <div class="robin-input-wrap" style="margin-bottom: 0;">
+              <input type="text" id="act_index_number" name="index_number" required
+                     placeholder="e.g. 5230100452"
+                     value="{{ index_number or '' }}"
+                     class="robin-input" style="font-family: 'JetBrains Mono', monospace;" />
+            </div>
           </div>
 
-          <div>
-            <label for="act_phone" style="display: block; font-size: 0.72rem; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.4rem; padding-left: 0.75rem;">
-              Ghana Mobile Phone
+          <!-- Field 2: Ghana Mobile Phone Number -->
+          <div style="margin-bottom: 1rem;">
+            <label for="act_phone" class="robin-label">
+              Ghana Mobile Phone Number
             </label>
-            <input type="tel" id="act_phone" name="phone" required
-                   placeholder="024XXXXXXX or +233..."
-                   pattern="^(?:\+233|233|0)(20|23|24|25|26|27|28|50|53|54|55|56|57|59)\d{7}$"
-                   title="Valid Ghana phone: 0244123456 or +233244123456"
-                   class="sana-pill-input" />
-          </div>
-
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
-            <div>
-              <label for="act_password" style="display: block; font-size: 0.72rem; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.4rem; padding-left: 0.75rem;">
-                Password
-              </label>
-              <input type="password" id="act_password" name="password" required minlength="6"
-                     placeholder="Min. 6 chars"
-                     class="sana-pill-input" />
-            </div>
-            <div>
-              <label for="act_confirm_password" style="display: block; font-size: 0.72rem; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.4rem; padding-left: 0.75rem;">
-                Confirm
-              </label>
-              <input type="password" id="act_confirm_password" name="confirm_password" required minlength="6"
-                     placeholder="Re-enter"
-                     class="sana-pill-input" />
+            <div class="robin-input-wrap" style="margin-bottom: 0;">
+              <input type="tel" id="act_phone" name="phone" required
+                     placeholder="024 XXX XXXX"
+                     value="{{ phone or '' }}"
+                     pattern="^(?:\+233|233|0)(20|23|24|25|26|27|28|50|53|54|55|56|57|59)\d{7}$"
+                     title="Valid Ghana phone: 0244123456 or +233244123456"
+                     class="robin-input" />
             </div>
           </div>
 
-          <button type="submit" class="sana-btn-submit" style="background: #8C033B;">
-            <span>Verify &amp; Activate Account</span>
-            <span class="material-symbols-outlined" style="font-size: 18px;">arrow_forward</span>
+          <!-- Field 3: Side-by-side inputs (like First/Last Name in Robinhood reference) -->
+          <div class="robin-grid-2" style="margin-bottom: 1.25rem;">
+            <div>
+              <label for="act_password" class="robin-label">
+                Create Password
+              </label>
+              <div class="robin-input-wrap" style="margin-bottom: 0;">
+                <input type="password" id="act_password" name="password" required minlength="6"
+                       placeholder="Min. 6 chars"
+                       class="robin-input robin-input-password" />
+                <button type="button" class="robin-eye-btn" onclick="togglePasswordVisibility('act_password', this)" aria-label="Toggle password visibility" tabindex="-1">
+                  <span class="material-symbols-outlined" style="font-size: 19px;">visibility</span>
+                </button>
+              </div>
+            </div>
+            <div>
+              <label for="act_confirm_password" class="robin-label">
+                Confirm Password
+              </label>
+              <div class="robin-input-wrap" style="margin-bottom: 0;">
+                <input type="password" id="act_confirm_password" name="confirm_password" required minlength="6"
+                       placeholder="Re-enter"
+                       class="robin-input robin-input-password" />
+                <button type="button" class="robin-eye-btn" onclick="togglePasswordVisibility('act_confirm_password', this)" aria-label="Toggle password visibility" tabindex="-1">
+                  <span class="material-symbols-outlined" style="font-size: 19px;">visibility</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Action Button: Full-width in Institutional Maroon -->
+          <button type="submit" class="robin-btn-primary">
+            <span>Verify Master Record &amp; Activate</span>
+            <span style="font-size: 16px;">&rarr;</span>
           </button>
         </form>
 
         <div style="margin-top: 1.5rem; text-align: center;">
-          <span style="font-size: 0.82rem; color: #64748B;">
+          <span style="font-size: 0.8125rem; color: #64748B;">
             Already have an active account? 
             <button type="button" onclick="switchAuthTab('signin')" style="background: none; border: none; color: #8C033B; font-weight: 700; cursor: pointer; padding: 0; text-decoration: underline;">
               Sign In
@@ -163,67 +231,47 @@
         </div>
       </div>
 
-      <!-- Legal Affiliation Subtext -->
-      <p style="font-size: 0.78rem; color: #94A3B8; line-height: 1.5; margin-top: 2rem; padding: 0 0.5rem;">
-        By continuing, you verify your official affiliation with the <a href="https://usted.edu.gh" target="_blank" rel="noopener noreferrer" style="color: #64748B; text-decoration: underline;">University of Skills Training and Entrepreneurial Development (USTED)</a> and agree to the <a href="#" onclick="openSanaModal('modalGuidelines'); return false;" style="color: #64748B; text-decoration: underline;">Attachment Code of Conduct</a>.
-      </p>
-    </div>
-
-    <!-- Right Column: Minimal Institutional Crest Showcase -->
-    <div class="auth-crest-showcase" aria-label="Institutional Crest and Practicum Pillars">
-      <!-- Crest Vector Display -->
-      <div class="crest-showcase-logo-wrap">
-        <img src="{{ url_for('static', filename='img/crest.svg') }}" 
-             alt="University of Skills Training and Entrepreneurial Development (USTED) Official Crest" 
-             class="crest-showcase-img" />
-      </div>
-
-      <!-- Institutional Identity -->
-      <div class="crest-showcase-republic">Republic of Ghana</div>
-      <h2 class="crest-showcase-title">University of Skills Training &amp; Entrepreneurial Development</h2>
-      <div class="crest-showcase-subtitle">Directorate of Industrial Attachment &amp; Practical Training</div>
-
-      <div class="crest-showcase-divider"></div>
-
-      <!-- Institutional Motto / Practicum Framework Note -->
-      <p class="crest-showcase-motto">
-        "Fostering experiential industrial competence, technical mastery, and professional leadership through verified industry immersion."
+      <!-- Legal & Affiliation Disclaimer -->
+      <p style="font-size: 0.75rem; color: #94A3B8; line-height: 1.5; margin-top: 2rem; text-align: center;">
+        By continuing, you verify your official affiliation with the <a href="https://usted.edu.gh" target="_blank" rel="noopener noreferrer" style="color: #64748B; text-decoration: underline;">University of Skills Training and Entrepreneurial Development</a> and agree to the <a href="#" onclick="openSanaModal('modalGuidelines'); return false;" style="color: #64748B; text-decoration: underline;">Attachment Code of Conduct</a>.
       </p>
 
-      <!-- 3 Minimal Verification Pillars -->
-      <div class="crest-showcase-badges">
-        <div class="crest-badge-pill">
-          <span class="material-symbols-outlined">verified</span>
-          <span>Accredited Placement</span>
-        </div>
-        <div class="crest-badge-pill">
-          <span class="material-symbols-outlined">fingerprint</span>
-          <span>Tamper-Proof eLogSheet</span>
-        </div>
-        <div class="crest-badge-pill">
-          <span class="material-symbols-outlined">location_on</span>
-          <span>Zonal GPS Supervision</span>
+      <!-- Instant Testing Role Drawer (Subtle, Discreet) -->
+      <div style="margin-top: 1.75rem; padding-top: 1.25rem; border-top: 1px solid #F1F5F9; text-align: center;">
+        <span style="font-size: 0.7rem; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 0.5rem;">
+          Quick Demo Persona Access
+        </span>
+        <div style="display: flex; gap: 0.4rem; justify-content: center; flex-wrap: wrap;">
+          <a href="{{ url_for('auth.switch_role', role='student') }}" 
+             style="font-size: 0.72rem; font-weight: 600; color: #475569; background: #F8FAFC; border: 1px solid #E2E8F0; padding: 3px 8px; border-radius: 6px; text-decoration: none;">Student</a>
+          <a href="{{ url_for('auth.switch_role', role='liaison') }}" 
+             style="font-size: 0.72rem; font-weight: 600; color: #475569; background: #F8FAFC; border: 1px solid #E2E8F0; padding: 3px 8px; border-radius: 6px; text-decoration: none;">Liaison Officer</a>
+          <a href="{{ url_for('auth.switch_role', role='supervisor') }}" 
+             style="font-size: 0.72rem; font-weight: 600; color: #475569; background: #F8FAFC; border: 1px solid #E2E8F0; padding: 3px 8px; border-radius: 6px; text-decoration: none;">Academic Supervisor</a>
+          <a href="{{ url_for('auth.switch_role', role='admin') }}" 
+             style="font-size: 0.72rem; font-weight: 600; color: #475569; background: #F8FAFC; border: 1px solid #E2E8F0; padding: 3px 8px; border-radius: 6px; text-decoration: none;">Admin</a>
         </div>
       </div>
-    </div>
 
-  </main>
+    </div>
+  </section>
+
 </div>
 
 <!-- ==========================================================================
-     Accessible Information Modals for Capsule Navigation
+     Accessible Information Modals
      ========================================================================== -->
 
 <!-- Modal 1: Overview -->
 <div id="modalOverview" class="sana-modal-backdrop" style="display: none;" onclick="closeSanaModal('modalOverview')">
   <div class="sana-modal-card" onclick="event.stopPropagation()">
     <div class="sana-modal-header">
-      <h3 style="margin: 0; font-size: 1.15rem; font-weight: 800; color: #0F172A;">U-IAP Practicum System Overview</h3>
+      <h3 style="margin: 0; font-size: 1.1rem; font-weight: 800; color: #0F172A;">U-IAP Practicum System Overview</h3>
       <button type="button" class="sana-modal-close" onclick="closeSanaModal('modalOverview')">&times;</button>
     </div>
-    <div style="padding: 1.5rem; font-size: 0.88rem; color: #475569; line-height: 1.6;">
+    <div style="padding: 1.5rem; font-size: 0.85rem; color: #475569; line-height: 1.6;">
       <p style="margin-top: 0;">The <strong>USTED Industrial Attachment Portal (U-IAP)</strong> is the official workplace experiential learning platform connecting students, university liaison officers, academic supervisors, and partner industry enterprises across the Republic of Ghana.</p>
-      <h4 style="font-size: 0.95rem; font-weight: 700; color: #0F172A; margin: 1.25rem 0 0.5rem 0;">Key Milestones</h4>
+      <h4 style="font-size: 0.92rem; font-weight: 700; color: #0F172A; margin: 1.25rem 0 0.5rem 0;">Key Milestones</h4>
       <ul style="padding-left: 1.25rem; margin: 0;">
         <li><strong>Physical Walk-in Intake:</strong> Liaison officers verify Master records and issue cryptographically stamped Introductory Letters.</li>
         <li><strong>Wet-Ink Acceptance Verification:</strong> Mandatory high-resolution photo/scan audit of physical employer stamp with GPS capture.</li>
@@ -238,10 +286,10 @@
 <div id="modalGuidelines" class="sana-modal-backdrop" style="display: none;" onclick="closeSanaModal('modalGuidelines')">
   <div class="sana-modal-card" onclick="event.stopPropagation()">
     <div class="sana-modal-header">
-      <h3 style="margin: 0; font-size: 1.15rem; font-weight: 800; color: #0F172A;">Attachment Guidelines &amp; Regulations</h3>
+      <h3 style="margin: 0; font-size: 1.1rem; font-weight: 800; color: #0F172A;">Attachment Guidelines &amp; Regulations</h3>
       <button type="button" class="sana-modal-close" onclick="closeSanaModal('modalGuidelines')">&times;</button>
     </div>
-    <div style="padding: 1.5rem; font-size: 0.88rem; color: #475569; line-height: 1.6;">
+    <div style="padding: 1.5rem; font-size: 0.85rem; color: #475569; line-height: 1.6;">
       <p style="margin-top: 0;">All students enrolled in the workplace experience learning program must adhere strictly to the USTED Practicum Handbook:</p>
       <ol style="padding-left: 1.25rem; margin: 0; display: flex; flex-direction: column; gap: 0.5rem;">
         <li><strong>Working Hours:</strong> Minimum 35 hours per week under the direct guidance of an industry workplace mentor.</li>
@@ -253,94 +301,55 @@
   </div>
 </div>
 
-<!-- Modal 3: Privacy & Terms -->
-<div id="modalPrivacy" class="sana-modal-backdrop" style="display: none;" onclick="closeSanaModal('modalPrivacy')">
-  <div class="sana-modal-card" onclick="event.stopPropagation()">
-    <div class="sana-modal-header">
-      <h3 style="margin: 0; font-size: 1.15rem; font-weight: 800; color: #0F172A;">Data Privacy &amp; Institutional Governance</h3>
-      <button type="button" class="sana-modal-close" onclick="closeSanaModal('modalPrivacy')">&times;</button>
-    </div>
-    <div style="padding: 1.5rem; font-size: 0.88rem; color: #475569; line-height: 1.6;">
-      <p style="margin-top: 0;">U-IAP complies with the <strong>Ghana Data Protection Act, 2012 (Act 843)</strong>. Student and enterprise data are handled with rigorous confidentiality:</p>
-      <ul style="padding-left: 1.25rem; margin: 0;">
-        <li><strong>Data Sovereignty:</strong> Student records and employer details remain property of USTED.</li>
-        <li><strong>Audit Logging:</strong> All login attempts, document approvals, and supervisory visit entries are immutably logged with timestamps and IP addresses.</li>
-        <li><strong>Security:</strong> All passwords are encrypted with salted PBKDF2/scrypt hashes. Passwords are never stored in plaintext.</li>
-      </ul>
-    </div>
-  </div>
-</div>
-
-<!-- Modal 4: FAQ -->
-<div id="modalFaq" class="sana-modal-backdrop" style="display: none;" onclick="closeSanaModal('modalFaq')">
-  <div class="sana-modal-card" onclick="event.stopPropagation()">
-    <div class="sana-modal-header">
-      <h3 style="margin: 0; font-size: 1.15rem; font-weight: 800; color: #0F172A;">Frequently Asked Questions</h3>
-      <button type="button" class="sana-modal-close" onclick="closeSanaModal('modalFaq')">&times;</button>
-    </div>
-    <div style="padding: 1.5rem; font-size: 0.88rem; color: #475569; line-height: 1.6;">
-      <div style="margin-bottom: 1rem;">
-        <strong style="color: #0F172A; display: block;">How do I get my Introductory Letter?</strong>
-        <span>Visit the Industrial Liaison Office desk. A liaison officer will verify your student ID and print your letter with a secure verification QR code.</span>
-      </div>
-      <div style="margin-bottom: 1rem;">
-        <strong style="color: #0F172A; display: block;">What is First-Time Activation?</strong>
-        <span>Students scanning their Introductory Letter QR code or visiting for the first time use the "First-Time Activation" tab with their Index Number and phone number to set their portal password.</span>
-      </div>
-      <div>
-        <strong style="color: #0F172A; display: block;">What if my acceptance stamp is rejected?</strong>
-        <span>If a liaison officer flags your upload due to low resolution or missing wet-ink stamp, re-upload a sharp, well-lit photo showing the physical employer stamp clearly.</span>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Modal 5: Forgot Password -->
+<!-- Modal 3: Forgot Password -->
 <div id="modalForgot" class="sana-modal-backdrop" style="display: none;" onclick="closeSanaModal('modalForgot')">
   <div class="sana-modal-card" onclick="event.stopPropagation()">
     <div class="sana-modal-header">
-      <h3 style="margin: 0; font-size: 1.15rem; font-weight: 800; color: #0F172A;">Password Reset Support</h3>
+      <h3 style="margin: 0; font-size: 1.1rem; font-weight: 800; color: #0F172A;">Reset Portal Password</h3>
       <button type="button" class="sana-modal-close" onclick="closeSanaModal('modalForgot')">&times;</button>
     </div>
-    <div style="padding: 1.5rem; font-size: 0.88rem; color: #475569; line-height: 1.6;">
-      <p style="margin-top: 0;">For institutional security and to protect student practicum records, password resets are processed by the Directorate of Industrial Liaison.</p>
-      <div style="background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 12px; padding: 1rem; margin: 1rem 0;">
-        <div style="font-weight: 700; color: #0F172A;">Industrial Liaison Office</div>
-        <div style="color: #64748B; font-size: 0.82rem; margin-top: 2px;">USTED Main Campus, Kumasi</div>
-        <div style="color: #8C033B; font-weight: 600; font-size: 0.85rem; margin-top: 6px;">Email: liaison@usted.edu.gh</div>
+    <div style="padding: 1.5rem; font-size: 0.85rem; color: #475569; line-height: 1.6;">
+      <p style="margin-top: 0;">For institutional security and audit integrity, automated email self-service password resets are restricted.</p>
+      <div style="background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 8px; padding: 1rem; margin-bottom: 1rem;">
+        <strong style="color: #0F172A; display: block; margin-bottom: 0.25rem;">Students</strong>
+        Please present your student ID card in person at the <strong>Industrial Liaison Unit Helpdesk (Block B, Room 104)</strong> or contact your designated faculty coordinator.
       </div>
-      <p style="margin-bottom: 0; font-size: 0.82rem; color: #64748B;">Please provide your Student Index Number and Programme of Study when requesting a reset.</p>
+      <div style="background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 8px; padding: 1rem;">
+        <strong style="color: #0F172A; display: block; margin-bottom: 0.25rem;">Staff &amp; Supervisors</strong>
+        Contact the <strong>Directorate ICT Administrator</strong> via internal ticketing or email <code>support.liaison@usted.edu.gh</code>.
+      </div>
     </div>
   </div>
 </div>
 
 <style>
-/* Modal Dialog Styles */
+/* Modal Dialog Styling */
 .sana-modal-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(15, 23, 42, 0.6);
-  backdrop-filter: blur(6px);
-  z-index: 9999;
+  background: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 1.5rem;
+  z-index: 1000;
+  padding: 1rem;
 }
 
 .sana-modal-card {
   background: #FFFFFF;
-  border-radius: 20px;
-  max-width: 540px;
+  border-radius: 16px;
   width: 100%;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-  overflow: hidden;
+  max-width: 520px;
+  box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.25);
   border: 1px solid #E2E8F0;
+  overflow: hidden;
   animation: modalScaleUp 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 @keyframes modalScaleUp {
-  from { opacity: 0; transform: scale(0.95); }
+  from { opacity: 0; transform: scale(0.96); }
   to { opacity: 1; transform: scale(1); }
 }
 
@@ -348,7 +357,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1.25rem 1.5rem;
+  padding: 1.15rem 1.5rem;
   border-bottom: 1px solid #F1F5F9;
 }
 
@@ -369,31 +378,46 @@
 
 <script>
 function switchAuthTab(tab) {
-  const signInBtn = document.getElementById('tabSignInBtn');
-  const actBtn = document.getElementById('tabActivationBtn');
-  const secSignIn = document.getElementById('sectionSignIn');
-  const secAct = document.getElementById('sectionActivation');
+  const tabSignIn = document.getElementById('tabSignIn');
+  const tabActivation = document.getElementById('tabActivation');
+  const viewSignIn = document.getElementById('viewSignIn');
+  const viewActivation = document.getElementById('viewActivation');
 
   if (tab === 'activation') {
-    signInBtn.classList.remove('active');
-    signInBtn.setAttribute('aria-selected', 'false');
-    actBtn.classList.add('active');
-    actBtn.setAttribute('aria-selected', 'true');
+    tabSignIn.classList.remove('active');
+    tabSignIn.setAttribute('aria-selected', 'false');
+    tabActivation.classList.add('active');
+    tabActivation.setAttribute('aria-selected', 'true');
 
-    secSignIn.style.display = 'none';
-    secAct.style.display = 'block';
+    viewSignIn.style.display = 'none';
+    viewActivation.style.display = 'block';
+
     const indexInput = document.getElementById('act_index_number');
     if (indexInput) indexInput.focus();
   } else {
-    actBtn.classList.remove('active');
-    actBtn.setAttribute('aria-selected', 'false');
-    signInBtn.classList.add('active');
-    signInBtn.setAttribute('aria-selected', 'true');
+    tabActivation.classList.remove('active');
+    tabActivation.setAttribute('aria-selected', 'false');
+    tabSignIn.classList.add('active');
+    tabSignIn.setAttribute('aria-selected', 'true');
 
-    secAct.style.display = 'none';
-    secSignIn.style.display = 'block';
+    viewActivation.style.display = 'none';
+    viewSignIn.style.display = 'block';
+
     const userInput = document.getElementById('username');
     if (userInput) userInput.focus();
+  }
+}
+
+function togglePasswordVisibility(inputId, btn) {
+  const input = document.getElementById(inputId);
+  if (!input) return;
+  const icon = btn.querySelector('.material-symbols-outlined');
+  if (input.type === 'password') {
+    input.type = 'text';
+    if (icon) icon.textContent = 'visibility_off';
+  } else {
+    input.type = 'password';
+    if (icon) icon.textContent = 'visibility';
   }
 }
 
@@ -411,6 +435,14 @@ function closeSanaModal(modalId) {
 document.addEventListener('keydown', function(e) {
   if (e.key === 'Escape') {
     document.querySelectorAll('.sana-modal-backdrop').forEach(m => m.style.display = 'none');
+  }
+});
+
+// Check query param for default tab
+document.addEventListener('DOMContentLoaded', function() {
+  const urlParams = new URLSearchParams(window.location.search);
+  if (urlParams.get('tab') === 'activation' || '{{ active_tab }}' === 'activation') {
+    switchAuthTab('activation');
   }
 });
 </script>

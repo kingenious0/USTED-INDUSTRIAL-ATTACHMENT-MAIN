@@ -1,209 +1,160 @@
 {% extends "base.html" %}
 
 {% block title %}Academic Supervisor Workspace — USTED U-IAP{% endblock %}
-{% block page_breadcrumb %}Assigned Supervision Roster{% endblock %}
+{% block page_breadcrumb %}Supervisor Zonal Hub{% endblock %}
 
 {% block content %}
-<div class="page-header" style="margin-bottom: 1.5rem;">
+<!-- Top Header (Reference: image_c75f00.jpg) -->
+<div class="linear-page-header">
   <div>
-    <h1 class="page-title">Academic Supervisor Workspace</h1>
-    <p class="page-subtitle">
-      Monitored Student Workplace Experience Learning (WEL) Roster &amp; Field Evaluations
+    <h1 class="linear-page-title">Assigned Students</h1>
+    <p style="font-size: 0.8125rem; color: #64748B; margin: 0.25rem 0 0 0;">
+      Workplace Experience Learning (WEL) Field Supervision &amp; Zonal Monitoring Roster
     </p>
   </div>
-  <div style="display: flex; gap: 0.65rem; align-items: center; flex-wrap: wrap;">
-    <span class="badge badge-secondary" style="font-size: 11px; padding: 6px 12px;">
-      <span class="material-symbols-outlined" style="font-size: 14px;">calendar_today</span>
-      <span>2024/2025 Regular Session</span>
-    </span>
-    <span class="badge badge-success" style="font-size: 11px; padding: 6px 12px;">
-      <span class="material-symbols-outlined" style="font-size: 14px;">verified_user</span>
-      <span>Active Faculty Assessor</span>
-    </span>
+  <div class="linear-header-actions">
+    <button type="button" onclick="exportSupervisorCSV()" class="linear-btn-outline" title="Export current roster to CSV">
+      <span class="material-symbols-outlined" style="font-size: 15px;">download</span>
+      <span>Export CSV</span>
+    </button>
   </div>
 </div>
 
-<!-- KPI Metric Ribbon -->
-<div class="metrics-grid" style="margin-bottom: 1.5rem;">
-  <div class="modern-kpi-card">
-    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-      <div>
-        <span class="metric-label">Assigned Students</span>
-        <div class="metric-value">{{ attachments|length }}</div>
-      </div>
-      <div style="background: #FDF2F5; color: var(--brand-maroon, #8C033B); border-radius: 8px; padding: 0.5rem; display: flex;">
-        <span class="material-symbols-outlined">group</span>
-      </div>
-    </div>
-    <div style="font-size: 0.78rem; color: #64748B; margin-top: 0.5rem;">
-      Active supervision allocations
-    </div>
+<!-- Sub-toolbar: Search & Status Filter (Reference: image_c75f00.jpg) -->
+<div class="linear-toolbar">
+  <!-- Search input (w-72, h-9 with search icon) -->
+  <div class="linear-search-wrap">
+    <span class="material-symbols-outlined linear-search-icon">search</span>
+    <input type="text" id="rosterSearch" placeholder="Search by name, index, company..." class="linear-search-input" onkeyup="filterRoster()" />
   </div>
 
-  <div class="modern-kpi-card">
-    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-      <div>
-        <span class="metric-label">Active Placements</span>
-        {% set active_count = attachments | selectattr('status', 'equalto', 'approved') | list | length %}
-        <div class="metric-value" style="color: #065F46;">{{ active_count if active_count > 0 else attachments|length }}</div>
-      </div>
-      <div style="background: #ECFDF5; color: #065F46; border-radius: 8px; padding: 0.5rem; display: flex;">
-        <span class="material-symbols-outlined">domain_verification</span>
-      </div>
-    </div>
-    <div style="font-size: 0.78rem; color: #065F46; margin-top: 0.5rem; font-weight: 600;">
-      Workplace vetted &amp; endorsed
-    </div>
-  </div>
+  <!-- Filter dropdown adjacent to search -->
+  <select id="rosterStatusFilter" class="linear-filter-select" onchange="filterRoster()">
+    <option value="">All Statuses</option>
+    <option value="approved">Active / Approved</option>
+    <option value="pending">Pending Review</option>
+    <option value="logging_active">Logging Active</option>
+    <option value="completed">Completed</option>
+  </select>
 
-  <div class="modern-kpi-card">
-    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-      <div>
-        <span class="metric-label">GPS Calibrated</span>
-        {% set nav_ready = attachments | selectattr('latest_acceptance') | list | length %}
-        <div class="metric-value" style="color: #D97706;">{{ nav_ready }}</div>
-      </div>
-      <div style="background: #FEF3C7; color: #D97706; border-radius: 8px; padding: 0.5rem; display: flex;">
-        <span class="material-symbols-outlined">explore</span>
-      </div>
-    </div>
-    <div style="font-size: 0.78rem; color: #64748B; margin-top: 0.5rem;">
-      GPS coordinates available
-    </div>
+  <!-- Total Count Indicator -->
+  <div style="margin-left: auto; font-size: 0.75rem; color: #64748B; font-weight: 500;">
+    Showing <strong id="visibleCount" style="color: #0F172A;">{{ attachments|length }}</strong> of {{ attachments|length }} students
   </div>
 </div>
 
-<!-- Roster Data Table Container (Section 3.3) -->
-<div class="modern-card" style="padding: 0; overflow: hidden; border: 1px solid #E2E8F0; border-radius: 0.5rem; background: #FFFFFF; box-shadow: 0 1px 2px 0 rgba(0,0,0,0.05);">
-  <div style="padding: 1rem 1.25rem; border-bottom: 1px solid #E2E8F0; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; background: #F8FAFC;">
-    <div style="display: flex; align-items: center; gap: 0.6rem;">
-      <span class="material-symbols-outlined" style="color: var(--brand-wine, #6B022D); font-size: 20px;">assignment_ind</span>
-      <h3 class="card-title" style="font-size: 0.95rem; font-weight: 700; color: #0F172A; margin: 0;">
-        Assigned Students ({{ attachments|length }})
-      </h3>
-    </div>
-    <div style="position: relative;">
-      <input type="text" id="rosterSearch" placeholder="Filter roster..." class="form-control" style="font-size: 0.82rem; padding-left: 2rem; width: 240px; height: 36px; border-radius: 6px; border: 1px solid #CBD5E1;" onkeyup="filterRoster()" />
-      <span class="material-symbols-outlined" style="position: absolute; left: 0.6rem; top: 50%; transform: translateY(-50%); font-size: 16px; color: #94A3B8;">search</span>
-    </div>
-  </div>
-
-  <div class="table-responsive" style="margin: 0; border: none; border-radius: 0; overflow-x: auto; width: 100%;">
-    <table class="modern-table" id="rosterTable" style="width: 100%; border-collapse: collapse;">
+<!-- Linear Data Table (Reference: image_c75f00.jpg) -->
+<div class="linear-table-card">
+  <div class="table-responsive" style="margin: 0; overflow-x: auto;">
+    <table class="linear-table" id="rosterTable">
       <thead>
-        <tr style="border-bottom: 1px solid #E2E8F0; background: #F8FAFC;">
-          <th style="min-width: 220px; padding: 10px 16px; text-align: left; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #64748B;">Student Details</th>
-          <th style="min-width: 200px; padding: 10px 16px; text-align: left; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #64748B;">Host Enterprise</th>
-          <th style="min-width: 180px; padding: 10px 16px; text-align: left; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #64748B;">Digital Address &amp; Landmark</th>
-          <th style="width: 140px; min-width: 140px; flex-shrink: 0; padding: 10px 16px; text-align: left; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #64748B;">GPS Routing</th>
-          <th style="width: 130px; min-width: 130px; flex-shrink: 0; padding: 10px 16px; text-align: left; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #64748B;">Logbook Status</th>
-          <th style="width: 140px; min-width: 140px; flex-shrink: 0; padding: 10px 16px; text-align: right; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #64748B;">Audit Action</th>
+        <tr>
+          <th style="min-width: 220px;">Student Details</th>
+          <th style="min-width: 200px;">Host Enterprise</th>
+          <th style="min-width: 170px;">Digital Address</th>
+          <th style="width: 130px;">GPS Route</th>
+          <th style="width: 130px;">Status</th>
+          <th style="width: 150px; text-align: right;">Action</th>
         </tr>
       </thead>
       <tbody>
         {% for att in attachments %}
-          <tr style="border-bottom: 1px solid #F1F5F9;">
-            <!-- STUDENT DETAILS: min-w-[220px] (Name in bold, Index + Programme in muted secondary line) -->
-            <td style="min-width: 220px; padding: 12px 16px; vertical-align: top;">
-              <div style="font-weight: 700; color: #0F172A; font-size: 0.88rem;">{{ att.student.full_name }}</div>
-              <div style="display: flex; align-items: center; gap: 6px; margin-top: 3px; flex-wrap: wrap;">
-                <span class="font-mono" style="font-family: var(--font-mono, monospace); font-size: 0.75rem; font-weight: 700; background: #F1F5F9; color: var(--brand-maroon, #8C033B); padding: 1px 6px; border-radius: 4px; border: 1px solid #E2E8F0;">
-                  {{ att.student.index_number }}
-                </span>
-                <span style="font-size: 0.75rem; color: #64748B;">Level {{ att.student.current_level }}</span>
-              </div>
-              <div style="font-size: 0.76rem; color: #64748B; margin-top: 2px;">
-                {{ att.student.programme }}
+          <tr data-status="{{ att.status }}" style="border-bottom: 1px solid #F1F5F9;">
+            <!-- Student Details -->
+            <td>
+              <div class="linear-table-name">{{ att.student.full_name }}</div>
+              <div class="linear-table-meta" style="margin-top: 2px;">
+                <span style="color: var(--brand-maroon, #8C033B); font-weight: 700;">{{ att.student.index_number }}</span>
+                <span style="color: #94A3B8;">&bull;</span>
+                <span>L{{ att.student.current_level }}</span>
+                <span style="color: #94A3B8;">&bull;</span>
+                <span>{{ att.student.programme }}</span>
               </div>
             </td>
 
-            <!-- HOST ENTERPRISE: min-w-[200px] (Company name bold; department/branch muted) -->
-            <td style="min-width: 200px; padding: 12px 16px; vertical-align: top;">
-              <div style="font-weight: 700; color: #0F172A; font-size: 0.86rem;">
+            <!-- Host Enterprise -->
+            <td>
+              <div class="linear-table-company">
                 {{ att.target_organization or (att.acceptance.company_name if att.acceptance else 'Pending Placement') }}
               </div>
               {% if att.acceptance and att.acceptance.supervisor_name %}
-                <div style="font-size: 0.75rem; color: #64748B; margin-top: 3px;">
-                  <span style="font-weight: 600;">Sup:</span> {{ att.acceptance.supervisor_name }}
-                  {% if att.acceptance.supervisor_phone %} &bull; {{ att.acceptance.supervisor_phone }}{% endif %}
+                <div class="linear-table-meta" style="margin-top: 2px; color: #64748B;">
+                  <span style="font-weight: 500;">Mentor:</span> {{ att.acceptance.supervisor_name }}
+                  {% if att.acceptance.supervisor_phone %}({{ att.acceptance.supervisor_phone }}){% endif %}
                 </div>
               {% elif att.organization_address %}
-                <div style="font-size: 0.75rem; color: #64748B; margin-top: 3px;">
+                <div class="linear-table-meta" style="margin-top: 2px; color: #94A3B8;">
                   {{ att.organization_address }}
                 </div>
               {% endif %}
             </td>
 
-            <!-- DIGITAL ADDRESS & LANDMARK: min-w-[180px] (Digital address in mono badge) -->
-            <td style="min-width: 180px; padding: 12px 16px; vertical-align: top;">
+            <!-- Digital Address & Landmark -->
+            <td>
               {% if att.acceptance and att.acceptance.gps_address %}
-                <span class="font-mono bg-slate-100" style="font-family: var(--font-mono, monospace); background: #F1F5F9; color: #0F172A; font-size: 0.75rem; font-weight: 700; padding: 2px 6px; border-radius: 4px; border: 1px solid #CBD5E1; display: inline-block;">
+                <span class="linear-table-address" style="background: #F8FAFC; border: 1px solid #E2E8F0; padding: 2px 6px; border-radius: 4px; font-weight: 600; color: #0F172A; display: inline-block;">
                   {{ att.acceptance.gps_address }}
                 </span>
                 {% if att.acceptance.landmark %}
-                  <div style="font-size: 0.75rem; color: #64748B; margin-top: 3px; line-height: 1.3;">
+                  <div style="font-size: 11px; color: #64748B; margin-top: 2px;">
                     Near {{ att.acceptance.landmark }}
                   </div>
                 {% endif %}
-                {% if att.acceptance.region %}
-                  <div style="font-size: 0.72rem; color: #94A3B8; margin-top: 2px;">
-                    {{ att.acceptance.region }}
-                  </div>
-                {% endif %}
               {% else %}
-                <span style="font-size: 0.76rem; color: #94A3B8; font-style: italic;">No Digital Address</span>
+                <span style="font-size: 11px; color: #94A3B8; font-style: italic;">No GPS Address</span>
               {% endif %}
             </td>
 
-            <!-- GPS ROUTING: w-[140px] shrink-0 (Direct link styled as a solid soft button) -->
-            <td style="width: 140px; min-width: 140px; padding: 12px 16px; vertical-align: top;">
+            <!-- GPS Routing -->
+            <td>
               {% if nav_map and nav_map[att.id] %}
-                <a href="{{ nav_map[att.id] }}" target="_blank" rel="noopener noreferrer" 
-                   style="background: #EFF6FF; color: #1D4ED8; font-size: 0.75rem; font-weight: 600; padding: 5px 10px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px; text-decoration: none; border: 1px solid #BFDBFE; transition: background 0.15s ease;"
-                   title="Open GPS in Google Maps">
-                  <span class="material-symbols-outlined" style="font-size: 14px;">navigation</span>
-                  <span>Open Maps &rarr;</span>
+                <a href="{{ nav_map[att.id] }}" target="_blank" rel="noopener noreferrer" class="linear-btn-action" style="background: #EFF6FF; border-color: #BFDBFE; color: #1D4ED8;" title="Open in Google Maps">
+                  <span class="material-symbols-outlined" style="font-size: 13px;">navigation</span>
+                  <span>Maps &rarr;</span>
                 </a>
               {% elif att.acceptance and att.acceptance.latitude and att.acceptance.longitude %}
-                <a href="https://www.google.com/maps/dir/?api=1&destination={{ att.acceptance.latitude }},{{ att.acceptance.longitude }}" target="_blank" rel="noopener noreferrer"
-                   style="background: #EFF6FF; color: #1D4ED8; font-size: 0.75rem; font-weight: 600; padding: 5px 10px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px; text-decoration: none; border: 1px solid #BFDBFE; transition: background 0.15s ease;">
-                  <span class="material-symbols-outlined" style="font-size: 14px;">navigation</span>
-                  <span>Open Maps &rarr;</span>
+                <a href="https://www.google.com/maps/dir/?api=1&destination={{ att.acceptance.latitude }},{{ att.acceptance.longitude }}" target="_blank" rel="noopener noreferrer" class="linear-btn-action" style="background: #EFF6FF; border-color: #BFDBFE; color: #1D4ED8;">
+                  <span class="material-symbols-outlined" style="font-size: 13px;">navigation</span>
+                  <span>Maps &rarr;</span>
                 </a>
               {% else %}
-                <span style="font-size: 0.75rem; color: #94A3B8;">Pending GPS</span>
+                <span style="font-size: 11px; color: #94A3B8;">Pending GPS</span>
               {% endif %}
             </td>
 
-            <!-- LOGBOOK STATUS: w-[130px] shrink-0 (Stripe-style compact lozenge pill) -->
-            <td style="width: 130px; min-width: 130px; padding: 12px 16px; vertical-align: top;">
+            <!-- Status Pill -->
+            <td>
               {% if att.status == 'approved' %}
-                <span style="font-size: 0.72rem; font-weight: 700; background: #ECFDF5; color: #065F46; border: 1px solid #A7F3D0; padding: 3px 8px; border-radius: 9999px; display: inline-block; letter-spacing: 0.02em;">
-                  ACTIVE / APPROVED
+                <span style="font-size: 10px; font-weight: 700; background: #ECFDF5; color: #065F46; border: 1px solid #A7F3D0; padding: 2px 7px; border-radius: 9999px; display: inline-block; letter-spacing: 0.03em;">
+                  APPROVED
                 </span>
               {% elif att.status == 'pending' %}
-                <span style="font-size: 0.72rem; font-weight: 700; background: #FFFBEB; color: #B45309; border: 1px solid #FDE68A; padding: 3px 8px; border-radius: 9999px; display: inline-block; letter-spacing: 0.02em;">
-                  PENDING REVIEW
+                <span style="font-size: 10px; font-weight: 700; background: #FFFBEB; color: #B45309; border: 1px solid #FDE68A; padding: 2px 7px; border-radius: 9999px; display: inline-block; letter-spacing: 0.03em;">
+                  PENDING
+                </span>
+              {% elif att.status == 'logging_active' %}
+                <span style="font-size: 10px; font-weight: 700; background: #F0FDF4; color: #15803D; border: 1px solid #BBF7D0; padding: 2px 7px; border-radius: 9999px; display: inline-block; letter-spacing: 0.03em;">
+                  LOGGING ACTIVE
                 </span>
               {% else %}
-                <span style="font-size: 0.72rem; font-weight: 700; background: #F1F5F9; color: #475569; border: 1px solid #E2E8F0; padding: 3px 8px; border-radius: 9999px; display: inline-block; letter-spacing: 0.02em;">
+                <span style="font-size: 10px; font-weight: 700; background: #F8FAFC; color: #475569; border: 1px solid #E2E8F0; padding: 2px 7px; border-radius: 9999px; display: inline-block; letter-spacing: 0.03em;">
                   {{ att.status.replace('_', ' ').upper() }}
                 </span>
               {% endif %}
             </td>
 
-            <!-- AUDIT ACTION: w-[140px] shrink-0 (Outlined action button) -->
-            <td style="width: 140px; min-width: 140px; padding: 12px 16px; vertical-align: top; text-align: right;">
-              <div style="display: inline-flex; flex-direction: column; gap: 4px; align-items: flex-end;">
+            <!-- Actions -->
+            <td style="text-align: right;">
+              <div style="display: inline-flex; align-items: center; gap: 4px;">
                 <button type="button"
                         onclick="openVisitModal('{{ att.id }}', '{{ att.student.full_name | escape }}', '{{ att.student.index_number }}', '{{ (att.acceptance.supervisor_name if att.acceptance else '') | escape }}')"
-                        style="border: 1px solid #CBD5E1; background: #FFFFFF; color: #0F172A; font-size: 0.75rem; font-weight: 600; padding: 5px 10px; border-radius: 6px; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.04); transition: all 0.15s ease;">
-                  <span class="material-symbols-outlined" style="font-size: 14px; color: var(--brand-maroon, #8C033B);">fact_check</span>
+                        class="linear-btn-action" title="Log supervisory field inspection">
+                  <span class="material-symbols-outlined" style="font-size: 13px; color: var(--brand-maroon, #8C033B);">fact_check</span>
                   <span>Log Visit</span>
                 </button>
                 <a href="{{ url_for('supervisor.view_assigned_student', attachment_id=att.id) }}" 
-                   style="font-size: 0.72rem; color: #64748B; text-decoration: none; font-weight: 600; padding: 2px 4px;">
-                  View Profile &rarr;
+                   class="linear-btn-action" style="border: none; color: #64748B;" title="View Student Profile">
+                  <span>&rarr;</span>
                 </a>
               </div>
             </td>
@@ -212,9 +163,9 @@
           <tr>
             <td colspan="6" style="text-align: center; color: #64748B; padding: 3rem 1.5rem;">
               <div style="display: flex; flex-direction: column; align-items: center; gap: 0.5rem;">
-                <span class="material-symbols-outlined" style="font-size: 40px; color: #CBD5E1;">assignment_late</span>
-                <div style="font-weight: 700; color: #0F172A;">No students currently assigned</div>
-                <div style="font-size: 0.85rem; color: #64748B;">No students are assigned to your supervision roster for this academic session.</div>
+                <span class="material-symbols-outlined" style="font-size: 36px; color: #CBD5E1;">group_off</span>
+                <div style="font-weight: 600; color: #0F172A; font-size: 0.875rem;">No students assigned yet</div>
+                <div style="font-size: 0.75rem; color: #64748B;">No students are assigned to your supervision roster for this session.</div>
               </div>
             </td>
           </tr>
@@ -224,112 +175,114 @@
   </div>
 </div>
 
-<!-- Centered Radix/shadcn-Style Dialog Modal: Record Supervisory Field Visit (Section 3.3) -->
-<div id="visitModal" style="display: none; position: fixed; inset: 0; z-index: 50; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(2px); align-items: center; justify-content: center; padding: 1rem;">
-  <div style="background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 0.75rem; width: 100%; max-width: 32rem; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); overflow: hidden; animation: modalFadeIn 0.2s ease-out;">
-    <!-- Modal Header -->
-    <div style="padding: 1.25rem 1.5rem; border-bottom: 1px solid #E2E8F0; display: flex; justify-content: space-between; align-items: flex-start; background: #F8FAFC;">
-      <div>
-        <h3 style="font-size: 1.1rem; font-weight: 700; color: #0F172A; margin: 0;">
-          Record Supervisory Field Visit
-        </h3>
-        <p id="modalStudentSubtitle" style="font-size: 0.8rem; color: #64748B; margin: 2px 0 0 0;">
-          Student Practicum Inspection &amp; Monitoring Checkpoint
-        </p>
-      </div>
-      <button type="button" onclick="closeVisitModal()" style="background: transparent; border: none; color: #94A3B8; cursor: pointer; padding: 4px; border-radius: 4px; display: flex;" title="Close dialog">
-        <span class="material-symbols-outlined" style="font-size: 20px;">close</span>
+<!-- ==========================================================================
+     Centered Radix/Reflex Modal Dialog (Reference: image_c76226.jpg)
+     ========================================================================== -->
+<div id="visitModal" class="linear-modal-backdrop" style="display: none;" onclick="closeVisitModal()">
+  <div class="linear-modal-card" onclick="event.stopPropagation()">
+    <!-- Modal Tag & Header -->
+    <div class="linear-modal-tag">Supervisory Field Audit</div>
+    <div class="linear-modal-header">
+      <h3 class="linear-modal-title">Record Supervisory Visit</h3>
+      <button type="button" class="linear-modal-close" onclick="closeVisitModal()" title="Close dialog">
+        <span class="material-symbols-outlined" style="font-size: 18px;">close</span>
       </button>
     </div>
 
+    <!-- Subtitle with student context -->
+    <p id="modalStudentSubtitle" style="font-size: 0.8125rem; color: #64748B; margin: 0 0 1.25rem 0; line-height: 1.4;"></p>
+
     <!-- Modal Form -->
-    <form id="modalVisitForm" method="POST" action="" style="padding: 1.5rem; display: flex; flex-direction: column; gap: 1.15rem;">
+    <form id="modalVisitForm" method="POST" action="">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
 
       <!-- Visit Date -->
       <div>
-        <label for="modal_visit_date" style="display: block; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #475569; margin-bottom: 0.35rem;">
-          Visit Date <span style="color: #BE123C;">*</span>
+        <label for="modal_visit_date" class="linear-form-label">
+          Visit Date <span style="color: #E11D48;">*</span>
         </label>
-        <input type="date" id="modal_visit_date" name="visit_date" 
-               style="height: 42px; width: 100%; padding: 0 0.75rem; border: 1px solid #CBD5E1; border-radius: 6px; font-size: 0.875rem; color: #0F172A; background: #FFFFFF; outline: none;" required />
+        <input type="date" id="modal_visit_date" name="visit_date" class="linear-form-field" required />
       </div>
 
       <!-- Supervisor Met -->
       <div>
-        <label for="modal_supervisor_contacted" style="display: block; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #475569; margin-bottom: 0.35rem;">
-          Industry Supervisor / Mentor Met on Site
+        <label for="modal_supervisor_contacted" class="linear-form-label">
+          Industry Mentor / Supervisor Met
         </label>
         <input type="text" id="modal_supervisor_contacted" name="supervisor_contacted" 
-               placeholder="e.g. Ing. Peter Arthur, Plant Superintendent"
-               style="height: 42px; width: 100%; padding: 0 0.75rem; border: 1px solid #CBD5E1; border-radius: 6px; font-size: 0.875rem; color: #0F172A; background: #FFFFFF; outline: none;" />
+               placeholder="e.g. Ing. Peter Arthur, Plant Superintendent" class="linear-form-field" />
       </div>
 
-      <!-- Student Attendance (Select) -->
+      <!-- Student Attendance Status -->
       <div>
-        <label for="modal_student_present" style="display: block; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #475569; margin-bottom: 0.35rem;">
-          Student Attendance &amp; Physical Workstation Audit <span style="color: #BE123C;">*</span>
+        <label for="modal_student_present" class="linear-form-label">
+          Physical Workstation Verification <span style="color: #E11D48;">*</span>
         </label>
-        <select id="modal_student_present" name="student_present" 
-                style="height: 42px; width: 100%; padding: 0 0.75rem; border: 1px solid #CBD5E1; border-radius: 6px; font-size: 0.875rem; color: #0F172A; background: #FFFFFF; outline: none;" required>
+        <select id="modal_student_present" name="student_present" class="linear-form-field" style="padding-right: 1.5rem;" required>
           <option value="1" selected>✓ Student Physically Present &amp; Actively Engaged</option>
           <option value="0">✕ Student Absent / Could Not Be Verified On Site</option>
         </select>
       </div>
 
-      <!-- Technical Observations (Textarea) -->
+      <!-- Technical Observations -->
       <div>
-        <label for="modal_general_remarks" style="display: block; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #475569; margin-bottom: 0.35rem;">
-          Technical Observations &amp; Remarks <span style="color: #BE123C;">*</span>
+        <label for="modal_general_remarks" class="linear-form-label">
+          Technical Observations &amp; Remarks <span style="color: #E11D48;">*</span>
         </label>
         <textarea id="modal_general_remarks" name="general_remarks" rows="3" required
-                  placeholder="Detail the student's tasks, alignment with curriculum, professional comportment, PPE compliance, and host feedback..."
-                  style="width: 100%; padding: 0.65rem 0.75rem; border: 1px solid #CBD5E1; border-radius: 6px; font-size: 0.875rem; color: #0F172A; background: #FFFFFF; outline: none; resize: vertical;"></textarea>
+                  placeholder="Detail curriculum alignment, tasks observed, host feedback..."
+                  class="linear-form-textarea"></textarea>
       </div>
 
-      <!-- Action Items (Textarea) -->
+      <!-- Action Items -->
       <div>
-        <label for="modal_action_items" style="display: block; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #475569; margin-bottom: 0.35rem;">
+        <label for="modal_action_items" class="linear-form-label">
           Action Items &amp; Guidance for Student
         </label>
         <textarea id="modal_action_items" name="action_items" rows="2"
-                  placeholder="e.g. Complete safety logbook entries weekly; review network diagram."
-                  style="width: 100%; padding: 0.65rem 0.75rem; border: 1px solid #CBD5E1; border-radius: 6px; font-size: 0.875rem; color: #0F172A; background: #FFFFFF; outline: none; resize: vertical;"></textarea>
+                  placeholder="e.g. Complete daily logbook entries; review safety schematics"
+                  class="linear-form-textarea"></textarea>
       </div>
 
-      <!-- Modal Actions (Section 3.3: Submit Inspection Record Maroon & Cancel Ghost) -->
-      <div style="display: flex; justify-content: flex-end; align-items: center; gap: 0.75rem; padding-top: 1rem; border-top: 1px solid #E2E8F0; margin-top: 0.25rem;">
-        <button type="button" onclick="closeVisitModal()"
-                style="height: 40px; padding: 0 1rem; background: transparent; border: 1px solid #CBD5E1; color: #475569; font-size: 0.875rem; font-weight: 600; border-radius: 6px; cursor: pointer; transition: background 0.15s ease;">
-          Cancel
+      <!-- Footer Buttons (Reference: image_c76226.jpg) -->
+      <div class="linear-modal-footer">
+        <button type="submit" class="linear-modal-btn-primary">
+          <span>Submit Inspection</span>
         </button>
-        <button type="submit" 
-                style="height: 40px; padding: 0 1.25rem; background: var(--brand-maroon, #8C033B); color: #FFFFFF; font-size: 0.875rem; font-weight: 600; border: none; border-radius: 6px; cursor: pointer; display: inline-flex; align-items: center; gap: 0.4rem; box-shadow: 0 1px 2px rgba(0,0,0,0.05); transition: background 0.15s ease;">
-          <span>Submit Inspection Record</span>
-          <span>&rarr;</span>
+        <button type="button" onclick="closeVisitModal()" class="linear-modal-btn-cancel">
+          Cancel
         </button>
       </div>
     </form>
   </div>
 </div>
 
-<style>
-@keyframes modalFadeIn {
-  from { opacity: 0; transform: scale(0.97); }
-  to { opacity: 1; transform: scale(1); }
-}
-</style>
-
 <script>
 function filterRoster() {
-  const input = document.getElementById('rosterSearch');
-  const filter = input.value.toLowerCase();
+  const searchVal = document.getElementById('rosterSearch').value.toLowerCase().trim();
+  const statusVal = document.getElementById('rosterStatusFilter').value.toLowerCase().trim();
   const table = document.getElementById('rosterTable');
   const trs = table.getElementsByTagName('tbody')[0].getElementsByTagName('tr');
+  let visibleCount = 0;
+
   for (let i = 0; i < trs.length; i++) {
-    const text = trs[i].innerText.toLowerCase();
-    trs[i].style.display = text.indexOf(filter) > -1 ? '' : 'none';
+    const row = trs[i];
+    const text = row.innerText.toLowerCase();
+    const rowStatus = (row.getAttribute('data-status') || '').toLowerCase();
+
+    const matchesSearch = !searchVal || text.indexOf(searchVal) > -1;
+    const matchesStatus = !statusVal || rowStatus.indexOf(statusVal) > -1;
+
+    if (matchesSearch && matchesStatus) {
+      row.style.display = '';
+      visibleCount++;
+    } else {
+      row.style.display = 'none';
+    }
   }
+
+  const countEl = document.getElementById('visibleCount');
+  if (countEl) countEl.innerText = visibleCount;
 }
 
 function openVisitModal(attId, studentName, studentIndex, supervisorContact) {
@@ -339,16 +292,16 @@ function openVisitModal(attId, studentName, studentIndex, supervisorContact) {
   const dateInput = document.getElementById('modal_visit_date');
   const supInput = document.getElementById('modal_supervisor_contacted');
 
-  // Set action URL to /supervisor/attachment/{attId}/log-visit
   form.action = '/supervisor/attachment/' + attId + '/log-visit';
-  subtitle.innerHTML = '<strong>' + studentName + '</strong> (' + studentIndex + ')';
+  subtitle.innerHTML = 'Student: <strong style="color: #0F172A;">' + studentName + '</strong> &bull; Index: <span style="font-family: monospace; font-weight: 700; color: #8C033B;">' + studentIndex + '</span>';
   
-  // Set today's date if empty
   const today = new Date().toISOString().split('T')[0];
   dateInput.value = today;
 
   if (supervisorContact) {
     supInput.value = supervisorContact;
+  } else {
+    supInput.value = '';
   }
 
   modal.style.display = 'flex';
@@ -359,10 +312,40 @@ function closeVisitModal() {
   modal.style.display = 'none';
 }
 
-// Close on backdrop click
-window.addEventListener('click', function(e) {
-  const modal = document.getElementById('visitModal');
-  if (e.target === modal) {
+// Client-side CSV export
+function exportSupervisorCSV() {
+  const table = document.getElementById('rosterTable');
+  const rows = table.querySelectorAll('tr');
+  let csv = [];
+  
+  rows.forEach(row => {
+    if (row.style.display === 'none') return;
+    const cols = row.querySelectorAll('th, td');
+    let rowData = [];
+    cols.forEach((col, idx) => {
+      // Exclude action column from CSV
+      if (idx === cols.length - 1) return;
+      let text = col.innerText.replace(/(\r\n|\n|\r)/gm, ' ').replace(/"/g, '""').trim();
+      rowData.push('"' + text + '"');
+    });
+    if (rowData.length > 0) {
+      csv.push(rowData.join(','));
+    }
+  });
+
+  const csvFile = new Blob([csv.join('\n')], { type: 'text/csv' });
+  const downloadLink = document.createElement('a');
+  downloadLink.download = 'USTED_Assigned_Supervision_Roster.csv';
+  downloadLink.href = window.URL.createObjectURL(csvFile);
+  downloadLink.style.display = 'none';
+  document.body.appendChild(downloadLink);
+  downloadLink.click();
+  document.body.removeChild(downloadLink);
+}
+
+// Close modal on Escape key
+window.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
     closeVisitModal();
   }
 });

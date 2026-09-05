@@ -1,313 +1,194 @@
 {% extends "base.html" %}
 
-{% block title %}Industrial Liaison Unit Dashboard — U-IAP{% endblock %}
+{% block title %}Industrial Liaison Unit Dashboard — USTED U-IAP{% endblock %}
 
-{% block page_breadcrumb %}Liaison Operations{% endblock %}
+{% block page_breadcrumb %}Liaison Console{% endblock %}
 
 {% block content %}
-<div style="display: flex; flex-direction: column; gap: 1.5rem; max-width: 1200px; margin: 0 auto;">
+<div class="ld-container">
 
-  <!-- Operational Header -->
-  <div style="display: flex; flex-direction: column; gap: 0.35rem;">
-    <div style="display: flex; align-items: center; gap: 6px; font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: #64748B;">
-      <span>Practicum Operations</span>
-      <span class="material-symbols-outlined" style="font-size: 14px;">chevron_right</span>
-      <span>Institutional Oversight</span>
-      <span class="material-symbols-outlined" style="font-size: 14px;">chevron_right</span>
-      <span style="color: #7E002F;">Liaison Console</span>
+  <!-- ========================================================================
+       1. HEADER & TOP ACTION TOOLBAR (Modeled after MetricFlow Image 2)
+       ======================================================================== -->
+  <div class="ld-top-bar">
+    <div class="ld-top-left">
+      <div class="ld-breadcrumb">Practicum Operations / Liaison Console</div>
+      <h1 class="ld-page-title">Industrial Liaison Unit Desk</h1>
+      <div class="ld-page-sub">Directorate of Academic Practicum &amp; WEL &bull; 2026/2027 Cohort</div>
     </div>
 
-    <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem; margin-top: 0.25rem;">
-      <div>
-        <h1 style="font-family: 'Plus Jakarta Sans', sans-serif; color: #0F172A; font-size: 1.65rem; font-weight: 800; margin: 0; letter-spacing: -0.015em;">
-          Industrial Liaison Unit Dashboard
-        </h1>
-        <p style="color: #64748B; font-size: 0.88rem; margin-top: 0.25rem;">
-          Directorate of Academic Practicum &amp; Industrial Liaison &bull; School of Engineering &amp; Technology / College of Science
-        </p>
-      </div>
-
-      <!-- Action & Session Tools -->
-      <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
-        <div style="display: flex; align-items: center; gap: 6px; background: #FFFFFF; border: 1px solid #E2E8F0; padding: 7px 14px; border-radius: 8px; font-size: 0.82rem; font-weight: 600; color: #0F172A; box-shadow: 0 1px 2px rgba(0,0,0,0.04);">
-          <span class="material-symbols-outlined" style="font-size: 18px; color: #D97706;">calendar_month</span>
-          <span>2024/2025 Regular Session</span>
+    <div class="ld-top-right">
+      <!-- Compact In-Person Student Lookup -->
+      <form action="{{ url_for('liaison.student_lookup') }}" method="get" class="ld-lookup-form">
+        <div class="ld-lookup-wrap">
+          <span class="material-symbols-outlined ld-lookup-icon">search</span>
+          <input type="text" name="q" placeholder="Lookup Index Number..." class="ld-lookup-input" required>
         </div>
-        <a href="{{ url_for('liaison.student_lookup') }}" class="btn-modern-primary">
-          <span class="material-symbols-outlined" style="font-size: 18px;">how_to_reg</span>
-          <span>+ Verify Student Intake</span>
-        </a>
-        <a href="{{ url_for('liaison.acceptance_queue') }}" class="btn-modern-gold">
-          <span class="material-symbols-outlined" style="font-size: 18px;">pending_actions</span>
-          <span>Acceptance Queue ({{ pending_acceptance }})</span>
-        </a>
-      </div>
-    </div>
-  </div>
-
-  <!-- Fast Student Intake Search Box -->
-  <div class="modern-card" style="padding: 1.25rem 1.75rem; border-left: 4px solid #7E002F !important;">
-    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1.25rem;">
-      <div style="max-width: 520px;">
-        <h3 style="font-family: 'Plus Jakarta Sans', sans-serif; margin: 0; font-size: 1.05rem; font-weight: 700; color: #0F172A; display: flex; align-items: center; gap: 6px;">
-          <span class="material-symbols-outlined" style="color: #7E002F; font-size: 20px;">search</span>
-          <span>In-Person Student Intake by Index Number</span>
-        </h3>
-        <p style="margin: 4px 0 0 0; color: #64748B; font-size: 0.82rem;">
-          Verify physical student presence at Liaison Office desk, record firm details, and issue official Introductory Letter with QR code.
-        </p>
-      </div>
-
-      <form action="{{ url_for('liaison.student_lookup') }}" method="get" style="display: flex; gap: 0.5rem; flex: 1; max-width: 460px; min-width: 260px;">
-        <div style="position: relative; flex: 1;">
-          <span class="material-symbols-outlined" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: #94A3B8; font-size: 18px;">
-            badge
-          </span>
-          <input type="text" name="q" placeholder="Enter Index Number (e.g. 5201040001)..." class="form-control"
-                 style="width: 100%; height: 42px; padding-left: 36px; padding-right: 12px; border: 1px solid #CBD5E1; border-radius: 8px; font-size: 0.88rem; color: #0F172A;" required>
-        </div>
-        <button type="submit" class="btn-modern-primary" style="white-space: nowrap; height: 42px; border-radius: 8px; padding: 0 18px;">
-          <span>Lookup</span>
-          <span class="material-symbols-outlined" style="font-size: 16px;">arrow_forward</span>
-        </button>
       </form>
+
+      <!-- Primary Action CTA -->
+      <a href="{{ url_for('liaison.student_lookup') }}" class="ld-btn-intake">
+        <span class="material-symbols-outlined" style="font-size: 16px;">add</span>
+        <span>Verify Intake</span>
+      </a>
     </div>
   </div>
 
-  <!-- Operational Metrics Grid -->
-  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.25rem;">
-    <!-- Metric 1: Total Placements Initiated -->
-    <div class="modern-card" style="padding: 20px 24px;">
-      <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-        <div>
-          <span style="color: #64748B; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 700; font-size: 11.5px; display: block;">
-            Total Attachments Initiated
-          </span>
-          <span style="font-family: 'Plus Jakarta Sans', sans-serif; color: #0F172A; display: block; margin: 4px 0 0 0; font-size: 2rem; font-weight: 800;">
-            {{ total_attachments }}
-          </span>
-        </div>
-        <div style="width: 44px; height: 44px; border-radius: 10px; background: #FDF2F5; display: flex; align-items: center; justify-content: center; color: #7E002F;">
-          <span class="material-symbols-outlined" style="font-size: 24px;">assignment_turned_in</span>
-        </div>
-      </div>
-      <div style="color: #64748B; margin-top: 12px; font-size: 12px; display: flex; align-items: center; gap: 4px;">
-        <span class="material-symbols-outlined" style="font-size: 16px; color: #15803D;">trending_up</span>
-        <span>Active cohort &bull; Registered in portal</span>
-      </div>
+  <!-- ========================================================================
+       2. 4-COLUMN UNIFORM METRIC STRIP (Modeled after Anam Image 5)
+       ======================================================================== -->
+  <div class="ld-metric-grid">
+    <!-- Card 1 (Total Initiated) -->
+    <div class="ld-metric-card">
+      <div class="ld-metric-label slate">TOTAL INITIATED</div>
+      <div class="ld-metric-value">{{ total_attachments }}</div>
+      <div class="ld-metric-note">Registered Cohort</div>
     </div>
 
-    <!-- Metric 2: Pending Acceptance Review -->
-    <div class="modern-card" style="padding: 20px 24px;">
-      <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-        <div>
-          <span style="color: #64748B; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 700; font-size: 11.5px; display: block;">
-            Pending Acceptance Review
-          </span>
-          <span style="font-family: 'Plus Jakarta Sans', sans-serif; color: #B45309; display: block; margin: 4px 0 0 0; font-size: 2rem; font-weight: 800;">
-            {{ pending_acceptance }}
-          </span>
-        </div>
-        <div style="width: 44px; height: 44px; border-radius: 10px; background: #FEF3C7; display: flex; align-items: center; justify-content: center; color: #B45309;">
-          <span class="material-symbols-outlined" style="font-size: 24px;">pending_actions</span>
-        </div>
-      </div>
-      <div style="margin-top: 12px; font-size: 12px; display: flex; align-items: center; gap: 4px;">
-        <span style="width: 8px; height: 8px; border-radius: 50%; background: #D97706; display: inline-block;"></span>
-        <a href="{{ url_for('liaison.acceptance_queue') }}" style="color: #B45309; font-weight: 600; text-decoration: none;">
-          Requires Directorate sign-off &rarr;
-        </a>
-      </div>
+    <!-- Card 2 (Pending Review) -->
+    <div class="ld-metric-card">
+      <div class="ld-metric-label amber">PENDING ACCEPTANCE</div>
+      <div class="ld-metric-value amber">{{ pending_acceptance }}</div>
+      <div class="ld-metric-note amber">Needs wet-ink review</div>
     </div>
 
-    <!-- Metric 3: Students Cleared to Log -->
-    <div class="modern-card" style="padding: 20px 24px;">
-      <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-        <div>
-          <span style="color: #64748B; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 700; font-size: 11.5px; display: block;">
-            Verified &amp; Cleared to Log
-          </span>
-          <span style="font-family: 'Plus Jakarta Sans', sans-serif; color: #15803D; display: block; margin: 4px 0 0 0; font-size: 2rem; font-weight: 800;">
-            {{ active_logging }}
-          </span>
-        </div>
-        <div style="width: 44px; height: 44px; border-radius: 10px; background: #DCFCE7; display: flex; align-items: center; justify-content: center; color: #15803D;">
-          <span class="material-symbols-outlined" style="font-size: 24px;">verified</span>
-        </div>
-      </div>
-      <div style="color: #64748B; margin-top: 12px; font-size: 12px; display: flex; align-items: center; gap: 4px;">
-        <span class="material-symbols-outlined" style="font-size: 16px; color: #15803D;">check_circle</span>
-        <span>Acceptance signed &amp; GPS verified</span>
-      </div>
+    <!-- Card 3 (Cleared / Active) -->
+    <div class="ld-metric-card">
+      <div class="ld-metric-label emerald">CLEARED TO LOG</div>
+      <div class="ld-metric-value emerald">{{ active_logging }}</div>
+      <div class="ld-metric-note emerald">GPS &amp; Stamp verified</div>
     </div>
 
-    <!-- Metric 4: Completed Attachments -->
-    <div class="modern-card" style="padding: 20px 24px;">
-      <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-        <div>
-          <span style="color: #64748B; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 700; font-size: 11.5px; display: block;">
-            Completed Attachments
-          </span>
-          <span style="font-family: 'Plus Jakarta Sans', sans-serif; color: #0F172A; display: block; margin: 4px 0 0 0; font-size: 2rem; font-weight: 800;">
-            {{ completed }}
-          </span>
-        </div>
-        <div style="width: 44px; height: 44px; border-radius: 10px; background: #F1F5F9; display: flex; align-items: center; justify-content: center; color: #0F172A;">
-          <span class="material-symbols-outlined" style="font-size: 24px;">fact_check</span>
-        </div>
-      </div>
-      <div style="color: #64748B; margin-top: 12px; font-size: 12px; display: flex; align-items: center; gap: 4px;">
-        <span class="material-symbols-outlined" style="font-size: 16px; color: #64748B;">school</span>
-        <span>Awaiting final grading assessment</span>
-      </div>
+    <!-- Card 4 (Completed) -->
+    <div class="ld-metric-card">
+      <div class="ld-metric-label slate">COMPLETED PLACEMENTS</div>
+      <div class="ld-metric-value">{{ completed }}</div>
+      <div class="ld-metric-note">Awaiting final grade</div>
     </div>
   </div>
 
-  <!-- 2-Column Main Workspace -->
-  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 540px), 1fr)); gap: 1.5rem; align-items: start;">
+  <!-- ========================================================================
+       3. TWO-COLUMN OPERATIONAL BODY GRID (Active Placements & Acceptance Queue)
+       ======================================================================== -->
+  <div class="ld-body-grid">
     
-    <!-- LEFT: Active Placements Table -->
-    <div class="modern-card" style="overflow: hidden;">
-      <!-- Pinned Header & Control Bar -->
-      <div style="padding: 1.15rem 1.5rem; background: #FFFFFF; border-bottom: 1px solid #E2E8F0; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem;">
-        <div style="display: flex; align-items: center; gap: 8px;">
-          <h2 style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 1.15rem; font-weight: 700; color: #0F172A; margin: 0;">
-            Active Placements
-          </h2>
-          <span class="chip-neutral" style="font-size: 11px; padding: 2px 8px;">
-            {{ recent_attachments|length }} Displayed
-          </span>
+    <!-- LEFT COLUMN: Active Placements Table (lg:col-span-8) -->
+    <div class="ld-col-left">
+      <div class="ld-table-card">
+        <!-- Card Header -->
+        <div class="ld-card-header">
+          <div class="ld-header-left">
+            <h2 class="ld-card-title">Active Placements</h2>
+            <span class="ld-count-badge">{{ recent_attachments|length }} Displayed</span>
+          </div>
+          <a href="{{ url_for('liaison.attachments_list') }}" class="ld-header-link">View All Roster &rarr;</a>
         </div>
-        <a href="{{ url_for('liaison.attachments_list') }}" class="btn-modern-secondary btn-modern-sm">
-          <span class="material-symbols-outlined" style="font-size: 16px;">view_list</span>
-          <span>View All Roster</span>
-        </a>
-      </div>
 
-      <!-- Table Section -->
-      <div class="table-responsive" style="overflow-x: auto;">
-        <table class="modern-table">
-          <thead>
-            <tr>
-              <th>Student &amp; Index</th>
-              <th>Host Organization &amp; Region</th>
-              <th>Status</th>
-              <th style="text-align: right;">Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for att in recent_attachments %}
+        <!-- Table Structure -->
+        <div class="ld-table-wrap">
+          <table class="ld-table">
+            <thead>
               <tr>
-                <td>
-                  <div style="display: flex; flex-direction: column;">
-                    <span style="font-weight: 700; color: #0F172A;">{{ att.student.full_name }}</span>
-                    <span style="color: #7E002F; font-size: 12px; font-weight: 700;">{{ att.student.index_number }} &bull; {{ att.student.programme }}</span>
-                  </div>
-                </td>
-                <td>
-                  <div style="display: flex; flex-direction: column;">
-                    <span style="font-weight: 600; color: #0F172A;">{{ att.company_name or 'Pending Placement Acceptance' }}</span>
-                    <span style="font-size: 12px; color: #64748B; display: flex; align-items: center; gap: 4px;">
-                      <span class="material-symbols-outlined" style="font-size: 14px; color: #7E002F;">location_on</span>
-                      <span>{{ att.company_address or 'Location pending' }}</span>
-                    </span>
-                  </div>
-                </td>
-                <td>
-                  {% if att.status == 'ACCEPTANCE_APPROVED' or att.status == 'LOGGING_ACTIVE' or att.status == 'COMPLETED' %}
-                    <span class="chip-approved">
-                      <span class="material-symbols-outlined" style="font-size: 14px;">check_circle</span>
-                      <span>{{ att.status.replace('_', ' ') }}</span>
-                    </span>
-                  {% elif att.status == 'ACCEPTANCE_SUBMITTED' %}
-                    <span class="chip-pending">
-                      <span class="material-symbols-outlined" style="font-size: 14px;">schedule</span>
-                      <span>Pending Review</span>
-                    </span>
-                  {% else %}
-                    <span class="chip-neutral">
-                      <span>{{ att.status.replace('_', ' ') }}</span>
-                    </span>
-                  {% endif %}
-                </td>
-                <td style="text-align: right;">
-                  <a href="{{ url_for('liaison.view_attachment_detail', attachment_id=att.id) }}" class="btn-modern-secondary btn-modern-sm">
-                    <span class="material-symbols-outlined" style="font-size: 16px; color: #7E002F;">visibility</span>
-                    <span>Audit</span>
-                  </a>
-                </td>
+                <th>Student &amp; Index</th>
+                <th>Host Firm &amp; Region</th>
+                <th>Status</th>
+                <th style="text-align: right;">Action</th>
               </tr>
-            {% else %}
-              <tr>
-                <td colspan="4" style="text-align: center; color: #64748B; padding: 2rem;">
-                  No placement records initiated yet. Click "+ Verify Student Intake" to register the first student.
-                </td>
-              </tr>
-            {% endfor %}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {% for att in recent_attachments %}
+                <tr class="ld-table-row">
+                  <td>
+                    <div class="ld-student-cell">
+                      <span class="ld-student-name">{{ att.student.full_name }}</span>
+                      <span class="ld-student-sub">{{ att.student.index_number }} &bull; {{ att.student.programme }}</span>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="ld-firm-cell">
+                      <span class="ld-firm-name">{{ att.company_name or 'Pending Placement Acceptance' }}</span>
+                      <span class="ld-firm-sub">
+                        <span class="material-symbols-outlined" style="font-size: 13px;">location_on</span>
+                        <span>{{ att.company_address or att.company_city or 'Location pending' }}</span>
+                      </span>
+                    </div>
+                  </td>
+                  <td>
+                    {% if att.status in ['ACCEPTANCE_APPROVED', 'LOGGING_ACTIVE', 'COMPLETED', 'approved'] %}
+                      <span class="ld-status-pill green">
+                        <span class="material-symbols-outlined" style="font-size: 12px;">check_circle</span>
+                        <span>{{ att.status.replace('_', ' ').title() }}</span>
+                      </span>
+                    {% elif att.status in ['ACCEPTANCE_SUBMITTED', 'PENDING_REVIEW', 'pending'] %}
+                      <span class="ld-status-pill amber">
+                        <span class="material-symbols-outlined" style="font-size: 12px;">schedule</span>
+                        <span>Pending Review</span>
+                      </span>
+                    {% else %}
+                      <span class="ld-status-pill slate">
+                        <span>{{ att.status.replace('_', ' ').title() }}</span>
+                      </span>
+                    {% endif %}
+                  </td>
+                  <td style="text-align: right;">
+                    <a href="{{ url_for('liaison.view_attachment_detail', attachment_id=att.id) }}" class="ld-btn-audit">
+                      <span>Audit &rarr;</span>
+                    </a>
+                  </td>
+                </tr>
+              {% else %}
+                <tr>
+                  <td colspan="4" class="ld-empty-row">
+                    No placement records initiated yet. Click "+ Verify Intake" to register the first student.
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
 
-    <!-- RIGHT: Acceptance Queue Card -->
-    <div class="modern-card" style="padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem;">
-      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #F1F5F9; padding-bottom: 1rem;">
-        <div>
-          <h2 style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 1.1rem; font-weight: 700; color: #0F172A; margin: 0; display: flex; align-items: center; gap: 8px;">
-            <span>Acceptance Queue</span>
-            <span class="chip-pending" style="font-size: 10px; padding: 1px 7px;">{{ pending_acceptance }} Pending</span>
-          </h2>
-          <p style="color: #64748B; font-size: 0.8rem; margin: 4px 0 0 0;">
-            Signed student forms awaiting physical wet-ink &amp; GPS clearance
-          </p>
+    <!-- RIGHT COLUMN: Acceptance Review Queue (lg:col-span-4) -->
+    <div class="ld-col-right">
+      <div class="ld-queue-card">
+        <!-- Card Header -->
+        <div class="ld-queue-header">
+          <div class="ld-queue-header-left">
+            <h2 class="ld-card-title">Acceptance Queue</h2>
+            <span class="ld-queue-badge">{{ pending_acceptance }} Pending</span>
+          </div>
+          <a href="{{ url_for('liaison.acceptance_queue') }}" class="ld-header-link">Queue &rarr;</a>
         </div>
-        <a href="{{ url_for('liaison.acceptance_queue') }}" style="color: #7E002F; font-size: 0.82rem; font-weight: 700; text-decoration: none;">
-          View All &rarr;
-        </a>
-      </div>
 
-      <!-- List of pending reviews -->
-      <div style="display: flex; flex-direction: column; gap: 0.75rem;">
-        {% for rec in pending_reviews %}
-          <div class="modern-card" style="padding: 1rem 1.15rem; display: flex; flex-direction: column; gap: 6px; border-left: 3px solid #D97706 !important; box-shadow: none; border: 1px solid #E2E8F0;">
-            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-              <div>
-                <span style="font-weight: 700; color: #0F172A; font-size: 0.9rem; display: block;">
-                  {{ rec.attachment.student.full_name }}
-                </span>
-                <span style="color: #7E002F; font-size: 0.75rem; font-weight: 700;">
-                  Index: {{ rec.attachment.student.index_number }}
-                </span>
+        <!-- Pending Review List -->
+        <div class="ld-queue-list">
+          {% for rec in pending_reviews %}
+            <div class="ld-queue-item">
+              <div class="ld-queue-item-top">
+                <span class="ld-queue-student">{{ rec.attachment.student.full_name }}</span>
+                <span class="ld-queue-index">{{ rec.attachment.student.index_number }}</span>
               </div>
-              <span class="chip-pending" style="font-size: 9px; padding: 1px 6px;">
-                Needs Review
-              </span>
-            </div>
-
-            <div style="color: #334155; font-size: 0.82rem; display: flex; align-items: center; gap: 4px;">
-              <span class="material-symbols-outlined" style="font-size: 16px; color: #D97706;">apartment</span>
-              <span><strong>{{ rec.company_name }}</strong> &bull; {{ rec.company_city }}</span>
-            </div>
-
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px; padding-top: 6px; border-top: 1px solid #F1F5F9;">
-              <span style="color: #94A3B8; font-size: 0.72rem;">
-                Uploaded {{ rec.created_at.strftime('%d %b, %H:%M') if rec.created_at else 'Recently' }}
-              </span>
-              <a href="{{ url_for('liaison.review_acceptance', acceptance_id=rec.id) }}" class="btn-modern-primary btn-modern-sm" style="padding: 3px 10px; font-size: 0.75rem;">
-                <span>Review Form</span>
-                <span class="material-symbols-outlined" style="font-size: 14px;">chevron_right</span>
+              <div class="ld-queue-firm">
+                <span class="material-symbols-outlined" style="font-size: 14px; color: #D97706;">business</span>
+                <span>{{ rec.company_name }}</span>
+              </div>
+              <a href="{{ url_for('liaison.review_acceptance', acceptance_id=rec.id) }}" class="ld-btn-review">
+                <span>Audit Wet-Ink Scan &rarr;</span>
               </a>
             </div>
-          </div>
-        {% else %}
-          <div style="text-align: center; padding: 2rem 1rem; color: #64748B; font-size: 0.85rem; background: #F8FAFC; border-radius: 8px; border: 1px dashed #CBD5E1;">
-            <span class="material-symbols-outlined" style="font-size: 32px; color: #15803D; display: block; margin-bottom: 6px;">task_alt</span>
-            <span>All submitted acceptance letters have been endorsed!</span>
-          </div>
-        {% endfor %}
+          {% else %}
+            <div class="ld-queue-empty">
+              <span class="material-symbols-outlined" style="font-size: 28px; color: #10B981; margin-bottom: 0.5rem;">task_alt</span>
+              <p class="ld-empty-title">All forms cleared</p>
+              <p class="ld-empty-sub">No pending wet-ink submissions require review.</p>
+            </div>
+          {% endfor %}
+        </div>
       </div>
     </div>
 
   </div>
+
 </div>
 {% endblock %}

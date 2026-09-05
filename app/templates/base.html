@@ -24,22 +24,22 @@
   <!-- Mobile Top Bar (< 1024px) -->
   <header class="mobile-topbar" role="banner">
     <button type="button" class="sidebar-toggle-btn" id="sidebarToggle" aria-label="Open Navigation Sidebar" aria-expanded="false">
-      <span class="material-symbols-outlined" style="font-size: 24px;">menu</span>
+      <span class="material-symbols-outlined" style="font-size: 22px;">menu</span>
     </button>
     <a href="{{ url_for('main.index') }}" class="mobile-brand-link">
-      <img src="{{ url_for('static', filename='img/crest.svg') }}" alt="USTED Crest" width="30" height="30" class="mobile-crest"/>
+      <img src="{{ url_for('static', filename='img/crest.svg') }}" alt="USTED Crest" width="26" height="26" class="mobile-crest"/>
       <div class="mobile-brand-text">
-        <span class="mobile-brand-title">U-IAP PORTAL</span>
-        <span class="mobile-brand-sub">USTED</span>
+        <span class="mobile-brand-title">USTED U-IAP</span>
+        <span class="mobile-brand-sub">Industrial Liaison</span>
       </div>
     </a>
     <div class="mobile-topbar-right">
       {% if current_user.is_authenticated %}
-        <span class="role-pill role-{{ current_user.role }}">
-          {{ current_user.role.split('_')[0] }}
-        </span>
+        <div class="header-avatar" style="width: 28px; height: 28px; font-size: 11px;">
+          {{ current_user.full_name[:1] }}
+        </div>
       {% else %}
-        <a href="{{ url_for('auth.login') }}" class="btn btn-secondary btn-sm" style="padding: 0.25rem 0.6rem; font-size: 0.78rem;">Sign In &rarr;</a>
+        <a href="{{ url_for('auth.login') }}" class="btn btn-secondary btn-sm" style="padding: 0.25rem 0.6rem; font-size: 0.75rem;">Sign In &rarr;</a>
       {% endif %}
     </div>
   </header>
@@ -47,24 +47,22 @@
   <!-- Sidebar Backdrop (for Mobile Drawer) -->
   <div class="sidebar-backdrop" id="sidebarBackdrop" aria-hidden="true"></div>
 
-  <!-- Modern Clean Sidebar Navigation (dashboard-02 Standard) -->
+  <!-- Modern Clean Sidebar Navigation (Zendesk Admin Ref) -->
   <aside class="app-sidebar" id="appSidebar" role="navigation" aria-label="Main Sidebar Navigation">
     <div class="sidebar-header">
       <a href="{{ url_for('main.index') }}" class="sidebar-brand">
         <div class="sidebar-crest-box">
-          <img src="{{ url_for('static', filename='img/crest.svg') }}" alt="USTED Crest" width="32" height="32"/>
+          <img src="{{ url_for('static', filename='img/crest.svg') }}" alt="USTED Crest" width="28" height="28"/>
         </div>
         <div class="sidebar-brand-text">
           <span class="sidebar-brand-title">USTED U-IAP</span>
-          <span class="sidebar-brand-sub">Industrial Liaison</span>
+          <span class="sidebar-brand-sub">Industrial Liaison Directorate</span>
         </div>
       </a>
       <button type="button" class="sidebar-close-btn" id="sidebarClose" aria-label="Close navigation sidebar">
         <span class="material-symbols-outlined" style="font-size: 20px;">close</span>
       </button>
     </div>
-
-    <!-- Identity De-duplication Rule: User name & role are anchored strictly in top nav header -->
 
     <!-- Sidebar Navigation Links -->
     <nav class="sidebar-nav">
@@ -149,58 +147,58 @@
       {% endif %}
     </nav>
 
-    <!-- Sidebar Footer with Clean Sign Out -->
+    <!-- Sidebar Bottom Lockup (Ref: Zendesk Image 5) -->
     <div class="sidebar-footer">
       {% if current_user.is_authenticated %}
         <a href="{{ url_for('auth.logout') }}" class="sidebar-logout-btn">
-          <span class="material-symbols-outlined" style="font-size: 18px;">logout</span>
+          <span class="material-symbols-outlined" style="font-size: 16px;">logout</span>
           <span>Sign Out</span>
         </a>
       {% else %}
         <a href="{{ url_for('auth.login') }}" class="sidebar-logout-btn">
-          <span class="material-symbols-outlined" style="font-size: 18px;">login</span>
+          <span class="material-symbols-outlined" style="font-size: 16px;">login</span>
           <span>Sign In</span>
         </a>
       {% endif %}
-      <div class="sidebar-inst-tag">
-        <span>USTED &bull; U-IAP v4.0</span>
+      <div class="sidebar-version-badge">
+        <span>U-IAP Directorate &bull; v4.0</span>
       </div>
     </div>
   </aside>
 
   <!-- Main Viewport Shell -->
   <div class="app-main-layout">
-    <!-- Clean Top Workspace Header -->
+    <!-- Top Header Bar (Ref: Zendesk Image 5) -->
     <header class="app-top-header">
       <div class="header-left">
-        <button type="button" class="header-toggle-sidebar" aria-label="Toggle Navigation Drawer">
+        <button type="button" class="header-toggle-sidebar" id="headerToggleSidebar" aria-label="Toggle Navigation Drawer">
           <span class="material-symbols-outlined" style="font-size: 20px;">menu</span>
         </button>
-        <div class="header-breadcrumb">
-          <span class="header-inst">USTED</span>
-          <span class="header-sep">/</span>
-          <span class="header-active-page">{% block page_breadcrumb %}Workplace Experience Learning{% endblock %}</span>
-        </div>
+        <nav class="header-breadcrumb" aria-label="Breadcrumb">
+          <a href="{{ url_for('main.index') }}" class="header-breadcrumb-inst">USTED</a>
+          <span class="header-breadcrumb-sep">/</span>
+          <span class="header-breadcrumb-active">{% block page_breadcrumb %}Workplace Experience Learning{% endblock %}</span>
+        </nav>
       </div>
       <div class="header-right">
         {% if current_user.is_authenticated %}
           <div class="header-user-dropdown" style="position: relative;">
-            <button type="button" class="header-user-badge" id="userMenuBtn" onclick="toggleUserDropdown(event)" aria-expanded="false" aria-haspopup="true" style="cursor: pointer; border: 1px solid var(--border-subtle); background: #F8FAFC; transition: all 0.15s ease;">
-              <span class="user-initial">{{ current_user.full_name[:1] }}</span>
-              <span class="user-fullname">{{ current_user.full_name }}</span>
-              <span class="role-pill role-{{ current_user.role }}">{{ current_user.role.split('_')[0].title() }}</span>
-              <span class="material-symbols-outlined" style="font-size: 16px; color: #94A3B8; margin-left: 2px;">expand_more</span>
+            <button type="button" class="header-user-lockup" id="userMenuBtn" onclick="toggleUserDropdown(event)" aria-expanded="false" aria-haspopup="true">
+              <span class="header-avatar">{{ current_user.full_name[:1] }}</span>
+              <span class="header-user-name">{{ current_user.full_name }}</span>
+              <span class="header-role-badge">{{ current_user.role.split('_')[0] }}</span>
+              <span class="material-symbols-outlined header-chevron">expand_more</span>
             </button>
-            <div class="user-dropdown-menu" id="userDropdownMenu" style="display: none; position: absolute; right: 0; top: calc(100% + 6px); width: 220px; background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 8px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05); z-index: 50; padding: 6px 0;">
-              <div style="padding: 8px 14px; border-bottom: 1px solid #F1F5F9;">
-                <div style="font-size: 0.82rem; font-weight: 700; color: #0F172A; line-height: 1.2;">{{ current_user.full_name }}</div>
-                <div style="font-size: 0.72rem; color: #64748B; margin-top: 2px;">{{ current_user.role.replace('_', ' ').title() }}</div>
-                <div style="font-size: 0.72rem; color: #065F46; font-weight: 600; margin-top: 4px; display: flex; align-items: center; gap: 4px;">
-                  <span style="width: 6px; height: 6px; border-radius: 50%; background: #10B981; display: inline-block;"></span>
+            <div class="user-dropdown-menu" id="userDropdownMenu" style="display: none;">
+              <div class="dropdown-user-header">
+                <div class="dropdown-user-name">{{ current_user.full_name }}</div>
+                <div class="dropdown-user-role">{{ current_user.role.replace('_', ' ').title() }}</div>
+                <div class="dropdown-user-session">
+                  <span class="session-dot"></span>
                   <span>2024/2025 Active Session</span>
                 </div>
               </div>
-              <a href="{{ url_for('auth.logout') }}" style="display: flex; align-items: center; gap: 8px; padding: 8px 14px; font-size: 0.8rem; font-weight: 600; color: #DC2626; text-decoration: none; transition: background 0.15s ease;" onmouseover="this.style.background='#FEF2F2'" onmouseout="this.style.background='transparent'">
+              <a href="{{ url_for('auth.logout') }}" class="dropdown-logout-item">
                 <span class="material-symbols-outlined" style="font-size: 16px;">logout</span>
                 <span>Sign Out</span>
               </a>
@@ -222,7 +220,7 @@
 
       <!-- Flash Alerts Container -->
       {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
+        {% if messages and request.endpoint != 'auth.login' %}
           <div class="flash-container" {% if is_auth_screen %}style="max-width: 520px; margin: 1.5rem auto 0 auto; padding: 0 1rem;"{% endif %}>
             {% for category, message in messages %}
               <div class="flash-alert {{ category }}" role="alert">
@@ -241,17 +239,13 @@
 {% if not is_auth_screen %}
     </main>
 
-    <!-- Institutional Modern Footer -->
-    <footer class="footer">
-      <div class="footer-container">
-        <div>
-          <strong>University of Skills Training and Entrepreneurial Development (USTED)</strong><br/>
-          <span style="font-size: 0.8rem; color: #64748B;">Industrial Liaison &amp; Workplace Experience Learning (WEL) Directorate</span>
-        </div>
-        <div class="footer-right">
-          <span>U-IAP Operational Portal</span><br/>
-          <span style="font-size: 0.8rem; color: #64748B;">&copy; 2026 USTED. All rights reserved.</span>
-        </div>
+    <!-- Global Minimal 1-Line Footer (Ref: GlossGenius Image 7) -->
+    <footer class="app-global-footer">
+      <div class="footer-copy">
+        &copy; 2026 University of Skills Training and Entrepreneurial Development (USTED). All rights reserved.
+      </div>
+      <div class="footer-meta">
+        U-IAP Directorate of Academic Practicum &amp; WEL &bull; v4.0
       </div>
     </footer>
 

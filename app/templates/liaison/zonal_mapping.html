@@ -4,179 +4,212 @@
 {% block page_breadcrumb %}Zonal Allocation{% endblock %}
 
 {% block content %}
-<div class="page-header">
-  <div>
-    <h1 class="page-title">Zonal Mapping &amp; Supervisor Allocation</h1>
-    <p class="page-subtitle">
-      Assign accredited university faculty supervisors to active field placements across Ghana's 16 administrative regions.
-    </p>
-  </div>
-
-  <!-- KPI Badges -->
-  <div style="display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
-    <div class="modern-card" style="padding: 8px 14px; margin-bottom: 0; display: flex; align-items: center; gap: 10px;">
-      <div style="width: 32px; height: 32px; border-radius: 8px; background: #FEF3C7; display: flex; align-items: center; justify-content: center; color: #D97706;">
-        <span class="material-symbols-outlined" style="font-size: 18px;">person_alert</span>
-      </div>
-      <div>
-        <span style="font-size: 0.7rem; font-weight: 700; color: #64748B; text-transform: uppercase; display: block;">Unallocated</span>
-        <strong style="font-size: 1.1rem; color: #D97706; line-height: 1;">{{ total_unassigned }}</strong>
-      </div>
-    </div>
-
-    <div class="modern-card" style="padding: 8px 14px; margin-bottom: 0; display: flex; align-items: center; gap: 10px;">
-      <div style="width: 32px; height: 32px; border-radius: 8px; background: #FDF2F5; display: flex; align-items: center; justify-content: center; color: #7E002F;">
-        <span class="material-symbols-outlined" style="font-size: 18px;">badge</span>
-      </div>
-      <div>
-        <span style="font-size: 0.7rem; font-weight: 700; color: #64748B; text-transform: uppercase; display: block;">Faculty Supervisors</span>
-        <strong style="font-size: 1.1rem; color: #0F172A; line-height: 1;">{{ lecturers|length }}</strong>
-      </div>
-    </div>
-
-    <div class="modern-card" style="padding: 8px 14px; margin-bottom: 0; display: flex; align-items: center; gap: 10px;">
-      <div style="width: 32px; height: 32px; border-radius: 8px; background: #ECFDF5; display: flex; align-items: center; justify-content: center; color: #065F46;">
-        <span class="material-symbols-outlined" style="font-size: 18px;">group_work</span>
-      </div>
-      <div>
-        <span style="font-size: 0.7rem; font-weight: 700; color: #64748B; text-transform: uppercase; display: block;">Total Placements</span>
-        <strong style="font-size: 1.1rem; color: #065F46; line-height: 1;">{{ attachments|length }}</strong>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Regional Filter Scroller -->
-<div class="modern-card" style="padding: 1rem 1.25rem; margin-bottom: 1.25rem;">
-  <div style="display: flex; align-items: center; gap: 8px; overflow-x: auto; padding-bottom: 4px;">
-    <a href="{{ url_for('liaison.zonal_mapping') }}" style="text-decoration: none;">
-      <span class="badge {% if not selected_region %}badge-primary{% else %}badge-secondary{% endif %}" style="padding: 6px 12px; font-size: 11.5px; cursor: pointer;">
-        <span>All Regions</span>
-        <span style="padding: 1px 6px; border-radius: 9999px; background: rgba(0,0,0,0.08); font-size: 10px; margin-left: 4px;">{{ attachments|length }}</span>
-      </span>
+<!-- Page Header with Back Link -->
+<div class="mb-6">
+  <div class="flex items-center gap-2 text-xs font-medium text-slate-500 mb-1">
+    <a href="{{ url_for('liaison.dashboard') }}" class="hover:text-[#8C033B] transition-colors flex items-center gap-1">
+      <span>&larr;</span> Back to Liaison Operations
     </a>
+    <span class="text-slate-300">/</span>
+    <span class="text-slate-700 font-semibold">Zonal Mapping</span>
+  </div>
+  <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Zonal Mapping &amp; Supervisor Allocation</h1>
+  <p class="text-xs text-slate-500 mt-1">
+    Assign accredited university faculty supervisors to active field placements across Ghana's 16 administrative regions.
+  </p>
+</div>
 
-    {% for region_name, counts in regional_summary.items() %}
-      <a href="{{ url_for('liaison.zonal_mapping', region=region_name) }}" style="text-decoration: none;">
-        <span class="badge {% if selected_region == region_name %}badge-primary{% elif counts.unassigned > 0 %}badge-warning{% else %}badge-secondary{% endif %}" style="padding: 6px 12px; font-size: 11.5px; white-space: nowrap; cursor: pointer;">
-          <span>{{ region_name }}</span>
-          <span style="padding: 1px 6px; border-radius: 9999px; background: rgba(0,0,0,0.08); font-size: 10px; margin-left: 4px;">{{ counts.total }}</span>
-        </span>
-      </a>
-    {% endfor %}
+<!-- 1. Full-Width Metric Strip (Top Canvas) -->
+{% set total_all_placements = regional_summary.values()|sum(attribute='total') if regional_summary else attachments|length %}
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6 zm-metric-grid">
+  <!-- Card 1: Unallocated Placements -->
+  <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm zm-metric-card">
+    <div class="text-[11px] font-bold text-amber-700 tracking-wider uppercase mb-2 zm-metric-label zm-metric-label-amber">
+      UNALLOCATED PLACEMENTS
+    </div>
+    <div class="text-2xl sm:text-3xl font-bold text-slate-900 zm-metric-val">
+      {{ total_unassigned }}
+    </div>
+  </div>
+
+  <!-- Card 2: Accredited Faculty Supervisors -->
+  <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm zm-metric-card">
+    <div class="text-[11px] font-bold text-slate-500 tracking-wider uppercase mb-2 zm-metric-label zm-metric-label-slate">
+      ACCREDITED FACULTY SUPERVISORS
+    </div>
+    <div class="text-2xl sm:text-3xl font-bold text-slate-900 zm-metric-val">
+      {{ lecturers|length }}
+    </div>
+  </div>
+
+  <!-- Card 3: Total Active Placements -->
+  <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm zm-metric-card">
+    <div class="text-[11px] font-bold text-slate-500 tracking-wider uppercase mb-2 zm-metric-label zm-metric-label-slate">
+      TOTAL ACTIVE PLACEMENTS
+    </div>
+    <div class="text-2xl sm:text-3xl font-bold text-slate-900 zm-metric-val">
+      {{ total_all_placements }}
+    </div>
   </div>
 </div>
 
-<!-- Main Table Section -->
-<div class="modern-card" style="padding: 0; overflow: hidden;">
-  <form method="POST" action="{{ url_for('liaison.zonal_mapping') }}" id="batchAllocationForm">
-    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+<!-- Form Wrapping Table and Floating Bulk Allocation Bar -->
+<form method="POST" action="{{ url_for('liaison.zonal_mapping') }}" id="batchAllocationForm">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
 
-    <!-- Pinned Table Control Bar with Batch Actions -->
-    <div style="padding: 1rem 1.25rem; background: #F8FAFC; border-bottom: 1px solid #E2E8F0; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
-      <div style="display: flex; align-items: center; gap: 8px;">
-        <input type="checkbox" id="selectAll" onclick="toggleSelectAll(this)" style="cursor: pointer; width: 16px; height: 16px; accent-color: #7E002F;"/>
-        <label for="selectAll" style="font-weight: 700; color: #0F172A; cursor: pointer; font-size: 0.88rem;">
-          Select All Records
-        </label>
+  <!-- 2. Integrated Filter & Search Toolbar + Data Table Card -->
+  <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden zm-card-container">
+    <!-- Top Control Bar (Modeled after Manychat Image 2) -->
+    <div class="p-4 border-b border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-3 zm-toolbar">
+      <!-- Left: Regional Filter Segmented Control -->
+      <div class="flex items-center gap-1.5 flex-wrap zm-pills-container">
+        <!-- All Placements Pill -->
+        <a href="{{ url_for('liaison.zonal_mapping') }}" 
+           class="{% if not selected_region %}bg-slate-900 text-white text-xs font-semibold px-3 py-1.5 rounded-lg zm-pill-active{% else %}text-slate-600 hover:bg-slate-100 text-xs font-medium px-3 py-1.5 rounded-lg transition-colors zm-pill-inactive{% endif %}">
+          All Placements ({{ total_all_placements }})
+        </a>
+
+        <!-- Regional Pills -->
+        {% for region_name, counts in regional_summary.items() %}
+          {% set label_name = 'Unassigned Zone' if region_name == 'Unassigned Region' else region_name %}
+          <a href="{{ url_for('liaison.zonal_mapping', region=region_name) }}" 
+             class="{% if selected_region == region_name %}bg-slate-900 text-white text-xs font-semibold px-3 py-1.5 rounded-lg zm-pill-active{% else %}text-slate-600 hover:bg-slate-100 text-xs font-medium px-3 py-1.5 rounded-lg transition-colors zm-pill-inactive{% endif %}">
+            {{ label_name }} ({{ counts.total }})
+          </a>
+        {% endfor %}
       </div>
 
-      <!-- Supervisor Selector & Batch Assign Button -->
-      <div style="display: flex; align-items: center; gap: 0.65rem; flex-wrap: wrap;">
-        <select id="supervisorSelect" name="supervisor_id" class="form-control" required style="width: auto; min-width: 260px; height: 38px; font-size: 13px;">
-          <option value="">-- Choose Visiting Supervisor --</option>
-          {% for sup in lecturers %}
-            <option value="{{ sup.id }}">{{ sup.full_name }} ({{ sup.department or 'Faculty' }})</option>
-          {% endfor %}
-        </select>
-        <button type="submit" class="btn-primary btn-sm" style="min-height: 38px; padding: 0 16px;">
-          <span class="material-symbols-outlined" style="font-size: 16px;">how_to_reg</span>
-          <span>Batch Allocate</span>
-        </button>
+      <!-- Right: Compact Search Input -->
+      <div class="zm-search-lockup">
+        <span class="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-base zm-search-icon">
+          search
+        </span>
+        <input type="text" 
+               id="tableSearchInput" 
+               placeholder="Filter by student or host..." 
+               class="h-9 w-full pl-8 pr-3 text-xs bg-white border border-slate-200 rounded-lg placeholder:text-slate-400 focus:border-[#8C033B] focus:ring-1 focus:ring-[#8C033B] outline-none transition-colors zm-search-input"/>
       </div>
     </div>
 
-    <!-- Placement Data Grid -->
-    <div class="table-responsive" style="margin: 0; border: none; border-radius: 0;">
-      <table class="modern-table">
-        <thead>
+    <!-- 3. Data Table Structure & Overflow Fix -->
+    <div class="w-full overflow-x-auto zm-table-wrapper">
+      <table class="w-full text-left border-collapse zm-table">
+        <thead class="bg-slate-50 border-b border-slate-200 text-[11px] font-bold uppercase tracking-wider text-slate-500 zm-table-head">
           <tr>
-            <th style="width: 40px; text-align: center;"></th>
-            <th>Student &amp; Index</th>
-            <th>Programme</th>
-            <th>Host Organization</th>
-            <th>Regional Zone &amp; Address</th>
-            <th>GPS Coordinates</th>
-            <th>Assigned Supervisor</th>
+            <th class="w-10 px-4 py-3 text-center zm-th-checkbox">
+              <input type="checkbox" 
+                     id="selectAllHeader" 
+                     onchange="toggleSelectAll(this)" 
+                     class="h-4 w-4 rounded border-slate-300 text-[#8C033B] focus:ring-[#8C033B] cursor-pointer" 
+                     title="Select All Records"/>
+            </th>
+            <th class="min-w-[180px] px-4 py-3 zm-th">STUDENT &amp; INDEX</th>
+            <th class="min-w-[160px] px-4 py-3 zm-th">PROGRAMME</th>
+            <th class="min-w-[200px] px-4 py-3 zm-th">HOST ORGANIZATION &amp; MENTOR</th>
+            <th class="min-w-[140px] px-4 py-3 zm-th">REGIONAL ZONE</th>
+            <th class="min-w-[150px] px-4 py-3 zm-th">GEOLOCATION &amp; GPS</th>
+            <th class="min-w-[160px] px-4 py-3 zm-th">ASSIGNED SUPERVISOR</th>
           </tr>
         </thead>
-        <tbody>
+        <tbody class="divide-y divide-slate-100 text-xs">
           {% for att in attachments %}
             {% set acc = att.latest_acceptance %}
-            <tr>
-              <td style="text-align: center;">
-                <input type="checkbox" name="attachment_ids" value="{{ att.id }}" class="attachment-cb" style="cursor: pointer; width: 16px; height: 16px; accent-color: #7E002F;"/>
+            <tr class="h-14 border-b border-slate-100 last:border-0 hover:bg-slate-50/60 transition-colors text-xs zm-row">
+              <!-- Checkbox -->
+              <td class="w-10 px-4 text-center align-middle zm-td-checkbox">
+                <input type="checkbox" 
+                       name="attachment_ids" 
+                       value="{{ att.id }}" 
+                       class="attachment-cb zm-row-cb h-4 w-4 rounded border-slate-300 text-[#8C033B] focus:ring-[#8C033B] cursor-pointer" 
+                       onchange="updateFloatingBar()"/>
               </td>
-              <td>
-                <div style="font-weight: 700; color: #0F172A;">{{ att.student.full_name }}</div>
-                <code style="font-family: 'JetBrains Mono', monospace; font-size: 0.78rem; font-weight: 700; color: #7E002F;">{{ att.student.index_number }}</code>
+
+              <!-- Student & Index -->
+              <td class="px-4 py-3 align-middle zm-td">
+                <div class="font-bold text-slate-900">{{ att.student.full_name }}</div>
+                <div class="font-mono text-[11px] text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded font-semibold inline-block mt-0.5">
+                  {{ att.student.index_number }}
+                </div>
               </td>
-              <td>
-                <div style="font-size: 0.82rem; color: #334155;">{{ att.student.programme }}</div>
-                <span class="badge badge-secondary" style="font-size: 9px; padding: 1px 6px;">Level {{ att.student.level }}</span>
+
+              <!-- Programme -->
+              <td class="px-4 py-3 align-middle zm-td">
+                <div class="text-slate-800 font-medium">{{ att.student.programme }}</div>
+                <div class="text-[11px] text-slate-500 mt-0.5">Level {{ att.student.level }}</div>
               </td>
-              <td>
-                <div style="font-weight: 600; color: #0F172A;">{{ acc.company_name or att.target_organization or 'Not Specified' }}</div>
+
+              <!-- Host Organization & Mentor -->
+              <td class="px-4 py-3 align-middle zm-td">
+                <div class="font-semibold text-slate-900">{{ acc.company_name or att.target_organization or 'Not Specified' }}</div>
                 {% if acc and acc.supervisor_name %}
-                  <div style="font-size: 0.78rem; color: #64748B;">
+                  <div class="text-[11px] text-slate-500 mt-0.5">
                     Mentor: {{ acc.supervisor_name }} ({{ acc.supervisor_phone or 'No Tel' }})
                   </div>
                 {% endif %}
               </td>
-              <td>
-                <span class="badge {% if acc and acc.region %}badge-success{% else %}badge-danger{% endif %}" style="font-size: 10px;">
-                  <span class="material-symbols-outlined" style="font-size: 12px;">location_on</span>
-                  <span>{{ acc.region if acc and acc.region else 'Unassigned' }}</span>
-                </span>
+
+              <!-- Regional Zone -->
+              <td class="px-4 py-3 align-middle zm-td">
+                {% if acc and acc.region and 'Ashanti' in acc.region %}
+                  <span class="bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-semibold px-2 py-0.5 rounded-full inline-flex items-center gap-1 zm-tag-ashanti">
+                    <span class="material-symbols-outlined text-[12px]">location_on</span>
+                    <span>{{ acc.region }}</span>
+                  </span>
+                {% elif acc and acc.region %}
+                  <span class="bg-slate-100 text-slate-700 border border-slate-200 text-[10px] font-semibold px-2 py-0.5 rounded-full inline-flex items-center gap-1">
+                    <span class="material-symbols-outlined text-[12px]">location_on</span>
+                    <span>{{ acc.region }}</span>
+                  </span>
+                {% else %}
+                  <span class="bg-amber-50 text-amber-700 border border-amber-200 text-[10px] font-semibold px-2 py-0.5 rounded-full inline-flex items-center gap-1 zm-tag-unassigned">
+                    <span class="material-symbols-outlined text-[12px]">warning</span>
+                    <span>Unassigned Zone</span>
+                  </span>
+                {% endif %}
                 {% if acc and acc.district_town %}
-                  <div style="font-size: 0.78rem; color: #334155; margin-top: 3px;">
+                  <div class="text-[11px] text-slate-500 mt-1">
                     {{ acc.district_town }}
                   </div>
                 {% endif %}
               </td>
-              <td>
+
+              <!-- Geolocation & GPS -->
+              <td class="px-4 py-3 align-middle zm-td">
                 {% if acc and acc.gps_address %}
-                  <span class="font-mono" style="font-family: var(--font-mono, monospace); font-size: 0.75rem; font-weight: 700; background: #F1F5F9; color: #0F172A; padding: 2px 6px; border-radius: 4px; border: 1px solid #CBD5E1; display: inline-block;">
+                  <div class="font-mono text-[11px] text-slate-700 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200 inline-block">
                     {{ acc.gps_address }}
-                  </span>
+                  </div>
                 {% endif %}
                 {% if acc and acc.latitude and acc.longitude %}
-                  <div style="font-size: 0.72rem; color: #64748B; margin-top: 3px; font-family: var(--font-mono, monospace);">
+                  <div class="font-mono text-[10px] text-slate-500 mt-0.5">
                     {{ "%.5f"|format(acc.latitude) }}, {{ "%.5f"|format(acc.longitude) }}
                   </div>
-                  <div style="margin-top: 4px;">
-                    <a href="https://www.google.com/maps/dir/?api=1&destination={{ acc.latitude }},{{ acc.longitude }}" target="_blank" rel="noopener noreferrer" 
-                       style="background: #EFF6FF; color: #1D4ED8; font-size: 0.72rem; font-weight: 600; padding: 3px 8px; border-radius: 4px; display: inline-flex; align-items: center; gap: 3px; text-decoration: none; border: 1px solid #BFDBFE;">
-                      <span class="material-symbols-outlined" style="font-size: 13px;">navigation</span>
-                      <span>Open Maps &rarr;</span>
+                  <div class="mt-1">
+                    <a href="https://www.google.com/maps/dir/?api=1&destination={{ acc.latitude }},{{ acc.longitude }}" 
+                       target="_blank" 
+                       rel="noopener noreferrer" 
+                       class="text-xs font-medium text-slate-700 hover:text-[#8C033B] inline-flex items-center gap-1 zm-gps-link">
+                      <span>📍 View Map ↗</span>
                     </a>
                   </div>
                 {% else %}
-                  <span style="font-size: 0.75rem; color: #94A3B8;">No GPS coordinates</span>
+                  <span class="text-[11px] text-slate-400 italic">No GPS coordinates</span>
                 {% endif %}
               </td>
-              <td>
+
+              <!-- Assigned Supervisor -->
+              <td class="px-4 py-3 align-middle zm-td">
                 {% if att.supervisor %}
-                  <div style="font-weight: 700; color: #065F46; display: flex; align-items: center; gap: 4px;">
-                    <span class="material-symbols-outlined" style="font-size: 16px;">verified</span>
+                  <div class="font-semibold text-emerald-700 flex items-center gap-1 zm-tag-assigned-sup">
+                    <span class="material-symbols-outlined text-[15px]">verified</span>
                     <span>{{ att.supervisor.full_name }}</span>
                   </div>
-                  <div style="font-size: 0.78rem; color: #64748B;">
+                  <div class="text-[11px] text-slate-500 mt-0.5">
                     {{ att.supervisor.department or 'Faculty' }}
                   </div>
                 {% else %}
-                  <span class="badge badge-warning" style="font-size: 10px;">
-                    <span class="material-symbols-outlined" style="font-size: 12px;">warning</span>
+                  <span class="bg-amber-50 text-amber-700 border border-amber-200 text-[10px] font-semibold px-2 py-0.5 rounded-full inline-flex items-center gap-1 zm-tag-unassigned">
+                    <span class="material-symbols-outlined text-[12px]">warning</span>
                     <span>Unallocated</span>
                   </span>
                 {% endif %}
@@ -184,7 +217,7 @@
             </tr>
           {% else %}
             <tr>
-              <td colspan="7" style="text-align: center; padding: 2.5rem 1rem; color: #64748B;">
+              <td colspan="7" class="p-8 text-center text-slate-400 text-xs">
                 No placement records found for the selected zone.
               </td>
             </tr>
@@ -192,15 +225,113 @@
         </tbody>
       </table>
     </div>
-  </form>
-</div>
+  </div>
+
+  <!-- 4. Floating Bulk Assignment Bar (Ref: Image 5 image_ff47ce.png) -->
+  <div id="floatingBulkBar" 
+       class="fixed bottom-8 left-1/2 -translate-x-1/2 z-40 bg-slate-900 text-white px-4 py-2.5 rounded-2xl shadow-xl flex items-center gap-3 border border-slate-800 animate-in fade-in slide-in-from-bottom-4 zm-floating-bar" 
+       style="display: none;">
+    <!-- Selection Counter -->
+    <span id="selectionCount" class="text-xs font-semibold text-slate-200 pr-2 border-r border-slate-700 whitespace-nowrap zm-floating-counter">
+      0 Placements Selected
+    </span>
+
+    <!-- Inline Select Dropdown -->
+    <select id="supervisorSelect" 
+            name="supervisor_id" 
+            class="h-8 bg-slate-800 border border-slate-700 rounded-lg text-xs text-white px-2.5 focus:ring-1 focus:ring-[#8C033B] outline-none zm-floating-select">
+      <option value="" disabled selected>-- Choose Visiting Supervisor --</option>
+      {% for sup in lecturers %}
+        <option value="{{ sup.id }}">Assign to {{ sup.full_name }} ({{ sup.department or 'Faculty' }})</option>
+      {% endfor %}
+    </select>
+
+    <!-- Primary Action Button -->
+    <button type="submit" 
+            id="confirmAllocBtn"
+            class="h-8 px-3.5 bg-[#8C033B] hover:bg-[#6B022D] text-white text-xs font-bold rounded-lg transition-colors zm-floating-btn">
+      Confirm Allocation
+    </button>
+
+    <!-- Deselect Trigger -->
+    <button type="button" 
+            onclick="deselectAll()" 
+            class="text-slate-400 hover:text-white text-sm cursor-pointer p-1 transition-colors zm-floating-deselect" 
+            title="Clear selections">
+      ✕
+    </button>
+  </div>
+</form>
 
 <script>
+function updateFloatingBar() {
+  const checkboxes = document.querySelectorAll('.attachment-cb');
+  const checked = document.querySelectorAll('.attachment-cb:checked');
+  const bar = document.getElementById('floatingBulkBar');
+  const counter = document.getElementById('selectionCount');
+  const masterCb = document.getElementById('selectAllHeader');
+
+  const count = checked.length;
+  if (count > 0) {
+    bar.style.display = 'flex';
+    counter.textContent = count + (count === 1 ? ' Placement Selected' : ' Placements Selected');
+  } else {
+    bar.style.display = 'none';
+  }
+
+  if (masterCb) {
+    masterCb.checked = (checkboxes.length > 0 && checked.length === checkboxes.length);
+    masterCb.indeterminate = (count > 0 && count < checkboxes.length);
+  }
+}
+
 function toggleSelectAll(masterCb) {
   const checkboxes = document.querySelectorAll('.attachment-cb');
   checkboxes.forEach(cb => {
-    cb.checked = masterCb.checked;
+    const tr = cb.closest('tr');
+    if (!tr || tr.style.display !== 'none') {
+      cb.checked = masterCb.checked;
+    }
   });
+  updateFloatingBar();
 }
+
+function deselectAll() {
+  const checkboxes = document.querySelectorAll('.attachment-cb');
+  checkboxes.forEach(cb => cb.checked = false);
+  const masterCb = document.getElementById('selectAllHeader');
+  if (masterCb) {
+    masterCb.checked = false;
+    masterCb.indeterminate = false;
+  }
+  updateFloatingBar();
+}
+
+// Client-side search filtering
+document.getElementById('tableSearchInput')?.addEventListener('input', function(e) {
+  const query = e.target.value.toLowerCase().trim();
+  const rows = document.querySelectorAll('tbody tr.zm-row');
+  rows.forEach(row => {
+    const text = row.textContent.toLowerCase();
+    row.style.display = text.includes(query) ? '' : 'none';
+  });
+});
+
+// Form submission validation
+document.getElementById('batchAllocationForm')?.addEventListener('submit', function(e) {
+  const checked = document.querySelectorAll('.attachment-cb:checked');
+  if (checked.length === 0) {
+    e.preventDefault();
+    alert('Please select at least one placement to allocate.');
+    return;
+  }
+  const supSelect = document.getElementById('supervisorSelect');
+  if (!supSelect || !supSelect.value) {
+    e.preventDefault();
+    alert('Please select a faculty supervisor from the dropdown.');
+    supSelect?.focus();
+    return;
+  }
+});
 </script>
 {% endblock %}

@@ -130,7 +130,7 @@ def register():
         # Check existing user
         if User.query.filter_by(username=index_number).first():
             flash("An account already exists for this index number. Please sign in.", "info")
-            return redirect(url_for('auth.login'))
+            return redirect(url_for('auth.login', tab='signin'))
 
         # Check StudentMaster
         student = StudentMaster.query.filter_by(index_number=index_number).first()
@@ -140,21 +140,21 @@ def register():
                 "Please verify your index number or visit the Industrial Liaison Unit desk.",
                 "danger"
             )
-            return render_template('auth/register.html', index_number=index_number, phone=phone, email=email)
+            return render_template('auth/login.html', active_tab='activation', index_number=index_number, phone=phone)
 
         # Validate Ghanaian Mobile Number
         valid_phone, normalized_phone, phone_err = validate_and_normalize_ghana_phone(phone)
         if not valid_phone:
             flash(phone_err, "danger")
-            return render_template('auth/register.html', index_number=index_number, phone=phone, email=email)
+            return render_template('auth/login.html', active_tab='activation', index_number=index_number, phone=phone)
 
         if len(password) < 6:
             flash("Password must be at least 6 characters.", "danger")
-            return render_template('auth/register.html', index_number=index_number, phone=phone, email=email)
+            return render_template('auth/login.html', active_tab='activation', index_number=index_number, phone=phone)
 
         if password != confirm_password:
             flash("Passwords do not match.", "danger")
-            return render_template('auth/register.html', index_number=index_number, phone=phone, email=email)
+            return render_template('auth/login.html', active_tab='activation', index_number=index_number, phone=phone)
 
         user = User(
             username=index_number,
@@ -178,7 +178,7 @@ def register():
         flash(f"Registration successful! Welcome, {student.full_name}.", "success")
         return redirect(url_for('student.dashboard'))
 
-    return render_template('auth/register.html')
+    return redirect(url_for('auth.login', tab='activation'))
 
 
 
