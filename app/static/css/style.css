@@ -704,11 +704,23 @@ a:hover {
    Container Constraints (max-w-7xl mx-auto px-4 sm:px-6 lg:px-8)
    ========================================================================== */
 .main-wrapper {
-  flex: 1;
+  flex: 1 0 auto;
   max-width: 80rem; /* max-w-7xl */
   width: 100%;
   margin: 1.5rem auto 3rem auto;
   padding: 0 1rem;
+  box-sizing: border-box;
+}
+
+@media (max-width: 767.98px) {
+  .main-wrapper {
+    flex: 1 0 auto !important;
+    padding: 1rem !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+    margin-top: 1rem !important;
+  }
 }
 
 @media (min-width: 640px) {
@@ -1281,39 +1293,62 @@ textarea.form-control {
    Global Minimal Application Footer (Ref: GlossGenius Image 7)
    ========================================================================== */
 .app-global-footer {
-  border-top: 1px solid #F1F5F9;
-  padding: 1rem 1.5rem;
+  border-top: 1px solid rgba(226, 232, 240, 0.8);
+  padding: 1.5rem 1rem;
   margin-top: 3rem;
+  background-color: rgba(255, 255, 255, 0.5);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.footer-inner-wrapper {
+  max-width: 80rem;
+  margin: 0 auto;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: space-between;
   gap: 0.5rem;
-  font-size: 0.75rem;
-  color: #94A3B8;
-  background: transparent;
+  justify-content: space-between;
+  align-items: center;
   width: 100%;
-  max-width: 80rem;
-  margin-left: auto;
-  margin-right: auto;
 }
 
 @media (min-width: 640px) {
-  .app-global-footer {
+  .footer-inner-wrapper {
     flex-direction: row;
+    align-items: center;
+  }
+  .app-global-footer .footer-copy {
+    text-align: left;
+  }
+  .app-global-footer .footer-meta {
+    justify-content: flex-end;
   }
 }
 
 .app-global-footer .footer-copy {
-  font-size: 0.75rem;
-  color: #94A3B8;
+  font-size: 11px;
+  color: #64748B;
+  line-height: 1.5;
   font-weight: 400;
+  max-width: 100%;
+  word-break: break-word;
+  text-align: center;
 }
 
 .app-global-footer .footer-meta {
-  font-size: 0.75rem;
+  font-size: 11px;
+  font-family: var(--font-mono, monospace);
   color: #94A3B8;
+  line-height: 1.5;
   font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  max-width: 100%;
+  word-break: break-word;
+  text-align: center;
 }
 
 /* Fallback for legacy footer classes */
@@ -4287,6 +4322,7 @@ textarea.form-control {
   gap: 4px;
   cursor: pointer;
   text-decoration: none;
+  white-space: nowrap;
   transition: all 0.15s ease;
 }
 

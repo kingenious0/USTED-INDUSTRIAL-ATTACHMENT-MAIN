@@ -1,229 +1,488 @@
 {% extends "base.html" %}
 
-{% block title %}Attachment #{{ attachment.id }} Management — U-IAP{% endblock %}
+{% block title %}Attachment Record #{{ attachment.id }} — U-IAP{% endblock %}
 {% block page_breadcrumb %}Manage Attachment #{{ attachment.id }}{% endblock %}
 
 {% block content %}
-<div class="page-header">
-  <div>
-    <a href="{{ url_for('liaison.attachments_list') }}" style="font-size: 0.82rem; font-weight: 600; color: #64748B; text-decoration: none; display: inline-flex; align-items: center; gap: 4px; margin-bottom: 6px;">
-      <span class="material-symbols-outlined" style="font-size: 16px;">arrow_back</span>
-      <span>Back to Attachments Roster</span>
-    </a>
-    <h1 class="page-title">Attachment Record #{{ attachment.id }}</h1>
-    <p class="page-subtitle">
-      Student: <strong style="color: #0F172A;">{{ attachment.student.full_name }}</strong> ({{ attachment.student.index_number }}) &bull;
-      Status: <span class="badge badge-primary">{{ attachment.status.replace('_', ' ') }}</span>
-    </p>
-  </div>
-  <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
-    <button type="button" class="btn-secondary btn-sm" onclick="openModal('reprintModal')">
-      <span class="material-symbols-outlined" style="font-size: 16px;">print</span>
-      <span>Reprint / Re-address Letter</span>
-    </button>
-    <a href="{{ url_for('student.download_compiled_report', attachment_id=attachment.id) }}" class="btn-primary btn-sm">
-      <span class="material-symbols-outlined" style="font-size: 16px;">download</span>
-      <span>Compiled Logbook (PDF)</span>
-    </a>
+
+{# ============================================================
+   PAGE HEADER — Linear-style unified action bar
+   ============================================================ #}
+<div style="display: flex; flex-direction: column; gap: 1rem; padding-bottom: 1.5rem; border-bottom: 1px solid #E2E8F0; margin-bottom: 1.5rem;">
+  <div style="display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 1rem;">
+
+    {# ── Left: Breadcrumb + Title Lockup + Subtitle ── #}
+    <div>
+      <a href="{{ url_for('liaison.attachments_list') }}"
+         style="font-size: 0.75rem; font-weight: 600; color: #64748B; text-decoration: none;
+                display: inline-flex; align-items: center; gap: 4px; margin-bottom: 4px;
+                transition: color 0.15s;"
+         onmouseover="this.style.color='#0F172A'" onmouseout="this.style.color='#64748B'">
+        <span class="material-symbols-outlined" style="font-size: 14px; line-height: 1;">arrow_back</span>
+        <span>Back to Attachments Roster</span>
+      </a>
+
+      <div style="display: flex; align-items: center; flex-wrap: wrap; gap: 0.5rem; margin-top: 2px;">
+        <h1 style="font-size: 1.5rem; font-weight: 700; color: #0F172A; letter-spacing: -0.025em; margin: 0; line-height: 1.25;">
+          Attachment Record #{{ attachment.id }}
+        </h1>
+        {# Status badge #}
+        {% set s = attachment.status | upper | replace('_', ' ') %}
+        {% if attachment.status in ['acceptance_approved', 'approved', 'logging_active', 'completed'] %}
+          <span style="background: #ECFDF5; color: #065F46; border: 1px solid #A7F3D0;
+                       font-size: 0.7rem; padding: 3px 10px; font-weight: 700; border-radius: 9999px;
+                       letter-spacing: 0.04em; white-space: nowrap; vertical-align: middle;">{{ s }}</span>
+        {% elif attachment.status == 'acceptance_uploaded' %}
+          <span style="background: #FFFBEB; color: #B45309; border: 1px solid #FDE68A;
+                       font-size: 0.7rem; padding: 3px 10px; font-weight: 700; border-radius: 9999px;
+                       letter-spacing: 0.04em; white-space: nowrap; vertical-align: middle;">{{ s }}</span>
+        {% elif attachment.status == 'letter_generated' %}
+          <span style="background: #EFF6FF; color: #1D4ED8; border: 1px solid #BFDBFE;
+                       font-size: 0.7rem; padding: 3px 10px; font-weight: 700; border-radius: 9999px;
+                       letter-spacing: 0.04em; white-space: nowrap; vertical-align: middle;">{{ s }}</span>
+        {% else %}
+          <span style="background: #F1F5F9; color: #475569; border: 1px solid #E2E8F0;
+                       font-size: 0.7rem; padding: 3px 10px; font-weight: 700; border-radius: 9999px;
+                       letter-spacing: 0.04em; white-space: nowrap; vertical-align: middle;">{{ s }}</span>
+        {% endif %}
+      </div>
+
+      <p style="font-size: 0.75rem; color: #64748B; font-family: 'JetBrains Mono', monospace; margin: 4px 0 0 0; line-height: 1.5;">
+        Student: {{ attachment.student.full_name }} ({{ attachment.student.index_number }})
+        &bull; {{ attachment.student.programme }}
+      </p>
+    </div>
+
+    {# ── Right: Unified Button Group ── #}
+    <div style="display: flex; align-items: center; gap: 0.5rem; flex-shrink: 0; flex-wrap: wrap;">
+      <button type="button" onclick="openModal('reprintModal')"
+              style="display: inline-flex; align-items: center; gap: 6px; height: 36px;
+                     padding: 0 14px; border: 1px solid #CBD5E1; border-radius: 8px;
+                     background: #fff; color: #334155; font-size: 0.75rem; font-weight: 600;
+                     cursor: pointer; box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+                     transition: background 0.15s, border-color 0.15s;"
+              onmouseover="this.style.background='#F8FAFC'" onmouseout="this.style.background='#fff'">
+        <span class="material-symbols-outlined" style="font-size: 15px;">print</span>
+        <span>Reprint / Re-address Letter</span>
+      </button>
+
+      <a href="{{ url_for('student.download_compiled_report', attachment_id=attachment.id) }}"
+         style="display: inline-flex; align-items: center; gap: 8px; height: 36px;
+                padding: 0 16px; border-radius: 8px; background: #8C033B;
+                color: #fff; font-size: 0.75rem; font-weight: 600; text-decoration: none;
+                box-shadow: 0 1px 2px rgba(0,0,0,0.1); transition: background 0.15s;"
+         onmouseover="this.style.background='#6B022D'" onmouseout="this.style.background='#8C033B'">
+        <span class="material-symbols-outlined" style="font-size: 15px;">download</span>
+        <span>Download Compiled Logbook (PDF)</span>
+      </a>
+    </div>
+
   </div>
 </div>
 
-<div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem;">
-  <!-- Main Info Column -->
-  <div>
-    <!-- Student & Attachment Particulars -->
-    <div class="modern-card">
-      <div class="card-header">
-        <h3 class="card-title">Attachment Particulars</h3>
-      </div>
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; font-size: 0.88rem;">
-        <div>
-          <span style="color: #64748B; font-size: 0.75rem; text-transform: uppercase; font-weight: 700; display: block;">Programme &amp; Level</span>
-          <strong style="color: #0F172A;">{{ attachment.student.programme }}</strong> (Level {{ attachment.student.current_level }})
-        </div>
-        <div>
-          <span style="color: #64748B; font-size: 0.75rem; text-transform: uppercase; font-weight: 700; display: block;">Department</span>
-          <span style="color: #334155;">{{ attachment.student.department }}</span>
-        </div>
-        <div>
-          <span style="color: #64748B; font-size: 0.75rem; text-transform: uppercase; font-weight: 700; display: block;">Academic Year &amp; Duration</span>
-          <span style="color: #334155;">{{ attachment.academic_year }} &bull; {{ attachment.duration_weeks }} Weeks</span>
-        </div>
-        <div>
-          <span style="color: #64748B; font-size: 0.75rem; text-transform: uppercase; font-weight: 700; display: block;">Period</span>
-          <span style="color: #334155;">{{ attachment.commencement_date.strftime('%d/%m/%Y') }} to {{ attachment.end_date.strftime('%d/%m/%Y') }}</span>
-        </div>
-        <div>
-          <span style="color: #64748B; font-size: 0.75rem; text-transform: uppercase; font-weight: 700; display: block;">Host Organization</span>
-          <strong style="color: #0F172A;">{{ attachment.target_organization or 'Not Yet Confirmed' }}</strong>
-        </div>
-        <div>
-          <span style="color: #64748B; font-size: 0.75rem; text-transform: uppercase; font-weight: 700; display: block;">Initiated By</span>
-          <span style="color: #334155;">{{ attachment.created_by.full_name }} ({{ attachment.created_at.strftime('%d %b, %Y') }})</span>
-        </div>
-      </div>
-    </div>
 
-    <!-- Weekly Activity Status Table -->
-    <div class="modern-card">
-      <div class="card-header">
-        <h3 class="card-title">Weekly Activity Monitoring</h3>
+{# ============================================================
+   MAIN GRID — 12-column, left 8 cols, right 4 cols
+   ============================================================ #}
+<div style="display: grid; grid-template-columns: 1fr; gap: 2rem;">
+
+  {# We use a CSS trick: a nested flex row for lg breakpoint.
+     Since this is plain CSS (no Tailwind), we inline a responsive wrapper. #}
+  <style>
+    .detail-grid       { display: grid; grid-template-columns: 1fr; gap: 2rem; }
+    @media (min-width: 1024px) {
+      .detail-grid     { grid-template-columns: 8fr 4fr; align-items: start; }
+    }
+    /* Shared card base */
+    .d-card            { background: #fff; border: 1px solid #E2E8F0; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
+    /* Compact table header */
+    .wk-th             { background: #F8FAFC; font-size: 11px; font-weight: 700; text-transform: uppercase;
+                         letter-spacing: 0.06em; color: #94A3B8; padding: 10px 14px;
+                         border-bottom: 1px solid #E2E8F0; white-space: nowrap; }
+    .wk-td             { font-size: 0.75rem; padding: 11px 14px; color: #334155; vertical-align: middle;
+                         border-bottom: 1px solid #F1F5F9; }
+    .wk-tr:last-child .wk-td { border-bottom: none; }
+    /* Sidebar divider sections */
+    .sb-section        { padding: 1rem 1.25rem; }
+    .sb-section + .sb-section { border-top: 1px solid #F1F5F9; }
+    .sb-label          { font-size: 0.6875rem; font-weight: 700; text-transform: uppercase;
+                         letter-spacing: 0.08em; color: #94A3B8; margin: 0 0 6px 0; }
+  </style>
+
+  <div class="detail-grid">
+
+    {# ==========================================
+       LEFT PANEL — Particulars & Weekly Log
+       ========================================== #}
+    <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+
+      {# Card 1: Placement Particulars #}
+      <div class="d-card" style="padding: 1.5rem;">
+        <h2 style="font-size: 0.875rem; font-weight: 700; color: #0F172A; margin: 0 0 12px 0;
+                   padding-bottom: 12px; border-bottom: 1px solid #F1F5F9;">
+          Workplace &amp; Attachment Particulars
+        </h2>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem 1.5rem;">
+
+          <div>
+            <span style="font-size: 0.7rem; font-weight: 700; text-transform: uppercase;
+                         letter-spacing: 0.06em; color: #94A3B8; display: block; margin-bottom: 3px;">
+              Host Organization
+            </span>
+            <strong style="font-size: 0.875rem; color: #0F172A; font-weight: 700;">
+              {{ attachment.target_organization or 'Not Yet Confirmed' }}
+            </strong>
+          </div>
+
+          <div>
+            <span style="font-size: 0.7rem; font-weight: 700; text-transform: uppercase;
+                         letter-spacing: 0.06em; color: #94A3B8; display: block; margin-bottom: 3px;">
+              Practicum Period
+            </span>
+            <span style="font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: #334155;">
+              {{ attachment.commencement_date.strftime('%d/%m/%Y') }} to {{ attachment.end_date.strftime('%d/%m/%Y') }}
+              <span style="color: #94A3B8; font-size: 0.7rem;">({{ attachment.duration_weeks }} Weeks)</span>
+            </span>
+          </div>
+
+          <div>
+            <span style="font-size: 0.7rem; font-weight: 700; text-transform: uppercase;
+                         letter-spacing: 0.06em; color: #94A3B8; display: block; margin-bottom: 3px;">
+              Programme &amp; Department
+            </span>
+            <span style="font-size: 0.8rem; color: #334155; line-height: 1.4;">
+              {{ attachment.student.programme }}<br>
+              <span style="color: #64748B; font-size: 0.75rem;">{{ attachment.student.department }}</span>
+            </span>
+          </div>
+
+          <div>
+            <span style="font-size: 0.7rem; font-weight: 700; text-transform: uppercase;
+                         letter-spacing: 0.06em; color: #94A3B8; display: block; margin-bottom: 3px;">
+              Initiated By
+            </span>
+            <span style="font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: #475569;">
+              {{ attachment.created_by.full_name }}
+              <span style="color: #94A3B8; font-size: 0.7rem;">(Liaison Officer)</span>
+            </span>
+          </div>
+
+        </div>
       </div>
-      <div class="table-responsive">
-        <table class="modern-table">
-          <thead>
-            <tr>
-              <th>Week</th>
-              <th>Period</th>
-              <th>Lock Status</th>
-              <th>Locked Timestamp</th>
-              <th style="text-align: right;">Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for week in attachment.weekly_activities %}
+      {# /Card 1 #}
+
+      {# Card 2: Weekly eLogSheet Monitoring #}
+      <div class="d-card" style="overflow: hidden;">
+        <div style="padding: 1.25rem 1.25rem 0.75rem 1.25rem; border-bottom: 1px solid #F1F5F9;">
+          <h2 style="font-size: 0.875rem; font-weight: 700; color: #0F172A; margin: 0;">
+            Weekly eLogSheet Activity Tracking
+          </h2>
+        </div>
+
+        <div style="overflow-x: auto;">
+          <table style="width: 100%; border-collapse: collapse; text-align: left;">
+            <thead>
               <tr>
-                <td><strong>Week {{ week.week_number }}</strong></td>
-                <td><small style="color: #64748B;">{{ week.start_date.strftime('%d/%m') }} – {{ week.end_date.strftime('%d/%m') }}</small></td>
-                <td>
-                  {% if week.is_locked %}
-                    <span class="badge badge-success">Locked (Read-Only)</span>
-                  {% else %}
-                    <span class="badge badge-secondary">Draft / Unlocked</span>
-                  {% endif %}
-                </td>
-                <td><small style="color: #64748B;">{{ week.locked_at.strftime('%d/%m/%Y %H:%M') if week.locked_at else '—' }}</small></td>
-                <td style="text-align: right;">
-                  <a href="{{ url_for('student.download_weekly_sheet', week_id=week.id) }}" class="btn-secondary btn-sm">
-                    <span class="material-symbols-outlined" style="font-size: 14px;">download</span>
-                    <span>Sheet (PDF)</span>
-                  </a>
-                </td>
+                <th class="wk-th">Week</th>
+                <th class="wk-th">Period</th>
+                <th class="wk-th">Lock Status</th>
+                <th class="wk-th">Timestamp</th>
+                <th class="wk-th" style="text-align: right;">Logsheet</th>
               </tr>
+            </thead>
+            <tbody>
+              {% for week in attachment.weekly_activities %}
+                <tr class="wk-tr">
+                  <td class="wk-td">
+                    <strong style="color: #0F172A;">Week {{ week.week_number }}</strong>
+                  </td>
+                  <td class="wk-td">
+                    <span style="font-family: 'JetBrains Mono', monospace; color: #475569; font-size: 0.7375rem;">
+                      {{ week.start_date.strftime('%d/%m') }} – {{ week.end_date.strftime('%d/%m') }}
+                    </span>
+                  </td>
+                  <td class="wk-td">
+                    {% if week.is_locked %}
+                      <span style="background: #ECFDF5; color: #065F46; border: 1px solid #A7F3D0;
+                                   font-size: 0.625rem; font-weight: 700; padding: 2px 8px;
+                                   border-radius: 4px; white-space: nowrap; letter-spacing: 0.03em;">
+                        LOCKED · READ-ONLY
+                      </span>
+                    {% else %}
+                      <span style="background: #F1F5F9; color: #475569; border: 1px solid #E2E8F0;
+                                   font-size: 0.625rem; font-weight: 700; padding: 2px 8px;
+                                   border-radius: 4px; white-space: nowrap; letter-spacing: 0.03em;">
+                        UNLOCKED / DRAFT
+                      </span>
+                    {% endif %}
+                  </td>
+                  <td class="wk-td">
+                    <span style="font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; color: #64748B;">
+                      {{ week.locked_at.strftime('%d/%m/%Y %H:%M') if week.locked_at else '—' }}
+                    </span>
+                  </td>
+                  <td class="wk-td" style="text-align: right;">
+                    <a href="{{ url_for('student.download_weekly_sheet', week_id=week.id) }}"
+                       style="display: inline-flex; align-items: center; gap: 4px;
+                              border: 1px solid #E2E8F0; border-radius: 6px;
+                              padding: 4px 10px; font-size: 0.75rem; font-weight: 600;
+                              color: #334155; text-decoration: none; background: #fff;
+                              transition: background 0.12s;"
+                       onmouseover="this.style.background='#F8FAFC'" onmouseout="this.style.background='#fff'">
+                      Sheet (PDF) &#8675;
+                    </a>
+                  </td>
+                </tr>
+              {% else %}
+                <tr>
+                  <td colspan="5"
+                      style="text-align: center; color: #94A3B8; padding: 2.5rem 1.5rem;
+                             font-size: 0.8rem; font-style: italic;">
+                    No weekly activity records provisioned yet.
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      {# /Card 2 #}
+
+    </div>
+    {# /Left Panel #}
+
+
+    {# ==========================================
+       RIGHT SIDEBAR — Single Consolidated Card
+       ========================================== #}
+    <div>
+      <div class="d-card" style="overflow: hidden;">
+
+        {# ── Section 1: Acceptance Endorsement ── #}
+        <div class="sb-section">
+          <p class="sb-label">Acceptance Endorsement</p>
+
+          {% if attachment.latest_acceptance %}
+            {% if attachment.latest_acceptance.is_approved %}
+              <div style="display: flex; align-items: center; gap: 6px; font-size: 0.75rem;
+                          font-weight: 700; color: #065F46; margin-bottom: 4px;">
+                <span class="material-symbols-outlined" style="font-size: 15px; color: #10B981;">verified</span>
+                VERIFIED &amp; CLEARED
+              </div>
+              <p style="font-size: 0.6875rem; color: #64748B; margin: 0 0 8px 0; line-height: 1.5;">
+                Verified by {{ attachment.latest_acceptance.reviewed_by.full_name if attachment.latest_acceptance.reviewed_by else 'Liaison Officer' }}
+                on {{ attachment.latest_acceptance.reviewed_at.strftime('%d %b, %Y') if attachment.latest_acceptance.reviewed_at else attachment.latest_acceptance.created_at.strftime('%d %b, %Y') }}
+              </p>
+            {% elif attachment.latest_acceptance.is_flagged %}
+              <div style="display: flex; align-items: center; gap: 6px; font-size: 0.75rem;
+                          font-weight: 700; color: #B91C1C; margin-bottom: 4px;">
+                <span class="material-symbols-outlined" style="font-size: 15px;">flag</span>
+                FLAGGED — NEEDS REVIEW
+              </div>
             {% else %}
-              <tr>
-                <td colspan="5" style="text-align: center; color: #64748B; padding: 2rem;">No weekly activity records provisioned yet.</td>
-              </tr>
-            {% endfor %}
-          </tbody>
-        </table>
+              <div style="display: flex; align-items: center; gap: 6px; font-size: 0.75rem;
+                          font-weight: 700; color: #B45309; margin-bottom: 4px;">
+                <span class="material-symbols-outlined" style="font-size: 15px;">hourglass_top</span>
+                PENDING REVIEW
+              </div>
+            {% endif %}
+
+            <div style="display: flex; flex-direction: column; gap: 6px; margin-top: 8px;">
+              <a href="{{ url_for('liaison.view_scan', acceptance_id=attachment.latest_acceptance.id) }}"
+                 target="_blank"
+                 style="font-size: 0.75rem; font-weight: 600; color: #8C033B; text-decoration: none;
+                        display: inline-flex; align-items: center; gap: 4px; transition: opacity 0.15s;"
+                 onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">
+                <span class="material-symbols-outlined" style="font-size: 14px;">open_in_new</span>
+                Inspect Uploaded Scan ↗
+              </a>
+              <a href="{{ url_for('liaison.review_acceptance', acceptance_id=attachment.latest_acceptance.id) }}"
+                 style="font-size: 0.75rem; font-weight: 600; color: #64748B; text-decoration: none;
+                        display: inline-flex; align-items: center; gap: 4px;"
+                 onmouseover="this.style.color='#0F172A'" onmouseout="this.style.color='#64748B'">
+                <span class="material-symbols-outlined" style="font-size: 14px;">rate_review</span>
+                Review / Update Decision
+              </a>
+            </div>
+
+          {% else %}
+            <p style="font-size: 0.8rem; color: #94A3B8; margin: 0; font-style: italic;">
+              Acceptance form not yet uploaded by student.
+            </p>
+          {% endif %}
+        </div>
+
+        {# ── Section 2: Academic Supervision ── #}
+        <div class="sb-section">
+          <p class="sb-label">Academic Supervision</p>
+
+          {% if attachment.academic_supervisor %}
+            <p style="font-size: 0.875rem; font-weight: 700; color: #0F172A; margin: 0 0 2px 0;">
+              {{ attachment.academic_supervisor.full_name }}
+            </p>
+            <p style="font-size: 0.75rem; color: #64748B; margin: 0;">Faculty Visiting Examiner</p>
+          {% else %}
+            <p style="font-size: 0.8rem; color: #94A3B8; margin: 0; font-style: italic;">
+              No supervisor assigned yet.
+            </p>
+          {% endif %}
+
+          {# Reassign Supervisor button — opens inline form #}
+          <button type="button" onclick="toggleSupervisorForm()"
+                  style="width: 100%; margin-top: 12px; height: 32px;
+                         border: 1px solid #CBD5E1; border-radius: 8px;
+                         background: #fff; color: #334155; font-size: 0.75rem; font-weight: 600;
+                         cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;
+                         transition: background 0.15s;"
+                  onmouseover="this.style.background='#F8FAFC'" onmouseout="this.style.background='#fff'">
+            <span class="material-symbols-outlined" style="font-size: 14px;">swap_horiz</span>
+            Reassign Supervisor
+          </button>
+
+          {# Collapsible supervisor form #}
+          <div id="supervisorFormWrap" style="display: none; margin-top: 10px;">
+            <form method="POST" action="{{ url_for('liaison.assign_supervisor', attachment_id=attachment.id) }}">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+              <select name="supervisor_id"
+                      style="width: 100%; padding: 6px 10px; border: 1px solid #CBD5E1; border-radius: 8px;
+                             font-size: 0.8rem; color: #334155; background: #fff; margin-bottom: 8px;
+                             outline: none; cursor: pointer;">
+                <option value="">— Select Supervisor —</option>
+                {% for sv in supervisors %}
+                  <option value="{{ sv.id }}" {% if attachment.academic_supervisor_id == sv.id %}selected{% endif %}>
+                    {{ sv.full_name }}
+                  </option>
+                {% endfor %}
+              </select>
+              <button type="submit"
+                      style="width: 100%; height: 32px; border-radius: 8px; background: #0F172A;
+                             color: #fff; font-size: 0.75rem; font-weight: 600; border: none;
+                             cursor: pointer; transition: opacity 0.15s;"
+                      onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">
+                Confirm Assignment
+              </button>
+            </form>
+          </div>
+        </div>
+
+        {# ── Section 3: Reference & Letter Tracking ── #}
+        <div class="sb-section">
+          <p class="sb-label">Reference &amp; Letter Tracking</p>
+
+          {% if attachment.letters %}
+            {% set letter = attachment.letters[-1] %}
+            <code style="display: block; font-family: 'JetBrains Mono', monospace;
+                         font-size: 0.75rem; color: #334155;
+                         background: #F8FAFC; border: 1px solid #E2E8F0;
+                         padding: 8px 10px; border-radius: 6px; word-break: break-all;">
+              {{ letter.reference_number }}
+            </code>
+            <p style="font-size: 0.6875rem; color: #94A3B8; margin: 6px 0 0 0;">
+              Dispatched: {{ letter.letter_date.strftime('%d/%m/%Y') }}
+              &bull; Reprints: {{ letter.reprint_count }}
+            </p>
+          {% else %}
+            <p style="font-size: 0.8rem; color: #94A3B8; margin: 0; font-style: italic;">
+              No letters generated yet.
+            </p>
+          {% endif %}
+        </div>
+
       </div>
     </div>
-  </div>
+    {# /Right Sidebar #}
 
-  <!-- Sidebar Column: Acceptance Review & Supervisor Assignment -->
-  <div>
-    <!-- Acceptance Form Card -->
-    <div class="modern-card">
-      <div class="card-header">
-        <h3 class="card-title">Acceptance Review</h3>
-      </div>
-
-      {% if attachment.latest_acceptance %}
-        <div style="margin-bottom: 0.75rem;">
-          <span class="badge {% if attachment.latest_acceptance.is_approved %}badge-success{% elif attachment.latest_acceptance.is_flagged %}badge-danger{% else %}badge-warning{% endif %}">
-            {{ attachment.latest_acceptance.status.replace('_', ' ') }}
-          </span>
-        </div>
-        <div style="font-size: 0.85rem; line-height: 1.6; color: #334155; margin-bottom: 1rem; background: #F8FAFC; padding: 10px 12px; border-radius: 8px; border: 1px solid #E2E8F0;">
-          <div><strong style="color: #0F172A;">Org:</strong> {{ attachment.latest_acceptance.organization_name }}</div>
-          <div><strong style="color: #0F172A;">Phone:</strong> {{ attachment.latest_acceptance.telephone }}</div>
-          <div><strong style="color: #0F172A;">Uploaded:</strong> {{ attachment.latest_acceptance.created_at.strftime('%d %b, %Y') }}</div>
-        </div>
-
-        <div style="display: flex; flex-direction: column; gap: 0.5rem;">
-          <a href="{{ url_for('liaison.view_scan', acceptance_id=attachment.latest_acceptance.id) }}" target="_blank" class="btn-secondary btn-sm" style="width: 100%;">
-            <span class="material-symbols-outlined" style="font-size: 15px;">visibility</span>
-            <span>Inspect Uploaded Scan</span>
-          </a>
-          <a href="{{ url_for('liaison.review_acceptance', acceptance_id=attachment.latest_acceptance.id) }}" class="btn-primary btn-sm" style="width: 100%;">
-            <span class="material-symbols-outlined" style="font-size: 15px;">rate_review</span>
-            <span>Review / Update Decision</span>
-          </a>
-        </div>
-      {% else %}
-        <p style="font-size: 0.85rem; color: #64748B; margin: 0;">
-          Student has not uploaded completed Acceptance Form yet.
-        </p>
-      {% endif %}
-    </div>
-
-    <!-- Assign Academic Supervisor Card -->
-    <div class="modern-card">
-      <div class="card-header">
-        <h3 class="card-title">Academic Supervision</h3>
-      </div>
-      <form method="POST" action="{{ url_for('liaison.assign_supervisor', attachment_id=attachment.id) }}">
-        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-        <div class="form-group" style="margin-bottom: 1rem;">
-          <label class="form-label" style="font-size: 0.82rem;">Assigned Faculty Supervisor</label>
-          <select name="supervisor_id" class="form-control">
-            <option value="">-- Select Academic Supervisor --</option>
-            {% for s in supervisors %}
-              <option value="{{ s.id }}" {% if attachment.academic_supervisor_id == s.id %}selected{% endif %}>
-                {{ s.full_name }}
-              </option>
-            {% endfor %}
-          </select>
-        </div>
-        <button type="submit" class="btn-secondary btn-sm" style="width: 100%;">
-          <span>Update Assignment</span>
-        </button>
-      </form>
-    </div>
-
-    <!-- Official Documents Card -->
-    <div class="modern-card">
-      <div class="card-header">
-        <h3 class="card-title">Generated Letters</h3>
-      </div>
-      {% for letter in attachment.letters %}
-        <div style="font-size: 0.85rem; padding: 0.5rem 0; border-bottom: 1px solid #F1F5F9;">
-          <strong style="color: #0F172A;">Ref:</strong> {{ letter.reference_number }}<br/>
-          <small style="color: #64748B;">Dated: {{ letter.letter_date.strftime('%d/%m/%Y') }} &bull; Reprints: {{ letter.reprint_count }}</small>
-        </div>
-      {% else %}
-        <p style="font-size: 0.82rem; color: #64748B; margin: 0;">No letters generated yet.</p>
-      {% endfor %}
-    </div>
   </div>
 </div>
 
-<!-- Reprint Letter Modal -->
-<div id="reprintModal" class="modal-backdrop" style="display: none; position: fixed; inset: 0; background: rgba(15,23,42,0.6); z-index: 2000; align-items: center; justify-content: center;">
-  <div class="modern-card" style="max-width: 520px; width: 100%; margin: 2rem; padding: 1.75rem;">
+
+{# ============================================================
+   REPRINT LETTER MODAL
+   ============================================================ #}
+<div id="reprintModal"
+     style="display: none; position: fixed; inset: 0; background: rgba(15,23,42,0.55);
+            z-index: 2000; align-items: center; justify-content: center; padding: 1rem;">
+  <div style="background: #fff; border-radius: 14px; max-width: 520px; width: 100%;
+              padding: 1.75rem; box-shadow: 0 20px 60px rgba(0,0,0,0.18);">
+
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
-      <h3 style="color: #7E002F; font-size: 1.15rem; font-weight: 700; margin: 0;">Reprint / Re-address Introductory Letter</h3>
-      <button type="button" onclick="closeModal('reprintModal')" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #64748B;">&times;</button>
+      <h3 style="font-size: 1.1rem; font-weight: 700; color: #8C033B; margin: 0;">
+        Reprint / Re-address Introductory Letter
+      </h3>
+      <button type="button" onclick="closeModal('reprintModal')"
+              style="background: none; border: none; color: #64748B; font-size: 1.4rem;
+                     cursor: pointer; line-height: 1; padding: 2px 6px; border-radius: 6px;"
+              onmouseover="this.style.background='#F1F5F9'" onmouseout="this.style.background='none'">
+        &times;
+      </button>
     </div>
 
     <form method="POST" action="{{ url_for('liaison.reprint_letter', attachment_id=attachment.id) }}">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
 
-      <div class="form-group" style="margin-bottom: 1.5rem;">
-        <label class="form-label" for="reprint_org">Addressee Organization Name</label>
-        <input type="text" id="reprint_org" name="target_organization" class="form-control"
+      <div style="margin-bottom: 1.25rem;">
+        <label for="reprint_org"
+               style="display: block; font-size: 0.8rem; font-weight: 600; color: #334155; margin-bottom: 6px;">
+          Addressee Organization Name
+        </label>
+        <input type="text" id="reprint_org" name="target_organization"
                value="{{ attachment.target_organization or '' }}"
-               placeholder="The Managing Director, Organization Name">
-        <p class="form-hint">Authorized staff can reprint or re-address letters if student requires replacement.</p>
+               placeholder="The Managing Director, Organization Name"
+               style="width: 100%; padding: 9px 12px; border: 1px solid #CBD5E1; border-radius: 8px;
+                      font-size: 0.85rem; color: #0F172A; outline: none; box-sizing: border-box;
+                      transition: border-color 0.15s;"
+               onfocus="this.style.borderColor='#8C033B'" onblur="this.style.borderColor='#CBD5E1'">
+        <p style="font-size: 0.75rem; color: #94A3B8; margin: 5px 0 0 0; line-height: 1.4;">
+          Authorized staff can reprint or re-address letters if a replacement is required.
+        </p>
       </div>
 
-      <div style="display: flex; justify-content: flex-end; gap: 0.75rem;">
-        <button type="button" class="btn-secondary" onclick="closeModal('reprintModal')">Cancel</button>
-        <button type="submit" class="btn-primary">Regenerate &amp; Log Reprint</button>
+      <div style="display: flex; justify-content: flex-end; gap: 0.625rem;">
+        <button type="button" onclick="closeModal('reprintModal')"
+                style="height: 36px; padding: 0 14px; border: 1px solid #CBD5E1; border-radius: 8px;
+                       background: #fff; color: #334155; font-size: 0.8rem; font-weight: 600; cursor: pointer;">
+          Cancel
+        </button>
+        <button type="submit"
+                style="height: 36px; padding: 0 16px; border-radius: 8px; background: #8C033B;
+                       color: #fff; font-size: 0.8rem; font-weight: 600; border: none; cursor: pointer;
+                       transition: background 0.15s;"
+                onmouseover="this.style.background='#6B022D'" onmouseout="this.style.background='#8C033B'">
+          Regenerate &amp; Log Reprint
+        </button>
       </div>
     </form>
   </div>
 </div>
 
+
 <script>
+/* ─── Modal helpers ─── */
 function openModal(id) {
   const m = document.getElementById(id);
-  if (m) m.style.display = 'flex';
+  if (m) { m.style.display = 'flex'; document.body.style.overflow = 'hidden'; }
 }
 function closeModal(id) {
   const m = document.getElementById(id);
-  if (m) m.style.display = 'none';
+  if (m) { m.style.display = 'none'; document.body.style.overflow = ''; }
+}
+/* Close on backdrop click */
+document.getElementById('reprintModal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal('reprintModal');
+});
+/* Close on Escape */
+window.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') closeModal('reprintModal');
+});
+
+/* ─── Supervisor form toggle ─── */
+function toggleSupervisorForm() {
+  const wrap = document.getElementById('supervisorFormWrap');
+  if (wrap) {
+    wrap.style.display = wrap.style.display === 'none' ? 'block' : 'none';
+  }
 }
 </script>
+
 {% endblock %}

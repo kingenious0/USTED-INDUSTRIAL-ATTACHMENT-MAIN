@@ -255,7 +255,10 @@ def switch_role(role: str):
 
     if user:
         login_user(user)
-        flash(f'Switched to {user.full_name} ({user.role.replace("_", " ").title()}) preview mode.', 'info')
+        import re
+        clean_name = re.sub(r'\s*\([^)]*\)', '', user.full_name).strip()
+        role_label = user.role.replace("_", " ").title()
+        flash(f'Viewing portal as <strong>{clean_name}</strong> • {role_label} Preview', 'info')
 
     next_url = request.args.get('next')
     if next_url and next_url.startswith('/') and not next_url.startswith('/auth/login'):

@@ -1,90 +1,317 @@
 {% extends "base.html" %}
 
-{% block title %}System Audit Logs — U-IAP{% endblock %}
-{% block page_breadcrumb %}Administration / Institutional Audit Trail{% endblock %}
+{% block title %}Security & Audit Trail — U-IAP{% endblock %}
+{% block page_breadcrumb %}Administration / Audit Center{% endblock %}
 
 {% block content %}
-<div class="page-header" style="margin-bottom: 1.5rem;">
+
+{# ── Helper macro: build a URL preserving all current filters except changed key #}
+{% macro pg_url(p=None, pp=None) %}{{ url_for('admin.audit_logs',
+    page      = p  if p  is not none else pagination.page,
+    per_page  = pp if pp is not none else per_page,
+    action    = selected_action,
+    actor     = actor_filter,
+    role      = role_filter) }}{% endmacro %}
+
+{# ─────────────────────────────────────────────────────────────────────────── #}
+{#  1. PAGE HEADER                                                              #}
+{# ─────────────────────────────────────────────────────────────────────────── #}
+<div style="display:flex; flex-wrap:wrap; align-items:flex-start; justify-content:space-between; gap:1rem; padding-bottom:1.5rem; border-bottom:1px solid #E2E8F0; margin-bottom:1.25rem;">
+
   <div>
-    <a href="{{ url_for('admin.dashboard') }}" style="font-size: 0.82rem; color: var(--color-text-muted); text-decoration: none; display: inline-flex; align-items: center; gap: 4px; margin-bottom: 0.35rem;">
-      <span class="material-symbols-outlined" style="font-size: 16px;">arrow_back</span>
-      <span>Back to Admin Dashboard</span>
-    </a>
-    <h1 class="page-title" style="font-size: 1.5rem; font-weight: 800; color: var(--color-text-main);">
+    <p style="font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:#94A3B8; margin:0 0 0.25rem;">
+      Administration / Audit Center
+    </p>
+    <h1 style="font-size:1.55rem; font-weight:800; color:#0F172A; letter-spacing:-0.02em; margin:0 0 0.15rem;">
       Institutional Audit Trail
     </h1>
-    <p class="page-subtitle" style="font-size: 0.88rem; color: var(--color-text-muted); margin-top: 0.2rem;">
-      Comprehensive, immutable log of administrative sessions, letter issuances, acceptance verifications, and weekly activity locking events.
+    <p style="font-family:var(--font-mono,monospace); font-size:0.75rem; color:#64748B; margin:0;">
+      Immutable system ledger tracking user logins, workflow state mutations, and document verifications.
     </p>
+  </div>
+
+  <div style="display:flex; align-items:center; gap:0.5rem; flex-shrink:0; padding-top:0.15rem;">
+    <a href="{{ url_for('admin.audit_logs') }}?export=csv"
+       style="display:inline-flex; align-items:center; gap:5px; height:36px; padding:0 14px; border:1px solid #CBD5E1; border-radius:8px; background:#FFFFFF; color:#334155; font-size:0.75rem; font-weight:600; text-decoration:none; box-shadow:0 1px 2px rgba(0,0,0,0.05);">
+      <span class="material-symbols-outlined" style="font-size:14px;">download</span>
+      Export CSV
+    </a>
   </div>
 </div>
 
-<div class="modern-card">
-  <!-- Filter by Action -->
-  <div style="padding: 1rem 1.5rem; border-bottom: 1px solid #E2E8F0; display: flex; gap: 0.4rem; flex-wrap: wrap; align-items: center;">
-    <span style="font-size: 0.78rem; font-weight: 700; text-transform: uppercase; color: var(--color-text-muted); margin-right: 0.4rem; letter-spacing: 0.05em;">Filter:</span>
-    <a href="{{ url_for('admin.audit_logs') }}" class="btn {% if not selected_action %}btn-primary{% else %}btn-secondary{% endif %} btn-sm" style="font-size: 0.78rem; padding: 4px 10px;">
-      All Actions
-    </a>
-    {% for a in actions %}
-      <a href="{{ url_for('admin.audit_logs', action=a) }}" class="btn {% if selected_action == a %}btn-primary{% else %}btn-secondary{% endif %} btn-sm" style="font-size: 0.78rem; padding: 4px 10px;">
-        {{ a.replace('_', ' ') }}
+{# ─────────────────────────────────────────────────────────────────────────── #}
+{#  2. COMPACT FILTER TOOLBAR                                                   #}
+{# ─────────────────────────────────────────────────────────────────────────── #}
+<form method="GET" action="{{ url_for('admin.audit_logs') }}"
+      style="background:#FFFFFF; border:1px solid #E2E8F0; border-radius:12px; padding:10px 14px; margin-bottom:1rem; box-shadow:0 1px 3px rgba(0,0,0,0.06); display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:0.6rem;">
+
+  {# Preserve pagination per_page across filter submits #}
+  <input type="hidden" name="per_page" value="{{ per_page }}">
+
+  {# Left: filter controls #}
+  <div style="display:flex; flex-wrap:wrap; align-items:center; gap:0.5rem;">
+
+    {# Search input #}
+    <div style="position:relative; display:inline-flex; align-items:center;">
+      <span class="material-symbols-outlined" style="position:absolute; left:8px; font-size:15px; color:#94A3B8; pointer-events:none;">search</span>
+      <input type="text" name="actor" value="{{ actor_filter }}"
+             placeholder="Filter by actor or index..."
+             style="height:36px; width:220px; padding:0 10px 0 30px; font-size:0.75rem; border:1px solid #E2E8F0; border-radius:8px; color:#334155; outline:none; transition:border-color 0.15s;"
+             onfocus="this.style.borderColor='#8C033B'; this.style.boxShadow='0 0 0 2px rgba(140,3,59,0.08)'"
+             onblur="this.style.borderColor='#E2E8F0'; this.style.boxShadow='none'">
+    </div>
+
+    {# Role dropdown #}
+    <select name="role"
+            style="height:36px; padding:0 10px; font-size:0.75rem; border:1px solid #E2E8F0; border-radius:8px; color:#334155; background:#FFFFFF; outline:none;">
+      <option value=""       {% if not role_filter %}selected{% endif %}>All Roles</option>
+      <option value="admin"  {% if role_filter == 'admin' %}selected{% endif %}>Admin</option>
+      <option value="liaison_head"    {% if role_filter == 'liaison_head' %}selected{% endif %}>Liaison Head</option>
+      <option value="liaison_officer" {% if role_filter == 'liaison_officer' %}selected{% endif %}>Liaison Officers</option>
+      <option value="supervisor"      {% if role_filter == 'supervisor' %}selected{% endif %}>Supervisors</option>
+      <option value="student"         {% if role_filter == 'student' %}selected{% endif %}>Students</option>
+    </select>
+
+    {# Event type dropdown #}
+    <select name="action"
+            style="height:36px; padding:0 10px; font-size:0.75rem; border:1px solid #E2E8F0; border-radius:8px; color:#334155; background:#FFFFFF; outline:none;">
+      <option value="" {% if not selected_action %}selected{% endif %}>All Events</option>
+      {% for a in actions %}
+        <option value="{{ a }}" {% if selected_action == a %}selected{% endif %}>
+          {{ a.replace('_', ' ').title() }}
+        </option>
+      {% endfor %}
+    </select>
+
+    <button type="submit"
+            style="height:36px; padding:0 14px; font-size:0.75rem; font-weight:600; background:var(--color-primary,#8C033B); color:#FFFFFF; border:none; border-radius:8px; cursor:pointer;">
+      Apply
+    </button>
+
+    {% if selected_action or actor_filter or role_filter %}
+      <a href="{{ url_for('admin.audit_logs') }}"
+         style="height:36px; padding:0 12px; font-size:0.75rem; font-weight:600; border:1px solid #CBD5E1; border-radius:8px; background:#FFFFFF; color:#64748B; text-decoration:none; display:inline-flex; align-items:center; gap:4px;">
+        <span class="material-symbols-outlined" style="font-size:13px;">close</span>
+        Clear
       </a>
-    {% endfor %}
+    {% endif %}
   </div>
 
-  <div class="table-responsive">
-    <table class="table modern-table" style="margin-bottom: 0;">
-      <thead>
-        <tr>
-          <th style="width: 60px;">ID</th>
-          <th>Timestamp (UTC)</th>
-          <th>Actor</th>
-          <th>Role</th>
-          <th>Action</th>
-          <th>Target</th>
-          <th>IP Address</th>
-          <th>Event Summary &amp; Context</th>
+  {# Right: total counter #}
+  <span style="font-family:var(--font-mono,monospace); font-size:0.72rem; color:#64748B; white-space:nowrap; flex-shrink:0;">
+    {{ pagination.total }} Event{% if pagination.total != 1 %}s{% endif %} Recorded
+  </span>
+</form>
+
+{# ─────────────────────────────────────────────────────────────────────────── #}
+{#  3. DATA TABLE WITH STICKY HEADERS & CONSTRAINED VIEWPORT                   #}
+{# ─────────────────────────────────────────────────────────────────────────── #}
+<div style="background:#FFFFFF; border:1px solid #E2E8F0; border-radius:12px; box-shadow:0 1px 3px rgba(0,0,0,0.06); overflow:hidden;">
+
+  {# Scrollable viewport: max 620px tall, full-width scroll for narrow screens #}
+  <div style="overflow-x:auto; max-height:620px; overflow-y:auto; position:relative;">
+    <table style="width:100%; border-collapse:collapse; font-size:0.78rem; min-width:820px;">
+
+      {# ── Sticky header ── #}
+      <thead style="position:sticky; top:0; z-index:10;">
+        <tr style="background:rgba(248,250,252,0.97); backdrop-filter:blur(4px); border-bottom:1px solid #E2E8F0;">
+          <th style="width:52px;    padding:10px 14px; text-align:left; font-size:0.68rem; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:#94A3B8; white-space:nowrap;">ID</th>
+          <th style="width:160px;   padding:10px 14px; text-align:left; font-size:0.68rem; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:#94A3B8; white-space:nowrap;">Timestamp (UTC)</th>
+          <th style="width:180px;   padding:10px 14px; text-align:left; font-size:0.68rem; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:#94A3B8;">Actor &amp; Role</th>
+          <th style="width:150px;   padding:10px 14px; text-align:left; font-size:0.68rem; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:#94A3B8;">Event Action</th>
+          <th style="width:130px;   padding:10px 14px; text-align:left; font-size:0.68rem; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:#94A3B8;">Target</th>
+          <th style="min-width:280px; padding:10px 14px; text-align:left; font-size:0.68rem; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:#94A3B8;">Audit Details</th>
         </tr>
       </thead>
+
       <tbody>
         {% for log in logs %}
-          <tr>
-            <td><code style="font-family: var(--font-mono, monospace); font-size: 0.8rem; font-weight: 700; color: var(--color-text-muted);">#{{ log.id }}</code></td>
-            <td><span style="font-family: var(--font-mono, monospace); font-size: 0.8rem; color: var(--color-text-muted);">{{ log.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</span></td>
-            <td><strong>{{ log.actor_username or 'SYSTEM' }}</strong></td>
-            <td>
-              <span class="badge {% if log.actor_role in ['admin', 'liaison_head'] %}badge-danger{% elif log.actor_role == 'liaison_officer' %}badge-primary{% else %}badge-secondary{% endif %}" style="font-size: 0.72rem;">
-                {{ log.actor_role or 'system' }}
+          <tr style="border-bottom:1px solid #F1F5F9; transition:background 0.1s;"
+              onmouseover="this.style.background='rgba(248,250,252,0.7)'"
+              onmouseout="this.style.background='transparent'">
+
+            {# ID #}
+            <td style="padding:10px 14px; vertical-align:middle;">
+              <code style="font-family:var(--font-mono,monospace); font-size:0.7rem; font-weight:700; color:#94A3B8;">#{{ log.id }}</code>
+            </td>
+
+            {# Timestamp — single-line compact monospace #}
+            <td style="padding:10px 14px; vertical-align:middle; white-space:nowrap;">
+              <span style="font-family:var(--font-mono,monospace); font-size:0.72rem; color:#475569; display:block; line-height:1.4;">
+                {{ log.timestamp.strftime('%b %d, %Y') }} &bull; {{ log.timestamp.strftime('%H:%M:%S') }}
               </span>
             </td>
-            <td>
-              <span class="badge {% if 'LOGIN' in log.action or 'LOCKED' in log.action %}badge-success{% elif 'CHANGE' in log.action or 'REPRINT' in log.action %}badge-warning{% else %}badge-secondary{% endif %}" style="font-size: 0.72rem;">
-                {{ log.action.replace('_', ' ') }}
+
+            {# Actor & Role #}
+            <td style="padding:10px 14px; vertical-align:middle;">
+              <span style="font-family:var(--font-mono,monospace); font-size:0.76rem; font-weight:600; color:#0F172A;">
+                {{ log.actor_username or 'SYSTEM' }}
               </span>
+              {% if log.actor_role %}
+                <span style="font-size:0.65rem; font-weight:600; background:#F1F5F9; color:#475569; padding:2px 6px; border-radius:4px; margin-left:5px; display:inline-block; white-space:nowrap;">
+                  {{ log.actor_role.replace('_', ' ') }}
+                </span>
+              {% endif %}
             </td>
-            <td>
-              <span style="color: var(--color-text-muted); font-size: 0.82rem;">
-                {{ log.target_type or '—' }}{% if log.target_id %} <code style="font-family: var(--font-mono, monospace); font-size: 0.78rem;">#{{ log.target_id }}</code>{% endif %}
-              </span>
+
+            {# Event Action Badge — low-saturation for routine, high-contrast for workflow #}
+            <td style="padding:10px 14px; vertical-align:middle; white-space:nowrap;">
+              {% set act = log.action %}
+              {% if 'LOGIN' in act or 'LOGOUT' in act or 'ACCESS' in act %}
+                {# Routine auth — neutral, low-salience #}
+                <span style="display:inline-block; font-size:0.65rem; font-weight:500; background:#F1F5F9; color:#475569; border:1px solid #E2E8F0; padding:2px 7px; border-radius:4px; white-space:nowrap;">
+                  {{ act.replace('_', ' ') }}
+                </span>
+              {% elif 'ACCEPTANCE' in act or 'REVIEW' in act %}
+                <span style="display:inline-block; font-size:0.65rem; font-weight:600; background:#F5F3FF; color:#6D28D9; border:1px solid #DDD6FE; padding:2px 7px; border-radius:4px; white-space:nowrap;">
+                  {{ act.replace('_', ' ') }}
+                </span>
+              {% elif 'VISIT' in act or 'SUPERVISORY' in act or 'WEEK_LOCKED' in act or 'LOCKED' in act %}
+                <span style="display:inline-block; font-size:0.65rem; font-weight:600; background:#EFF6FF; color:#1D4ED8; border:1px solid #BFDBFE; padding:2px 7px; border-radius:4px; white-space:nowrap;">
+                  {{ act.replace('_', ' ') }}
+                </span>
+              {% elif 'LETTER' in act or 'REPRINT' in act or 'GENERATED' in act %}
+                <span style="display:inline-block; font-size:0.65rem; font-weight:600; background:#FDF4FF; color:#7C3AED; border:1px solid #DDD6FE; padding:2px 7px; border-radius:4px; white-space:nowrap;">
+                  {{ act.replace('_', ' ') }}
+                </span>
+              {% elif 'CHANGE' in act or 'CONFIG' in act or 'UPDATE' in act %}
+                <span style="display:inline-block; font-size:0.65rem; font-weight:600; background:#FFFBEB; color:#B45309; border:1px solid #FCD34D; padding:2px 7px; border-radius:4px; white-space:nowrap;">
+                  {{ act.replace('_', ' ') }}
+                </span>
+              {% else %}
+                <span style="display:inline-block; font-size:0.65rem; font-weight:500; background:#F8FAFC; color:#64748B; border:1px solid #E2E8F0; padding:2px 7px; border-radius:4px; white-space:nowrap;">
+                  {{ act.replace('_', ' ') }}
+                </span>
+              {% endif %}
             </td>
-            <td><code style="font-family: var(--font-mono, monospace); font-size: 0.78rem; color: var(--color-text-muted);">{{ log.ip_address or '—' }}</code></td>
-            <td>
-              <span style="font-size: 0.84rem; color: var(--color-text-main);">
+
+            {# Target #}
+            <td style="padding:10px 14px; vertical-align:middle;">
+              {% if log.target_type %}
+                <span style="font-family:var(--font-mono,monospace); font-size:0.72rem; color:#334155; display:block;">
+                  {{ log.target_type }}{% if log.target_id %} <span style="color:#94A3B8;">#{{ log.target_id }}</span>{% endif %}
+                </span>
+              {% else %}
+                <span style="color:#CBD5E1; font-size:0.72rem;">—</span>
+              {% endif %}
+            </td>
+
+            {# Audit Details #}
+            <td style="padding:10px 14px; vertical-align:middle;">
+              <span style="font-size:0.75rem; color:#475569; line-height:1.5;">
                 {{ log | humanize_audit }}
               </span>
+              {% if log.ip_address %}
+                <code style="font-family:var(--font-mono,monospace); font-size:0.68rem; color:#94A3B8; margin-left:6px; background:#F8FAFC; padding:1px 5px; border-radius:3px; border:1px solid #F1F5F9;">
+                  {{ log.ip_address }}
+                </code>
+              {% endif %}
             </td>
+
           </tr>
         {% else %}
           <tr>
-            <td colspan="8" style="text-align: center; color: var(--color-text-muted); padding: 3rem 1rem;">
-              <span class="material-symbols-outlined" style="font-size: 36px; color: #CBD5E1; display: block; margin-bottom: 0.5rem;">history_toggle_off</span>
-              No matching institutional audit records found.
+            <td colspan="6" style="padding:4rem 1rem; text-align:center;">
+              <span class="material-symbols-outlined" style="font-size:40px; color:#CBD5E1; display:block; margin-bottom:0.6rem;">history_toggle_off</span>
+              <span style="font-size:0.85rem; font-weight:600; color:#94A3B8; display:block;">No matching audit records found.</span>
+              <span style="font-size:0.75rem; color:#CBD5E1; display:block; margin-top:0.2rem;">Try clearing the active filter or check back after system activity.</span>
             </td>
           </tr>
         {% endfor %}
       </tbody>
     </table>
   </div>
+
+  {# ─────────────────────────────────────────────────────────────────────── #}
+  {#  4. PAGINATION FOOTER DOCK                                               #}
+  {# ─────────────────────────────────────────────────────────────────────── #}
+  {% if pagination.pages > 0 %}
+  <div style="padding:10px 14px; background:#F8FAFC; border-top:1px solid #E2E8F0; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.75rem;">
+
+    {# Left: rows-per-page selector #}
+    <form method="GET" action="{{ url_for('admin.audit_logs') }}"
+          style="display:inline-flex; align-items:center; gap:6px; font-size:0.72rem; color:#475569;"
+          onchange="this.submit()">
+      <input type="hidden" name="page"   value="1">
+      <input type="hidden" name="action" value="{{ selected_action }}">
+      <input type="hidden" name="actor"  value="{{ actor_filter }}">
+      <input type="hidden" name="role"   value="{{ role_filter }}">
+      <span>Show</span>
+      <select name="per_page"
+              style="height:28px; padding:0 6px; font-size:0.72rem; border:1px solid #CBD5E1; border-radius:5px; background:#FFFFFF; color:#334155; outline:none;">
+        <option value="20"  {% if per_page == 20  %}selected{% endif %}>20</option>
+        <option value="50"  {% if per_page == 50  %}selected{% endif %}>50</option>
+        <option value="100" {% if per_page == 100 %}selected{% endif %}>100</option>
+      </select>
+      <span>items per page</span>
+    </form>
+
+    {# Middle: range counter #}
+    <span style="font-family:var(--font-mono,monospace); font-size:0.72rem; color:#64748B;">
+      {% set start = (pagination.page - 1) * per_page + 1 %}
+      {% set end   = [pagination.page * per_page, pagination.total] | min %}
+      Showing {{ start }}–{{ end }} of {{ pagination.total }} event{% if pagination.total != 1 %}s{% endif %}
+    </span>
+
+    {# Right: page buttons #}
+    <div style="display:flex; align-items:center; gap:4px;">
+
+      {# Prev #}
+      {% if pagination.has_prev %}
+        <a href="{{ pg_url(p=pagination.prev_num) }}"
+           style="height:28px; padding:0 10px; border:1px solid #E2E8F0; border-radius:5px; background:#FFFFFF; color:#334155; font-size:0.72rem; font-weight:600; text-decoration:none; display:inline-flex; align-items:center; gap:3px;">
+          <span class="material-symbols-outlined" style="font-size:13px;">chevron_left</span>
+          Prev
+        </a>
+      {% else %}
+        <span style="height:28px; padding:0 10px; border:1px solid #E2E8F0; border-radius:5px; background:#FFFFFF; color:#CBD5E1; font-size:0.72rem; display:inline-flex; align-items:center; gap:3px; cursor:default;">
+          <span class="material-symbols-outlined" style="font-size:13px;">chevron_left</span>
+          Prev
+        </span>
+      {% endif %}
+
+      {# Page number buttons — show up to 5 around current page #}
+      {% set window = 2 %}
+      {% for p in pagination.iter_pages(left_edge=1, left_current=window, right_current=window, right_edge=1) %}
+        {% if p %}
+          {% if p == pagination.page %}
+            <span style="height:28px; width:28px; border-radius:5px; background:#0F172A; color:#FFFFFF; font-size:0.72rem; font-weight:700; display:inline-flex; align-items:center; justify-content:center;">
+              {{ p }}
+            </span>
+          {% else %}
+            <a href="{{ pg_url(p=p) }}"
+               style="height:28px; width:28px; border-radius:5px; background:#FFFFFF; color:#334155; font-size:0.72rem; font-weight:500; text-decoration:none; display:inline-flex; align-items:center; justify-content:center; border:1px solid #E2E8F0;">
+              {{ p }}
+            </a>
+          {% endif %}
+        {% else %}
+          <span style="height:28px; width:20px; display:inline-flex; align-items:center; justify-content:center; font-size:0.72rem; color:#94A3B8;">…</span>
+        {% endif %}
+      {% endfor %}
+
+      {# Next #}
+      {% if pagination.has_next %}
+        <a href="{{ pg_url(p=pagination.next_num) }}"
+           style="height:28px; padding:0 10px; border:1px solid #E2E8F0; border-radius:5px; background:#FFFFFF; color:#334155; font-size:0.72rem; font-weight:600; text-decoration:none; display:inline-flex; align-items:center; gap:3px;">
+          Next
+          <span class="material-symbols-outlined" style="font-size:13px;">chevron_right</span>
+        </a>
+      {% else %}
+        <span style="height:28px; padding:0 10px; border:1px solid #E2E8F0; border-radius:5px; background:#FFFFFF; color:#CBD5E1; font-size:0.72rem; display:inline-flex; align-items:center; gap:3px; cursor:default;">
+          Next
+          <span class="material-symbols-outlined" style="font-size:13px;">chevron_right</span>
+        </span>
+      {% endif %}
+
+    </div>
+  </div>
+  {% endif %}
+
 </div>
+
+{# Immutability footer note #}
+<p style="font-size:0.68rem; color:#CBD5E1; font-family:var(--font-mono,monospace); text-align:right; margin-top:0.6rem;">
+  U-IAP Audit Engine v2 · Records are immutable & tamper-evident · All timestamps UTC
+</p>
+
 {% endblock %}

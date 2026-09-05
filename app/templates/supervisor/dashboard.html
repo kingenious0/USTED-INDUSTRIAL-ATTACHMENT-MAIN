@@ -4,32 +4,131 @@
 {% block page_breadcrumb %}Supervisor Zonal Hub{% endblock %}
 
 {% block content %}
-<!-- Top Header (Reference: image_c75f00.jpg) -->
+<!-- Scoped Styles for Responsive Zonal Hub -->
+<style>
+  .linear-page-header {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding-bottom: 1.25rem;
+    border-bottom: 1px solid #E2E8F0;
+    margin-bottom: 1.25rem;
+  }
+  @media (min-width: 640px) {
+    .linear-page-header {
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+    }
+  }
+
+  /* Desktop vs Mobile Toolbar */
+  .desktop-toolbar {
+    display: none;
+  }
+  .mobile-toolbar {
+    display: flex;
+    flex-direction: column;
+    gap: 0.625rem;
+    margin-bottom: 1rem;
+  }
+  @media (min-width: 768px) {
+    .desktop-toolbar {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 1.25rem;
+    }
+    .mobile-toolbar {
+      display: none;
+    }
+  }
+
+  /* Desktop Table vs Mobile Cards */
+  .roster-desktop-view {
+    display: none;
+  }
+  .roster-mobile-view {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  @media (min-width: 768px) {
+    .roster-desktop-view {
+      display: block;
+    }
+    .roster-mobile-view {
+      display: none;
+    }
+  }
+</style>
+
+<!-- Top Header -->
 <div class="linear-page-header">
   <div>
-    <h1 class="linear-page-title">Assigned Students</h1>
-    <p style="font-size: 0.8125rem; color: #64748B; margin: 0.25rem 0 0 0;">
+    <h1 class="linear-page-title" style="font-size: 1.5rem; font-weight: 800; color: #0F172A; letter-spacing: -0.02em; margin: 0;">
+      Assigned Students
+    </h1>
+    <p style="font-size: 0.8125rem; color: #64748B; margin: 0.25rem 0 0 0; line-height: 1.4;">
       Workplace Experience Learning (WEL) Field Supervision &amp; Zonal Monitoring Roster
     </p>
   </div>
-  <div class="linear-header-actions">
-    <button type="button" onclick="exportSupervisorCSV()" class="linear-btn-outline" title="Export current roster to CSV">
+  <div style="display: none;" class="desktop-header-action sm:block">
+    <button type="button" onclick="exportSupervisorCSV()" class="linear-btn-outline" 
+            style="height: 2.25rem; padding: 0 0.875rem; border: 1px solid #CBD5E1; border-radius: 0.5rem; font-size: 0.75rem; font-weight: 600; color: #334155; background: #FFFFFF; display: inline-flex; align-items: center; gap: 6px; cursor: pointer;"
+            title="Export current roster to CSV">
       <span class="material-symbols-outlined" style="font-size: 15px;">download</span>
       <span>Export CSV</span>
     </button>
   </div>
 </div>
 
-<!-- Sub-toolbar: Search & Status Filter (Reference: image_c75f00.jpg) -->
-<div class="linear-toolbar">
-  <!-- Search input (w-72, h-9 with search icon) -->
-  <div class="linear-search-wrap">
-    <span class="material-symbols-outlined linear-search-icon">search</span>
-    <input type="text" id="rosterSearch" placeholder="Search by name, index, company..." class="linear-search-input" onkeyup="filterRoster()" />
+<!-- 1. Mobile-First Search & Filter Row (< 768px) -->
+<div class="mobile-toolbar">
+  <!-- Search input full width -->
+  <div style="position: relative; width: 100%;">
+    <span class="material-symbols-outlined" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-size: 18px; color: #94A3B8; pointer-events: none;">search</span>
+    <input type="text" id="rosterSearchMobile" placeholder="Search by name, index, company..." 
+           style="width: 100%; height: 2.5rem; padding-left: 2.25rem; padding-right: 0.75rem; font-size: 0.75rem; border-radius: 0.75rem; border: 1px solid #CBD5E1; box-sizing: border-box; background: #FFFFFF; color: #0F172A; outline: none; transition: border-color 0.15s ease;"
+           onfocus="this.style.borderColor='#8C033B'" onblur="this.style.borderColor='#CBD5E1'"
+           onkeyup="syncSearch(this.value)" />
+  </div>
+  <!-- Controls row (Status selector + Export button) -->
+  <div style="display: flex; align-items: center; gap: 0.5rem; width: 100%;">
+    <select id="rosterStatusFilterMobile" 
+            style="flex: 1; height: 2.25rem; font-size: 0.75rem; border: 1px solid #CBD5E1; border-radius: 0.5rem; padding: 0 0.5rem; background: #FFFFFF; color: #334155; outline: none;"
+            onchange="syncStatus(this.value)">
+      <option value="">All Statuses</option>
+      <option value="approved">Active / Approved</option>
+      <option value="pending">Pending Review</option>
+      <option value="logging_active">Logging Active</option>
+      <option value="completed">Completed</option>
+    </select>
+    <button type="button" onclick="exportSupervisorCSV()" 
+            style="height: 2.25rem; padding: 0 0.75rem; border: 1px solid #CBD5E1; border-radius: 0.5rem; font-size: 0.75rem; font-weight: 600; color: #334155; background: #FFFFFF; display: inline-flex; align-items: center; gap: 4px; flex-shrink: 0; cursor: pointer; transition: background-color 0.15s ease;"
+            onmouseover="this.style.backgroundColor='#F8FAFC'" onmouseout="this.style.backgroundColor='#FFFFFF'">
+      <span class="material-symbols-outlined" style="font-size: 15px;">download</span>
+      <span>Export</span>
+    </button>
+  </div>
+  <!-- Mobile Count Indicator -->
+  <div style="font-size: 0.75rem; color: #64748B; font-weight: 500;">
+    Showing <strong id="visibleCountMobile" style="color: #0F172A;">{{ attachments|length }}</strong> of {{ attachments|length }} students
+  </div>
+</div>
+
+<!-- 2. Desktop Sub-toolbar (>= 768px) -->
+<div class="desktop-toolbar">
+  <div class="linear-search-wrap" style="position: relative; width: 18rem;">
+    <span class="material-symbols-outlined linear-search-icon" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); font-size: 16px; color: #94A3B8; pointer-events: none;">search</span>
+    <input type="text" id="rosterSearch" placeholder="Search by name, index, company..." class="linear-search-input" 
+           style="width: 100%; height: 2.25rem; padding-left: 2rem; padding-right: 0.75rem; font-size: 0.75rem; border-radius: 0.5rem; border: 1px solid #CBD5E1; box-sizing: border-box;"
+           onkeyup="syncSearch(this.value)" />
   </div>
 
-  <!-- Filter dropdown adjacent to search -->
-  <select id="rosterStatusFilter" class="linear-filter-select" onchange="filterRoster()">
+  <select id="rosterStatusFilter" class="linear-filter-select" 
+          style="height: 2.25rem; font-size: 0.75rem; border: 1px solid #CBD5E1; border-radius: 0.5rem; padding: 0 0.75rem; background: #FFFFFF; color: #334155;"
+          onchange="syncStatus(this.value)">
     <option value="">All Statuses</option>
     <option value="approved">Active / Approved</option>
     <option value="pending">Pending Review</option>
@@ -37,141 +136,255 @@
     <option value="completed">Completed</option>
   </select>
 
-  <!-- Total Count Indicator -->
   <div style="margin-left: auto; font-size: 0.75rem; color: #64748B; font-weight: 500;">
     Showing <strong id="visibleCount" style="color: #0F172A;">{{ attachments|length }}</strong> of {{ attachments|length }} students
   </div>
 </div>
 
-<!-- Linear Data Table (Reference: image_c75f00.jpg) -->
-<div class="linear-table-card">
-  <div class="table-responsive" style="margin: 0; overflow-x: auto;">
-    <table class="linear-table" id="rosterTable">
-      <thead>
-        <tr>
-          <th style="min-width: 220px;">Student Details</th>
-          <th style="min-width: 200px;">Host Enterprise</th>
-          <th style="min-width: 170px;">Digital Address</th>
-          <th style="width: 130px;">GPS Route</th>
-          <th style="width: 130px;">Status</th>
-          <th style="width: 150px; text-align: right;">Action</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for att in attachments %}
-          <tr data-status="{{ att.status }}" style="border-bottom: 1px solid #F1F5F9;">
-            <!-- Student Details -->
-            <td>
-              <div class="linear-table-name">{{ att.student.full_name }}</div>
-              <div class="linear-table-meta" style="margin-top: 2px;">
-                <span style="color: var(--brand-maroon, #8C033B); font-weight: 700;">{{ att.student.index_number }}</span>
-                <span style="color: #94A3B8;">&bull;</span>
-                <span>L{{ att.student.current_level }}</span>
-                <span style="color: #94A3B8;">&bull;</span>
-                <span>{{ att.student.programme }}</span>
-              </div>
-            </td>
+<!-- 3. MOBILE VIEW: Stacked Student Supervision Cards (< 768px) -->
+<div class="roster-mobile-view" id="mobileCardsContainer">
+  {% for att in attachments %}
+    <div class="roster-mobile-card" data-status="{{ att.status }}"
+         style="background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 0.75rem; padding: 1rem; box-shadow: 0 1px 2px rgba(0,0,0,0.04); display: flex; flex-direction: column; gap: 0.75rem;">
+      <!-- Header Row -->
+      <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 0.5rem;">
+        <div style="min-width: 0;">
+          <a href="{{ url_for('supervisor.view_assigned_student', attachment_id=att.id) }}" 
+             style="font-size: 0.875rem; font-weight: 700; color: #0F172A; text-decoration: none; line-height: 1.25; display: block;">
+            {{ att.student.full_name }}
+          </a>
+          <div style="margin-top: 0.25rem; display: flex; align-items: center; gap: 4px; flex-wrap: wrap;">
+            <span style="font-family: var(--font-mono, monospace); font-size: 11px; background: #F1F5F9; color: #334155; padding: 2px 6px; border-radius: 4px; display: inline-block; font-weight: 600;">
+              {{ att.student.index_number }}
+            </span>
+            <span style="font-size: 11px; color: #64748B;">
+              L{{ att.student.current_level }} &bull; {{ att.student.programme }}
+            </span>
+          </div>
+        </div>
+        <div style="flex-shrink: 0;">
+          {% if att.status == 'approved' %}
+            <span style="font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 9999px; white-space: nowrap; background: #ECFDF5; color: #065F46; border: 1px solid #A7F3D0; display: inline-block;">
+              APPROVED
+            </span>
+          {% elif att.status == 'pending' %}
+            <span style="font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 9999px; white-space: nowrap; background: #FFFBEB; color: #B45309; border: 1px solid #FDE68A; display: inline-block;">
+              PENDING
+            </span>
+          {% elif att.status == 'logging_active' %}
+            <span style="font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 9999px; white-space: nowrap; background: #F0FDF4; color: #15803D; border: 1px solid #BBF7D0; display: inline-block;">
+              LOGGING ACTIVE
+            </span>
+          {% else %}
+            <span style="font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 9999px; white-space: nowrap; background: #F8FAFC; color: #475569; border: 1px solid #E2E8F0; display: inline-block;">
+              {{ att.status.replace('_', ' ').upper() }}
+            </span>
+          {% endif %}
+        </div>
+      </div>
 
-            <!-- Host Enterprise -->
-            <td>
-              <div class="linear-table-company">
-                {{ att.target_organization or (att.acceptance.company_name if att.acceptance else 'Pending Placement') }}
-              </div>
-              {% if att.acceptance and att.acceptance.supervisor_name %}
-                <div class="linear-table-meta" style="margin-top: 2px; color: #64748B;">
-                  <span style="font-weight: 500;">Mentor:</span> {{ att.acceptance.supervisor_name }}
-                  {% if att.acceptance.supervisor_phone %}({{ att.acceptance.supervisor_phone }}){% endif %}
-                </div>
-              {% elif att.organization_address %}
-                <div class="linear-table-meta" style="margin-top: 2px; color: #94A3B8;">
-                  {{ att.organization_address }}
-                </div>
-              {% endif %}
-            </td>
-
-            <!-- Digital Address & Landmark -->
-            <td>
+      <!-- Workplace Details Block -->
+      <div style="display: flex; flex-direction: column; gap: 0.25rem; font-size: 0.75rem; border-top: 1px solid #F1F5F9; border-bottom: 1px solid #F1F5F9; padding: 0.625rem 0;">
+        <div style="font-weight: 600; color: #1E293B;">
+          {{ att.target_organization or (att.acceptance.company_name if att.acceptance else 'Pending Placement') }}
+        </div>
+        <div style="font-size: 11px; color: #64748B;">
+          {% if att.acceptance and att.acceptance.supervisor_name %}
+            Mentor: {{ att.acceptance.supervisor_name }} {% if att.acceptance.supervisor_phone %}({{ att.acceptance.supervisor_phone }}){% endif %}
+          {% else %}
+            Mentor: No workplace supervisor recorded
+          {% endif %}
+        </div>
+        <div>
+          {% if nav_map and nav_map[att.id] %}
+            <a href="{{ nav_map[att.id] }}" target="_blank" rel="noopener noreferrer"
+               style="font-size: 11px; font-weight: 600; color: #8C033B; text-decoration: none; display: inline-flex; align-items: center; gap: 4px; margin-top: 2px;">
+              <span>📍 View Location &#8599;</span>
               {% if att.acceptance and att.acceptance.gps_address %}
-                <span class="linear-table-address" style="background: #F8FAFC; border: 1px solid #E2E8F0; padding: 2px 6px; border-radius: 4px; font-weight: 600; color: #0F172A; display: inline-block;">
-                  {{ att.acceptance.gps_address }}
-                </span>
-                {% if att.acceptance.landmark %}
-                  <div style="font-size: 11px; color: #64748B; margin-top: 2px;">
-                    Near {{ att.acceptance.landmark }}
+                <span style="font-family: var(--font-mono, monospace); font-weight: 400; color: #64748B;">({{ att.acceptance.gps_address }})</span>
+              {% endif %}
+            </a>
+          {% elif att.acceptance and att.acceptance.latitude and att.acceptance.longitude %}
+            <a href="https://www.google.com/maps/dir/?api=1&destination={{ att.acceptance.latitude }},{{ att.acceptance.longitude }}" target="_blank" rel="noopener noreferrer"
+               style="font-size: 11px; font-weight: 600; color: #8C033B; text-decoration: none; display: inline-flex; align-items: center; gap: 4px; margin-top: 2px;">
+              <span>📍 View Location &#8599;</span>
+            </a>
+          {% elif att.acceptance and att.acceptance.gps_address %}
+            <span style="font-size: 11px; color: #64748B;">
+              📍 {{ att.acceptance.gps_address }}
+            </span>
+          {% else %}
+            <span style="font-size: 11px; color: #94A3B8; font-style: italic;">
+              📍 Location pending GPS
+            </span>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Mobile Action Row -->
+      <div>
+        <a href="{{ url_for('supervisor.log_visit', attachment_id=att.id) }}"
+           style="width: 100%; height: 2.5rem; background-color: #8C033B; color: #FFFFFF; font-size: 0.75rem; font-weight: 700; border-radius: 0.5rem; box-shadow: 0 1px 2px rgba(0,0,0,0.05); display: flex; align-items: center; justify-content: center; gap: 6px; text-decoration: none; box-sizing: border-box; transition: background-color 0.15s ease;"
+           onmouseover="this.style.backgroundColor='#6B022D'" onmouseout="this.style.backgroundColor='#8C033B'">
+          <span class="material-symbols-outlined" style="font-size: 16px;">fact_check</span>
+          <span>Log Field Visit &rarr;</span>
+        </a>
+      </div>
+    </div>
+  {% else %}
+    <div style="background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 0.75rem; padding: 2.5rem 1rem; text-align: center; color: #64748B;">
+      <span class="material-symbols-outlined" style="font-size: 32px; color: #CBD5E1;">group_off</span>
+      <div style="font-weight: 600; color: #0F172A; font-size: 0.875rem; margin-top: 0.5rem;">No students assigned yet</div>
+      <div style="font-size: 0.75rem; color: #64748B; margin-top: 2px;">No students are assigned to your supervision roster.</div>
+    </div>
+  {% endfor %}
+</div>
+
+<!-- 4. DESKTOP VIEW: Linear Data Table (>= 768px) -->
+<div class="roster-desktop-view">
+  <div class="linear-table-card">
+    <div class="table-responsive" style="margin: 0; overflow-x: auto;">
+      <table class="linear-table" id="rosterTable">
+        <thead>
+          <tr>
+            <th style="min-width: 220px;">Student Details</th>
+            <th style="min-width: 200px;">Host Enterprise</th>
+            <th style="min-width: 170px;">Digital Address</th>
+            <th style="width: 130px; white-space: nowrap;">GPS Route</th>
+            <th style="width: 130px;">Status</th>
+            <th style="width: 150px; text-align: right;">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for att in attachments %}
+            <tr data-status="{{ att.status }}" style="border-bottom: 1px solid #F1F5F9;">
+              <!-- Student Details -->
+              <td>
+                <a href="{{ url_for('supervisor.view_assigned_student', attachment_id=att.id) }}" 
+                   style="text-decoration: none; color: inherit;" class="linear-table-name">
+                  {{ att.student.full_name }}
+                </a>
+                <div class="linear-table-meta" style="margin-top: 2px;">
+                  <span style="color: var(--brand-maroon, #8C033B); font-weight: 700;">{{ att.student.index_number }}</span>
+                  <span style="color: #94A3B8;">&bull;</span>
+                  <span>L{{ att.student.current_level }}</span>
+                  <span style="color: #94A3B8;">&bull;</span>
+                  <span>{{ att.student.programme }}</span>
+                </div>
+              </td>
+
+              <!-- Host Enterprise -->
+              <td>
+                <div class="linear-table-company">
+                  {{ att.target_organization or (att.acceptance.company_name if att.acceptance else 'Pending Placement') }}
+                </div>
+                {% if att.acceptance and att.acceptance.supervisor_name %}
+                  <div class="linear-table-meta" style="margin-top: 2px; color: #64748B;">
+                    <span style="font-weight: 500;">Mentor:</span> {{ att.acceptance.supervisor_name }}
+                    {% if att.acceptance.supervisor_phone %}({{ att.acceptance.supervisor_phone }}){% endif %}
+                  </div>
+                {% elif att.organization_address %}
+                  <div class="linear-table-meta" style="margin-top: 2px; color: #94A3B8;">
+                    {{ att.organization_address }}
                   </div>
                 {% endif %}
-              {% else %}
-                <span style="font-size: 11px; color: #94A3B8; font-style: italic;">No GPS Address</span>
-              {% endif %}
-            </td>
+              </td>
 
-            <!-- GPS Routing -->
-            <td>
-              {% if nav_map and nav_map[att.id] %}
-                <a href="{{ nav_map[att.id] }}" target="_blank" rel="noopener noreferrer" class="linear-btn-action" style="background: #EFF6FF; border-color: #BFDBFE; color: #1D4ED8;" title="Open in Google Maps">
-                  <span class="material-symbols-outlined" style="font-size: 13px;">navigation</span>
-                  <span>Maps &rarr;</span>
-                </a>
-              {% elif att.acceptance and att.acceptance.latitude and att.acceptance.longitude %}
-                <a href="https://www.google.com/maps/dir/?api=1&destination={{ att.acceptance.latitude }},{{ att.acceptance.longitude }}" target="_blank" rel="noopener noreferrer" class="linear-btn-action" style="background: #EFF6FF; border-color: #BFDBFE; color: #1D4ED8;">
-                  <span class="material-symbols-outlined" style="font-size: 13px;">navigation</span>
-                  <span>Maps &rarr;</span>
-                </a>
-              {% else %}
-                <span style="font-size: 11px; color: #94A3B8;">Pending GPS</span>
-              {% endif %}
-            </td>
+              <!-- Digital Address & Landmark -->
+              <td>
+                {% if att.acceptance and att.acceptance.gps_address %}
+                  <span class="linear-table-address" style="background: #F8FAFC; border: 1px solid #E2E8F0; padding: 2px 6px; border-radius: 4px; font-weight: 600; color: #0F172A; display: inline-block;">
+                    {{ att.acceptance.gps_address }}
+                  </span>
+                  {% if att.acceptance.landmark %}
+                    <div style="font-size: 11px; color: #64748B; margin-top: 2px;">
+                      Near {{ att.acceptance.landmark }}
+                    </div>
+                  {% endif %}
+                {% else %}
+                  <span style="font-size: 11px; color: #94A3B8; font-style: italic;">No GPS Address</span>
+                {% endif %}
+              </td>
 
-            <!-- Status Pill -->
-            <td>
-              {% if att.status == 'approved' %}
-                <span style="font-size: 10px; font-weight: 700; background: #ECFDF5; color: #065F46; border: 1px solid #A7F3D0; padding: 2px 7px; border-radius: 9999px; display: inline-block; letter-spacing: 0.03em;">
-                  APPROVED
-                </span>
-              {% elif att.status == 'pending' %}
-                <span style="font-size: 10px; font-weight: 700; background: #FFFBEB; color: #B45309; border: 1px solid #FDE68A; padding: 2px 7px; border-radius: 9999px; display: inline-block; letter-spacing: 0.03em;">
-                  PENDING
-                </span>
-              {% elif att.status == 'logging_active' %}
-                <span style="font-size: 10px; font-weight: 700; background: #F0FDF4; color: #15803D; border: 1px solid #BBF7D0; padding: 2px 7px; border-radius: 9999px; display: inline-block; letter-spacing: 0.03em;">
-                  LOGGING ACTIVE
-                </span>
-              {% else %}
-                <span style="font-size: 10px; font-weight: 700; background: #F8FAFC; color: #475569; border: 1px solid #E2E8F0; padding: 2px 7px; border-radius: 9999px; display: inline-block; letter-spacing: 0.03em;">
-                  {{ att.status.replace('_', ' ').upper() }}
-                </span>
-              {% endif %}
-            </td>
+              <!-- GPS Routing -->
+              <td style="white-space: nowrap;">
+                {% if nav_map and nav_map[att.id] %}
+                  <a href="{{ nav_map[att.id] }}" target="_blank" rel="noopener noreferrer" 
+                     class="linear-btn-action" 
+                     style="background: #EFF6FF; border: 1px solid #BFDBFE; color: #1D4ED8; font-weight: 600; white-space: nowrap; display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; border-radius: 6px; font-size: 0.75rem; text-decoration: none;" 
+                     title="Open Turn-by-Turn GPS Directions in Google Maps">
+                    <span class="material-symbols-outlined" style="font-size: 14px; line-height: 1;">near_me</span>
+                    <span style="white-space: nowrap;">Maps &rarr;</span>
+                  </a>
+                {% elif att.acceptance and att.acceptance.latitude and att.acceptance.longitude %}
+                  <a href="https://www.google.com/maps/dir/?api=1&destination={{ att.acceptance.latitude }},{{ att.acceptance.longitude }}" target="_blank" rel="noopener noreferrer" 
+                     class="linear-btn-action" 
+                     style="background: #EFF6FF; border: 1px solid #BFDBFE; color: #1D4ED8; font-weight: 600; white-space: nowrap; display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; border-radius: 6px; font-size: 0.75rem; text-decoration: none;"
+                     title="Open in Google Maps">
+                    <span class="material-symbols-outlined" style="font-size: 14px; line-height: 1;">near_me</span>
+                    <span style="white-space: nowrap;">Maps &rarr;</span>
+                  </a>
+                {% else %}
+                  <span style="font-size: 11px; color: #94A3B8; font-style: italic;">Pending GPS</span>
+                {% endif %}
+              </td>
 
-            <!-- Actions -->
-            <td style="text-align: right;">
-              <div style="display: inline-flex; align-items: center; gap: 4px;">
-                <button type="button"
-                        onclick="openVisitModal('{{ att.id }}', '{{ att.student.full_name | escape }}', '{{ att.student.index_number }}', '{{ (att.acceptance.supervisor_name if att.acceptance else '') | escape }}')"
-                        class="linear-btn-action" title="Log supervisory field inspection">
-                  <span class="material-symbols-outlined" style="font-size: 13px; color: var(--brand-maroon, #8C033B);">fact_check</span>
-                  <span>Log Visit</span>
-                </button>
-                <a href="{{ url_for('supervisor.view_assigned_student', attachment_id=att.id) }}" 
-                   class="linear-btn-action" style="border: none; color: #64748B;" title="View Student Profile">
-                  <span>&rarr;</span>
-                </a>
-              </div>
-            </td>
-          </tr>
-        {% else %}
-          <tr>
-            <td colspan="6" style="text-align: center; color: #64748B; padding: 3rem 1.5rem;">
-              <div style="display: flex; flex-direction: column; align-items: center; gap: 0.5rem;">
-                <span class="material-symbols-outlined" style="font-size: 36px; color: #CBD5E1;">group_off</span>
-                <div style="font-weight: 600; color: #0F172A; font-size: 0.875rem;">No students assigned yet</div>
-                <div style="font-size: 0.75rem; color: #64748B;">No students are assigned to your supervision roster for this session.</div>
-              </div>
-            </td>
-          </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+              <!-- Status Pill -->
+              <td>
+                {% if att.status == 'approved' %}
+                  <span style="font-size: 10px; font-weight: 700; background: #ECFDF5; color: #065F46; border: 1px solid #A7F3D0; padding: 2px 7px; border-radius: 9999px; display: inline-block; letter-spacing: 0.03em;">
+                    APPROVED
+                  </span>
+                {% elif att.status == 'pending' %}
+                  <span style="font-size: 10px; font-weight: 700; background: #FFFBEB; color: #B45309; border: 1px solid #FDE68A; padding: 2px 7px; border-radius: 9999px; display: inline-block; letter-spacing: 0.03em;">
+                    PENDING
+                  </span>
+                {% elif att.status == 'logging_active' %}
+                  <span style="font-size: 10px; font-weight: 700; background: #F0FDF4; color: #15803D; border: 1px solid #BBF7D0; padding: 2px 7px; border-radius: 9999px; display: inline-block; letter-spacing: 0.03em;">
+                    LOGGING ACTIVE
+                  </span>
+                {% else %}
+                  <span style="font-size: 10px; font-weight: 700; background: #F8FAFC; color: #475569; border: 1px solid #E2E8F0; padding: 2px 7px; border-radius: 9999px; display: inline-block; letter-spacing: 0.03em;">
+                    {{ att.status.replace('_', ' ').upper() }}
+                  </span>
+                {% endif %}
+              </td>
+
+              <!-- Actions -->
+              <td style="text-align: right; white-space: nowrap;">
+                <div style="display: inline-flex; align-items: center; justify-content: flex-end; gap: 6px;">
+                  <a href="{{ url_for('supervisor.log_visit', attachment_id=att.id) }}" 
+                     class="linear-btn-action" 
+                     style="background: var(--brand-maroon, #8C033B); color: #FFFFFF; border: 1px solid var(--brand-maroon, #8C033B); font-weight: 600; padding: 4px 10px; border-radius: 6px; text-decoration: none; display: inline-flex; align-items: center; gap: 4px; font-size: 0.75rem; transition: all 0.15s ease;"
+                     onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'"
+                     title="Log supervisory field inspection">
+                    <span class="material-symbols-outlined" style="font-size: 14px;">fact_check</span>
+                    <span>Log Field Visit &rarr;</span>
+                  </a>
+                  <a href="{{ url_for('supervisor.view_assigned_student', attachment_id=att.id) }}" 
+                     class="linear-btn-action" 
+                     style="background: #FFFFFF; border: 1px solid #CBD5E1; color: #475569; padding: 4px 8px; border-radius: 6px; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; font-size: 0.75rem; transition: all 0.15s ease;"
+                     onmouseover="this.style.borderColor='#94A3B8'; this.style.color='#0F172A';" onmouseout="this.style.borderColor='#CBD5E1'; this.style.color='#475569';"
+                     title="View Student Supervision Profile">
+                    <span class="material-symbols-outlined" style="font-size: 15px;">person</span>
+                  </a>
+                </div>
+              </td>
+            </tr>
+          {% else %}
+            <tr>
+              <td colspan="6" style="text-align: center; color: #64748B; padding: 3rem 1.5rem;">
+                <div style="display: flex; flex-direction: column; align-items: center; gap: 0.5rem;">
+                  <span class="material-symbols-outlined" style="font-size: 36px; color: #CBD5E1;">group_off</span>
+                  <div style="font-weight: 600; color: #0F172A; font-size: 0.875rem;">No students assigned yet</div>
+                  <div style="font-size: 0.75rem; color: #64748B;">No students are assigned to your supervision roster for this session.</div>
+                </div>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
   </div>
 </div>
 
@@ -258,31 +471,76 @@
 </div>
 
 <script>
+function syncSearch(val) {
+  const desktopSearch = document.getElementById('rosterSearch');
+  const mobileSearch = document.getElementById('rosterSearchMobile');
+  if (desktopSearch && desktopSearch.value !== val) desktopSearch.value = val;
+  if (mobileSearch && mobileSearch.value !== val) mobileSearch.value = val;
+  filterRoster();
+}
+
+function syncStatus(val) {
+  const desktopStatus = document.getElementById('rosterStatusFilter');
+  const mobileStatus = document.getElementById('rosterStatusFilterMobile');
+  if (desktopStatus && desktopStatus.value !== val) desktopStatus.value = val;
+  if (mobileStatus && mobileStatus.value !== val) mobileStatus.value = val;
+  filterRoster();
+}
+
 function filterRoster() {
-  const searchVal = document.getElementById('rosterSearch').value.toLowerCase().trim();
-  const statusVal = document.getElementById('rosterStatusFilter').value.toLowerCase().trim();
-  const table = document.getElementById('rosterTable');
-  const trs = table.getElementsByTagName('tbody')[0].getElementsByTagName('tr');
+  const searchInput = document.getElementById('rosterSearch') || document.getElementById('rosterSearchMobile');
+  const statusSelect = document.getElementById('rosterStatusFilter') || document.getElementById('rosterStatusFilterMobile');
+  
+  const searchVal = (searchInput ? searchInput.value : '').toLowerCase().trim();
+  const statusVal = (statusSelect ? statusSelect.value : '').toLowerCase().trim();
+  
   let visibleCount = 0;
 
-  for (let i = 0; i < trs.length; i++) {
-    const row = trs[i];
-    const text = row.innerText.toLowerCase();
-    const rowStatus = (row.getAttribute('data-status') || '').toLowerCase();
+  // 1. Filter Desktop Table
+  const table = document.getElementById('rosterTable');
+  if (table) {
+    const trs = table.getElementsByTagName('tbody')[0].getElementsByTagName('tr');
+    for (let i = 0; i < trs.length; i++) {
+      const row = trs[i];
+      if (row.getAttribute('data-status') === null) continue;
+      const text = row.innerText.toLowerCase();
+      const rowStatus = (row.getAttribute('data-status') || '').toLowerCase();
 
-    const matchesSearch = !searchVal || text.indexOf(searchVal) > -1;
-    const matchesStatus = !statusVal || rowStatus.indexOf(statusVal) > -1;
+      const matchesSearch = !searchVal || text.indexOf(searchVal) > -1;
+      const matchesStatus = !statusVal || rowStatus.indexOf(statusVal) > -1;
 
-    if (matchesSearch && matchesStatus) {
-      row.style.display = '';
-      visibleCount++;
-    } else {
-      row.style.display = 'none';
+      if (matchesSearch && matchesStatus) {
+        row.style.display = '';
+        visibleCount++;
+      } else {
+        row.style.display = 'none';
+      }
     }
   }
 
+  // 2. Filter Mobile Cards
+  const cards = document.querySelectorAll('.roster-mobile-card');
+  let mobileVisibleCount = 0;
+  cards.forEach(card => {
+    const text = card.innerText.toLowerCase();
+    const cardStatus = (card.getAttribute('data-status') || '').toLowerCase();
+
+    const matchesSearch = !searchVal || text.indexOf(searchVal) > -1;
+    const matchesStatus = !statusVal || cardStatus.indexOf(statusVal) > -1;
+
+    if (matchesSearch && matchesStatus) {
+      card.style.display = 'flex';
+      mobileVisibleCount++;
+    } else {
+      card.style.display = 'none';
+    }
+  });
+
+  const finalCount = cards.length > 0 ? mobileVisibleCount : visibleCount;
   const countEl = document.getElementById('visibleCount');
-  if (countEl) countEl.innerText = visibleCount;
+  if (countEl) countEl.innerText = finalCount;
+  const countElMobile = document.getElementById('visibleCountMobile');
+  if (countElMobile) countElMobile.innerText = finalCount;
 }
 
 function openVisitModal(attId, studentName, studentIndex, supervisorContact) {

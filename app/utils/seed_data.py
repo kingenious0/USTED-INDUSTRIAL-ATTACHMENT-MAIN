@@ -87,14 +87,14 @@ def seed_database():
         {
             'username': 'liaison1',
             'email': 'liaison1@usted.edu.gh',
-            'full_name': 'Mrs. Faustina Arthur (Liaison Officer)',
+            'full_name': 'Mrs. Faustina Arthur',
             'role': UserRole.LIAISON_OFFICER,
             'password': 'password123'
         },
         {
             'username': 'supervisor1',
             'email': 'supervisor1@usted.edu.gh',
-            'full_name': 'Ing. Dr. Peter Owusu (Academic Supervisor)',
+            'full_name': 'Ing. Dr. Peter Owusu',
             'role': UserRole.ACADEMIC_SUPERVISOR,
             'password': 'password123'
         },

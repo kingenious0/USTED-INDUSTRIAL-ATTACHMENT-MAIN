@@ -32,13 +32,27 @@ def dashboard():
 @admin_required
 def audit_logs():
     """Audit trail inspection complying with PRD Section 31."""
-    action_filter = request.args.get('action', '').strip()
+    action_filter  = request.args.get('action', '').strip()
+    actor_filter   = request.args.get('actor', '').strip()
+    role_filter    = request.args.get('role', '').strip()
+    page           = request.args.get('page', 1, type=int)
+    per_page       = request.args.get('per_page', 20, type=int)
+    if per_page not in (20, 50, 100):
+        per_page = 20
+
     query = AuditLog.query
 
     if action_filter:
         query = query.filter_by(action=action_filter)
+    if role_filter:
+        query = query.filter(AuditLog.actor_role == role_filter)
+    if actor_filter:
+        query = query.filter(AuditLog.actor_username.ilike(f'%{actor_filter}%'))
 
-    logs = query.order_by(AuditLog.timestamp.desc()).limit(100).all()
+    pagination = query.order_by(AuditLog.timestamp.desc()).paginate(
+        page=page, per_page=per_page, error_out=False
+    )
+
     actions = [
         AuditAction.USER_LOGIN,
         AuditAction.ATTACHMENT_INITIATED,
@@ -53,9 +67,13 @@ def audit_logs():
 
     return render_template(
         'admin/audit_logs.html',
-        logs=logs,
+        logs=pagination.items,
+        pagination=pagination,
         actions=actions,
-        selected_action=action_filter
+        selected_action=action_filter,
+        actor_filter=actor_filter,
+        role_filter=role_filter,
+        per_page=per_page,
     )
 
 

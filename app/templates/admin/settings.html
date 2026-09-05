@@ -1,70 +1,295 @@
 {% extends "base.html" %}
 
-{% block title %}System Settings &amp; Policy Governance — U-IAP{% endblock %}
-{% block page_breadcrumb %}Administration / Policy Governance{% endblock %}
+{% block title %}System Workflow & Policy Governance — U-IAP{% endblock %}
+{% block page_breadcrumb %}Administration / System Governance{% endblock %}
 
 {% block content %}
-<div class="page-header" style="margin-bottom: 1.5rem;">
-  <div>
-    <a href="{{ url_for('admin.dashboard') }}" style="font-size: 0.82rem; color: var(--color-text-muted); text-decoration: none; display: inline-flex; align-items: center; gap: 4px; margin-bottom: 0.35rem;">
-      <span class="material-symbols-outlined" style="font-size: 16px;">arrow_back</span>
-      <span>Back to Admin Dashboard</span>
-    </a>
-    <h1 class="page-title" style="font-size: 1.5rem; font-weight: 800; color: var(--color-text-main);">
-      System Configuration &amp; Policy Governance
-    </h1>
-    <p class="page-subtitle" style="font-size: 0.88rem; color: var(--color-text-muted); margin-top: 0.2rem;">
-      Configurable workflow parameters preserving institutional decision authority and compliance boundaries
-    </p>
-  </div>
+
+{# ─────────────────────────────────────────────────────────
+   PAGE HEADER
+   ───────────────────────────────────────────────────────── #}
+<div style="margin-bottom: 2rem;">
+  <p style="font-size: 0.7rem; font-weight: 700; text-transform: uppercase;
+             letter-spacing: 0.1em; color: #94A3B8; margin: 0 0 4px 0;">
+    Administration / System Governance
+  </p>
+  <h1 style="font-size: 1.5rem; font-weight: 700; color: #0F172A;
+              letter-spacing: -0.025em; margin: 0 0 4px 0; line-height: 1.25;">
+    System Workflow &amp; Policy Governance
+  </h1>
+  <p style="font-size: 0.75rem; color: #64748B; font-family: 'JetBrains Mono', monospace; margin: 0;">
+    Configure institutional workflow thresholds and student logging access boundaries.
+  </p>
 </div>
 
-<div style="max-width: 760px; margin: 0 auto;">
-  <div class="modern-card">
-    <div class="card-header" style="border-bottom: 1px solid #E2E8F0;">
-      <h3 class="card-title" style="font-size: 1.05rem; font-weight: 700; color: var(--color-text-main); margin: 0;">
-        Acceptance Form Status Governance
-      </h3>
-      <p class="card-subtitle" style="font-size: 0.78rem; color: var(--color-text-muted); margin: 2px 0 0 0;">
-        Institutional workflow threshold determining when daily logging unlocks for students
+
+{# ─────────────────────────────────────────────────────────
+   SETTINGS CONTAINER — max-w-3xl
+   ───────────────────────────────────────────────────────── #}
+<div style="max-width: 768px;">
+
+  <form method="POST">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+
+    {# ══════════════════════════════════════════════════
+       CARD 1 — Institutional Principle Summary (Callout)
+       Modeled after Copperx info/callout block
+       ══════════════════════════════════════════════════ #}
+    <div style="background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 12px;
+                padding: 1.25rem 1.375rem; margin-bottom: 1.5rem;">
+
+      <div style="display: flex; align-items: flex-start; gap: 10px;">
+        {# Shield / Gavel icon cluster #}
+        <div style="flex-shrink: 0; width: 34px; height: 34px; border-radius: 8px;
+                    background: #FEF3C7; border: 1px solid #FDE68A;
+                    display: flex; align-items: center; justify-content: center;">
+          <span class="material-symbols-outlined"
+                style="font-size: 18px; color: #92400E;">gavel</span>
+        </div>
+
+        <div style="flex: 1; min-width: 0;">
+          <p style="font-size: 0.7rem; font-weight: 700; text-transform: uppercase;
+                     letter-spacing: 0.08em; color: #475569; margin: 0 0 5px 0;">
+            Governing Workflow Principle
+          </p>
+          <p style="font-size: 0.75rem; color: #475569; line-height: 1.65; margin: 0;">
+            The U-IAP platform does not hardcode institutional workflow assumptions.
+            This policy control establishes whether daily eLogSheet entries require
+            upfront physical wet-ink verification by the Liaison Directorate, or allow
+            concurrent student logging subject to subsequent audit.
+          </p>
+        </div>
+      </div>
+    </div>
+
+
+    {# ══════════════════════════════════════════════════
+       CARD 2 — eLogSheet Activation Threshold
+       Interactive option cards (A / B)
+       ══════════════════════════════════════════════════ #}
+    <div style="background: #fff; border: 1px solid #E2E8F0; border-radius: 12px;
+                padding: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+                margin-bottom: 1.5rem;">
+
+      <h2 style="font-size: 0.875rem; font-weight: 700; color: #0F172A; margin: 0 0 14px 0;
+                  padding-bottom: 12px; border-bottom: 1px solid #F1F5F9;">
+        eLogSheet Activation Threshold
+      </h2>
+
+      {# ── Scoped option-card styles ── #}
+      <style>
+        .policy-option               { display: none; }
+        /* Option A — selected state */
+        .policy-option:checked ~ .policy-a-card {
+          border-color: #8C033B !important;
+          background: rgba(140,3,59,0.02) !important;
+        }
+        /* Option B — selected state */
+        .policy-option:checked ~ .policy-b-card {
+          border-color: #334155 !important;
+          background: #F8FAFC !important;
+        }
+
+        .pol-card {
+          display: flex; align-items: flex-start; justify-content: space-between;
+          gap: 1rem; padding: 1rem 1.125rem; border-radius: 10px;
+          cursor: pointer; transition: border-color 0.15s, background 0.15s;
+          user-select: none;
+        }
+
+        /* Custom radio dot */
+        .pol-radio-outer {
+          flex-shrink: 0; width: 18px; height: 18px; border-radius: 50%;
+          border: 2px solid #CBD5E1; display: flex; align-items: center;
+          justify-content: center; transition: border-color 0.15s; margin-top: 1px;
+        }
+        .pol-radio-inner {
+          width: 8px; height: 8px; border-radius: 50%;
+          background: transparent; transition: background 0.15s;
+        }
+      </style>
+
+      <div style="display: flex; flex-direction: column; gap: 12px;">
+
+        {# ── Option A ── #}
+        <label style="display: block; cursor: pointer;">
+          <input class="policy-option" type="radio" name="require_acceptance_approval"
+                 value="1" id="optionA"
+                 {% if require_approval %}checked{% endif %}>
+
+          <div class="pol-card policy-a-card"
+               id="cardA"
+               style="border: 2px solid {% if require_approval %}#8C033B{% else %}#E2E8F0{% endif %};
+                      background: {% if require_approval %}rgba(140,3,59,0.02){% else %}#fff{% endif %};">
+
+            {# Left text block #}
+            <div style="flex: 1; min-width: 0;">
+              <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 6px;">
+                <span style="font-size: 0.75rem; font-weight: 700; color: #0F172A;">
+                  Strict Liaison Pre-Approval Required (Option A)
+                </span>
+                <span style="background: #8C033B; color: #fff; font-size: 0.625rem;
+                             font-weight: 700; padding: 2px 8px; border-radius: 9999px;
+                             letter-spacing: 0.04em; white-space: nowrap;">
+                  ACTIVE POLICY
+                </span>
+              </div>
+              <p style="font-size: 0.75rem; color: #475569; margin: 0; line-height: 1.6;">
+                Students cannot log daily activities until an authorized Industrial Liaison
+                Officer inspects and validates the physical wet-ink company stamp. Guarantees
+                100&percnt; pre-placement audit compliance.
+              </p>
+            </div>
+
+            {# Right radio indicator #}
+            <div class="pol-radio-outer"
+                 id="radioOuterA"
+                 style="border-color: {% if require_approval %}#8C033B{% else %}#CBD5E1{% endif %};">
+              <div class="pol-radio-inner"
+                   id="radioInnerA"
+                   style="background: {% if require_approval %}#8C033B{% else %}transparent{% endif %};"></div>
+            </div>
+          </div>
+        </label>
+
+        {# ── Option B ── #}
+        <label style="display: block; cursor: pointer;">
+          <input class="policy-option" type="radio" name="require_acceptance_approval"
+                 value="0" id="optionB"
+                 {% if not require_approval %}checked{% endif %}>
+
+          <div class="pol-card policy-b-card"
+               id="cardB"
+               style="border: 1px solid {% if not require_approval %}#334155{% else %}#E2E8F0{% endif %};
+                      background: {% if not require_approval %}#F8FAFC{% else %}#fff{% endif %};">
+
+            {# Left text block #}
+            <div style="flex: 1; min-width: 0;">
+              <p style="font-size: 0.75rem; font-weight: 600; color: #1E293B; margin: 0 0 6px 0;">
+                Asynchronous Staff Audit (Option B)
+              </p>
+              <p style="font-size: 0.75rem; color: #64748B; margin: 0; line-height: 1.6;">
+                Students unlock logging immediately upon uploading their scan. Liaison Officers
+                audit stamps asynchronously in the background. Minimises orientation bottlenecks
+                for high-volume cohorts.
+              </p>
+            </div>
+
+            {# Right radio indicator #}
+            <div class="pol-radio-outer"
+                 id="radioOuterB"
+                 style="border-color: {% if not require_approval %}#334155{% else %}#CBD5E1{% endif %};">
+              <div class="pol-radio-inner"
+                   id="radioInnerB"
+                   style="background: {% if not require_approval %}#334155{% else %}transparent{% endif %};"></div>
+            </div>
+          </div>
+        </label>
+
+      </div>
+
+      {# Form footnote #}
+      <p style="font-size: 0.6875rem; color: #94A3B8; margin: 16px 0 0 0;
+                display: flex; align-items: center; gap: 6px; line-height: 1.5;">
+        <span class="material-symbols-outlined" style="font-size: 13px; flex-shrink: 0;">info</span>
+        Switching this policy immediately updates workflow gates across all active student workspaces.
       </p>
     </div>
 
-    <form method="POST" style="padding: 1.5rem 1.75rem;">
-      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
 
-      <div style="background: #F8FAFC; border: 1px solid #E2E8F0; border-left: 4px solid var(--color-accent-gold); padding: 1rem 1.25rem; border-radius: 8px; margin-bottom: 1.5rem; font-size: 0.86rem; line-height: 1.55;">
-        <div style="display: flex; align-items: center; gap: 6px; font-weight: 700; color: var(--color-text-main); margin-bottom: 4px;">
-          <span class="material-symbols-outlined" style="font-size: 18px; color: var(--color-accent-gold);">gavel</span>
-          <span>Governing Institutional Principle</span>
-        </div>
-        <span style="color: var(--color-text-muted);">
-          The portal must not silently decide university institutional policy. This toggle empowers the Industrial Liaison Unit to switch between <strong>Option A</strong> (strict pre-approval required before logging begins) and <strong>Option B</strong> (logging proceeds immediately while staff reviews asynchronously).
-        </span>
+    {# ══════════════════════════════════════════════════
+       CARD 3 — Governance Audit Footer & Action Bar
+       ══════════════════════════════════════════════════ #}
+    <div style="background: #fff; border: 1px solid #E2E8F0; border-radius: 12px;
+                padding: 1rem 1.25rem; box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+                display: flex; flex-wrap: wrap; align-items: center;
+                justify-content: space-between; gap: 1rem;">
+
+      {# Left — Audit provenance #}
+      <div>
+        <p style="font-size: 0.75rem; font-weight: 600; color: #1E293B; margin: 0 0 2px 0;
+                   display: flex; align-items: center; gap: 6px;">
+          <span class="material-symbols-outlined" style="font-size: 14px; color: #94A3B8;">admin_panel_settings</span>
+          Policy Administrator: Dr. Kwame Asante (Director)
+        </p>
+        <p style="font-size: 0.625rem; color: #94A3B8; font-family: 'JetBrains Mono', monospace;
+                   margin: 0; letter-spacing: 0.02em;">
+          Last Updated: 2026/2027 Session Commencement &bull; Verified by Directorate
+        </p>
       </div>
 
-      <div class="form-group" style="margin-bottom: 1.5rem;">
-        <label style="display: flex; align-items: flex-start; gap: 0.85rem; cursor: pointer; padding: 1.15rem; border: 1px solid #E2E8F0; border-radius: 8px; background: #FFFFFF; transition: border-color 0.15s ease;">
-          <input type="checkbox" name="require_acceptance_approval" value="1" {% if require_approval %}checked{% endif %} style="margin-top: 0.25rem; width: 18px; height: 18px; accent-color: var(--color-primary); cursor: pointer;">
-          <div>
-            <strong style="color: var(--color-text-main); font-size: 0.95rem; display: block;">
-              Require Liaison Approval Before Enabling Student Activity Logging (Option A)
-            </strong>
-            <p style="font-size: 0.82rem; color: var(--color-text-muted); margin: 0.35rem 0 0 0; line-height: 1.5;">
-              When enabled, students cannot enter daily activities until a Liaison Officer reviews and approves their uploaded Acceptance Form scan and verifies the official wet-ink company stamp.
-              When disabled (Option B), students can log activities immediately after uploading their scan while Liaison reviews asynchronously.
-            </p>
-          </div>
-        </label>
-      </div>
+      {# Right — Primary CTA #}
+      <button type="submit"
+              style="display: inline-flex; align-items: center; gap: 7px;
+                     height: 40px; padding: 0 1.5rem; border-radius: 8px;
+                     background: #8C033B; color: #fff; font-size: 0.75rem; font-weight: 600;
+                     border: none; cursor: pointer; box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+                     letter-spacing: 0.01em; transition: background 0.15s; white-space: nowrap;"
+              onmouseover="this.style.background='#6B022D'"
+              onmouseout="this.style.background='#8C033B'">
+        <span class="material-symbols-outlined" style="font-size: 15px;">save</span>
+        Save Operational Policy
+      </button>
 
-      <div style="display: flex; justify-content: flex-end; padding-top: 1.25rem; border-top: 1px solid #E2E8F0;">
-        <button type="submit" class="btn btn-primary" style="display: inline-flex; align-items: center; gap: 6px;">
-          <span class="material-symbols-outlined" style="font-size: 16px;">save</span>
-          <span>Save Operational Policy</span>
-        </button>
-      </div>
-    </form>
-  </div>
+    </div>
+
+  </form>
 </div>
+
+
+{# ─────────────────────────────────────────────────────────
+   Interactive radio → visual card sync
+   ───────────────────────────────────────────────────────── #}
+<script>
+(function () {
+  const optA = document.getElementById('optionA');
+  const optB = document.getElementById('optionB');
+
+  const cardA       = document.getElementById('cardA');
+  const cardB       = document.getElementById('cardB');
+  const rOuterA     = document.getElementById('radioOuterA');
+  const rInnerA     = document.getElementById('radioInnerA');
+  const rOuterB     = document.getElementById('radioOuterB');
+  const rInnerB     = document.getElementById('radioInnerB');
+
+  function applyA() {
+    /* Card A — active */
+    cardA.style.borderColor  = '#8C033B';
+    cardA.style.borderWidth  = '2px';
+    cardA.style.background   = 'rgba(140,3,59,0.02)';
+    rOuterA.style.borderColor = '#8C033B';
+    rInnerA.style.background  = '#8C033B';
+    /* Card B — inactive */
+    cardB.style.borderColor  = '#E2E8F0';
+    cardB.style.borderWidth  = '1px';
+    cardB.style.background   = '#fff';
+    rOuterB.style.borderColor = '#CBD5E1';
+    rInnerB.style.background  = 'transparent';
+  }
+
+  function applyB() {
+    /* Card B — active */
+    cardB.style.borderColor  = '#334155';
+    cardB.style.borderWidth  = '1px';
+    cardB.style.background   = '#F8FAFC';
+    rOuterB.style.borderColor = '#334155';
+    rInnerB.style.background  = '#334155';
+    /* Card A — inactive */
+    cardA.style.borderColor  = '#E2E8F0';
+    cardA.style.borderWidth  = '1px';
+    cardA.style.background   = '#fff';
+    rOuterA.style.borderColor = '#CBD5E1';
+    rInnerA.style.background  = 'transparent';
+  }
+
+  /* Click anywhere on either card label triggers the radio */
+  optA.addEventListener('change', function() { if (this.checked) applyA(); });
+  optB.addEventListener('change', function() { if (this.checked) applyB(); });
+
+  /* Set correct initial visual state (server-rendered) */
+  if (optA.checked) applyA();
+  else applyB();
+})();
+</script>
+
 {% endblock %}

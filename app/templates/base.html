@@ -223,10 +223,19 @@
         {% if messages and request.endpoint != 'auth.login' %}
           <div class="flash-container" {% if is_auth_screen %}style="max-width: 520px; margin: 1.5rem auto 0 auto; padding: 0 1rem;"{% endif %}>
             {% for category, message in messages %}
-              <div class="flash-alert {{ category }}" role="alert">
-                <span class="material-symbols-outlined" style="font-size: 18px;">info</span>
-                <span>{{ message }}</span>
-                <button type="button" class="alert-close" onclick="this.parentElement.remove();" aria-label="Dismiss alert">&times;</button>
+              <div class="flash-alert flash-{{ category }}" role="alert"
+                   style="{% if category in ['info', 'primary'] %}background-color: #F0F9FF; border: 1px solid #BAE6FD; color: #082F49;{% elif category == 'success' %}background-color: #F0FDF4; border: 1px solid #BBF7D0; color: #15803D;{% elif category == 'warning' %}background-color: #FFFBEB; border: 1px solid #FDE68A; color: #B45309;{% else %}background-color: #FEF2F2; border: 1px solid #FECACA; color: #B91C1C;{% endif %} border-radius: 0.75rem; padding: 0.75rem 1rem; margin-bottom: 1.5rem; display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);">
+                <div style="display: flex; align-items: center; gap: 0.625rem; min-width: 0;">
+                  <span class="material-symbols-outlined" style="font-size: 18px; flex-shrink: 0; color: {% if category in ['info', 'primary'] %}#0284C7{% elif category == 'success' %}#16A34A{% elif category == 'warning' %}#D97706{% else %}#DC2626{% endif %};">
+                    {% if category == 'success' %}check_circle{% elif category == 'warning' %}warning{% elif category in ['danger', 'error'] %}error{% else %}info{% endif %}
+                  </span>
+                  <span style="font-size: 11px; line-height: 1.4; font-weight: 500; word-break: break-word;">{{ message | safe }}</span>
+                </div>
+                <button type="button" class="alert-close" onclick="this.closest('[role=\'alert\']').remove();" aria-label="Dismiss alert"
+                        style="min-height: 36px; min-width: 36px; border-radius: 0.5rem; display: inline-flex; align-items: center; justify-content: center; background: transparent; border: none; color: {% if category in ['info', 'primary'] %}#0369A1{% else %}inherit{% endif %}; cursor: pointer; flex-shrink: 0; transition: background-color 0.15s ease;"
+                        onmouseover="this.style.backgroundColor='rgba(0,0,0,0.06)'" onmouseout="this.style.backgroundColor='transparent'">
+                  <span class="material-symbols-outlined" style="font-size: 18px; font-weight: 700;">close</span>
+                </button>
               </div>
             {% endfor %}
           </div>
@@ -239,13 +248,17 @@
 {% if not is_auth_screen %}
     </main>
 
-    <!-- Global Minimal 1-Line Footer (Ref: GlossGenius Image 7) -->
-    <footer class="app-global-footer">
-      <div class="footer-copy">
-        &copy; 2026 University of Skills Training and Entrepreneurial Development (USTED). All rights reserved.
-      </div>
-      <div class="footer-meta">
-        U-IAP Directorate of Academic Practicum &amp; WEL &bull; v4.0
+    <!-- Global Responsive Institutional Footer (Ref: Spec Section 5) -->
+    <footer class="app-global-footer" style="width: 100%; margin-top: 3rem; padding: 1.5rem 1rem; border-top: 1px solid rgba(226, 232, 240, 0.8); background-color: rgba(255, 255, 255, 0.5); box-sizing: border-box;">
+      <div class="footer-inner-wrapper" style="max-width: 80rem; margin: 0 auto; display: flex; flex-direction: column; gap: 0.5rem; justify-content: space-between; align-items: center; width: 100%;">
+        <div class="footer-copy" style="font-size: 11px; color: #64748B; line-height: 1.5; max-width: 100%; word-break: break-word; text-align: center;">
+          &copy; 2026 University of Skills Training and Entrepreneurial Development (USTED). All rights reserved.
+        </div>
+        <div class="footer-meta" style="font-size: 11px; font-family: var(--font-mono, monospace); color: #94A3B8; line-height: 1.5; display: flex; align-items: center; justify-content: center; gap: 6px; flex-wrap: wrap; max-width: 100%; word-break: break-word; text-align: center;">
+          <span>U-IAP Directorate of Academic Practicum &amp; WEL</span>
+          <span>&bull;</span>
+          <span style="background: #F1F5F9; color: #475569; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 600;">v4.0</span>
+        </div>
       </div>
     </footer>
 
