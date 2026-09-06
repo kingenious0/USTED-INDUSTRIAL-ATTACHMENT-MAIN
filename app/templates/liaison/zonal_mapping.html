@@ -19,81 +19,81 @@
   </p>
 </div>
 
-<!-- 1. Full-Width Metric Strip (Top Canvas) -->
+<!-- 1. Compact Metrics Grid (Responsive 3-Column Strip) -->
 {% set total_all_placements = regional_summary.values()|sum(attribute='total') if regional_summary else attachments|length %}
-<div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6 zm-metric-grid">
+<div class="grid grid-cols-3 gap-3 mb-6 zm-metric-grid">
   <!-- Card 1: Unallocated Placements -->
-  <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm zm-metric-card">
-    <div class="text-[11px] font-bold text-amber-700 tracking-wider uppercase mb-2 zm-metric-label zm-metric-label-amber">
-      UNALLOCATED PLACEMENTS
+  <div class="bg-white border border-slate-200 rounded-xl p-3 sm:p-4 text-center sm:text-left shadow-sm zm-metric-card">
+    <div class="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-amber-600 zm-metric-label zm-metric-label-amber">
+      Unallocated Placements
     </div>
-    <div class="text-2xl sm:text-3xl font-bold text-slate-900 zm-metric-val">
+    <div class="text-xl sm:text-2xl font-bold text-slate-900 mt-0.5 zm-metric-val">
       {{ total_unassigned }}
     </div>
   </div>
 
-  <!-- Card 2: Accredited Faculty Supervisors -->
-  <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm zm-metric-card">
-    <div class="text-[11px] font-bold text-slate-500 tracking-wider uppercase mb-2 zm-metric-label zm-metric-label-slate">
-      ACCREDITED FACULTY SUPERVISORS
+  <!-- Card 2: Accredited Supervisors -->
+  <div class="bg-white border border-slate-200 rounded-xl p-3 sm:p-4 text-center sm:text-left shadow-sm zm-metric-card">
+    <div class="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-slate-500 zm-metric-label zm-metric-label-slate">
+      Accredited Supervisors
     </div>
-    <div class="text-2xl sm:text-3xl font-bold text-slate-900 zm-metric-val">
+    <div class="text-xl sm:text-2xl font-bold text-slate-900 mt-0.5 zm-metric-val">
       {{ lecturers|length }}
     </div>
   </div>
 
-  <!-- Card 3: Total Active Placements -->
-  <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm zm-metric-card">
-    <div class="text-[11px] font-bold text-slate-500 tracking-wider uppercase mb-2 zm-metric-label zm-metric-label-slate">
-      TOTAL ACTIVE PLACEMENTS
+  <!-- Card 3: Active Placements -->
+  <div class="bg-white border border-slate-200 rounded-xl p-3 sm:p-4 text-center sm:text-left shadow-sm zm-metric-card">
+    <div class="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-slate-500 zm-metric-label zm-metric-label-slate">
+      Active Placements
     </div>
-    <div class="text-2xl sm:text-3xl font-bold text-slate-900 zm-metric-val">
+    <div class="text-xl sm:text-2xl font-bold text-slate-900 mt-0.5 zm-metric-val">
       {{ total_all_placements }}
     </div>
   </div>
 </div>
 
 <!-- Form Wrapping Table and Floating Bulk Allocation Bar -->
-<form method="POST" action="{{ url_for('liaison.zonal_mapping') }}" id="batchAllocationForm">
+<form method="POST" action="{{ url_for('liaison.zonal_mapping') }}" id="batchAllocationForm" class="pb-28">
   <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
 
-  <!-- 2. Integrated Filter & Search Toolbar + Data Table Card -->
-  <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden zm-card-container">
-    <!-- Top Control Bar (Modeled after Manychat Image 2) -->
-    <div class="p-4 border-b border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-3 zm-toolbar">
-      <!-- Left: Regional Filter Segmented Control -->
-      <div class="flex items-center gap-1.5 flex-wrap zm-pills-container">
-        <!-- All Placements Pill -->
-        <a href="{{ url_for('liaison.zonal_mapping') }}" 
-           class="{% if not selected_region %}bg-slate-900 text-white text-xs font-semibold px-3 py-1.5 rounded-lg zm-pill-active{% else %}text-slate-600 hover:bg-slate-100 text-xs font-medium px-3 py-1.5 rounded-lg transition-colors zm-pill-inactive{% endif %}">
-          All Placements ({{ total_all_placements }})
+  <!-- 2. Integrated Tabs & Search Toolbar -->
+  <div class="bg-white border border-slate-200 rounded-xl p-3 mb-4 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-3 zm-toolbar">
+    <!-- Left: Segmented Tab Filter -->
+    <div class="flex items-center gap-1.5 overflow-x-auto pb-1 md:pb-0 zm-pills-container">
+      <!-- All Placements Pill -->
+      <a href="{{ url_for('liaison.zonal_mapping') }}" 
+         class="{% if not selected_region %}bg-slate-900 text-white text-xs font-semibold px-3 py-1.5 rounded-lg whitespace-nowrap zm-pill-active{% else %}bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-medium px-3 py-1.5 rounded-lg transition-colors whitespace-nowrap zm-pill-inactive{% endif %}">
+        All Placements ({{ total_all_placements }})
+      </a>
+
+      <!-- Regional Pills -->
+      {% for region_name, counts in regional_summary.items() %}
+        {% set label_name = 'Unassigned Zone' if region_name == 'Unassigned Region' else region_name %}
+        <a href="{{ url_for('liaison.zonal_mapping', region=region_name) }}" 
+           class="{% if selected_region == region_name %}bg-slate-900 text-white text-xs font-semibold px-3 py-1.5 rounded-lg whitespace-nowrap zm-pill-active{% else %}bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-medium px-3 py-1.5 rounded-lg transition-colors whitespace-nowrap zm-pill-inactive{% endif %}">
+          {{ label_name }} ({{ counts.total }})
         </a>
-
-        <!-- Regional Pills -->
-        {% for region_name, counts in regional_summary.items() %}
-          {% set label_name = 'Unassigned Zone' if region_name == 'Unassigned Region' else region_name %}
-          <a href="{{ url_for('liaison.zonal_mapping', region=region_name) }}" 
-             class="{% if selected_region == region_name %}bg-slate-900 text-white text-xs font-semibold px-3 py-1.5 rounded-lg zm-pill-active{% else %}text-slate-600 hover:bg-slate-100 text-xs font-medium px-3 py-1.5 rounded-lg transition-colors zm-pill-inactive{% endif %}">
-            {{ label_name }} ({{ counts.total }})
-          </a>
-        {% endfor %}
-      </div>
-
-      <!-- Right: Compact Search Input -->
-      <div class="zm-search-lockup">
-        <span class="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-base zm-search-icon">
-          search
-        </span>
-        <input type="text" 
-               id="tableSearchInput" 
-               placeholder="Filter by student or host..." 
-               class="h-9 w-full pl-8 pr-3 text-xs bg-white border border-slate-200 rounded-lg placeholder:text-slate-400 focus:border-[#8C033B] focus:ring-1 focus:ring-[#8C033B] outline-none transition-colors zm-search-input"/>
-      </div>
+      {% endfor %}
     </div>
 
-    <!-- 3. Data Table Structure & Overflow Fix -->
+    <!-- Right: Search Input -->
+    <div class="relative w-full md:w-64 zm-search-lockup">
+      <span class="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-base zm-search-icon">
+        search
+      </span>
+      <input type="text" 
+             id="tableSearchInput" 
+             placeholder="Filter by student or host..." 
+             class="h-9 w-full md:w-64 pl-8 pr-3 text-xs border border-slate-200 rounded-lg placeholder:text-slate-400 focus:border-[#8C033B] focus:ring-1 focus:ring-[#8C033B] outline-none transition-colors zm-search-input"/>
+    </div>
+  </div>
+
+  <!-- 3. Placements Container (Desktop Table + Mobile Cards) -->
+  <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden mb-6 zm-card-container">
+    <!-- Desktop Table (Hidden on mobile < 768px) -->
     <div class="w-full overflow-x-auto zm-table-wrapper">
-      <table class="w-full text-left border-collapse zm-table">
+      <table class="hidden md:table w-full text-left border-collapse zm-table">
         <thead class="bg-slate-50 border-b border-slate-200 text-[11px] font-bold uppercase tracking-wider text-slate-500 zm-table-head">
           <tr>
             <th class="w-10 px-4 py-3 text-center zm-th-checkbox">
@@ -120,8 +120,8 @@
                 <input type="checkbox" 
                        name="attachment_ids" 
                        value="{{ att.id }}" 
-                       class="attachment-cb zm-row-cb h-4 w-4 rounded border-slate-300 text-[#8C033B] focus:ring-[#8C033B] cursor-pointer" 
-                       onchange="updateFloatingBar()"/>
+                       class="attachment-cb h-4 w-4 rounded border-slate-300 text-[#8C033B] focus:ring-[#8C033B] cursor-pointer" 
+                       onchange="syncCheckbox(this); updateFloatingBar()"/>
               </td>
 
               <!-- Student & Index -->
@@ -151,7 +151,7 @@
               <!-- Regional Zone -->
               <td class="px-4 py-3 align-middle zm-td">
                 {% if acc and acc.region and 'Ashanti' in acc.region %}
-                  <span class="bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-semibold px-2 py-0.5 rounded-full inline-flex items-center gap-1 zm-tag-ashanti">
+                  <span class="bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-semibold px-2 py-0.5 rounded-full inline-flex items-center gap-1">
                     <span class="material-symbols-outlined text-[12px]">location_on</span>
                     <span>{{ acc.region }}</span>
                   </span>
@@ -161,7 +161,7 @@
                     <span>{{ acc.region }}</span>
                   </span>
                 {% else %}
-                  <span class="bg-amber-50 text-amber-700 border border-amber-200 text-[10px] font-semibold px-2 py-0.5 rounded-full inline-flex items-center gap-1 zm-tag-unassigned">
+                  <span class="bg-amber-50 text-amber-700 border border-amber-200 text-[10px] font-semibold px-2 py-0.5 rounded-full inline-flex items-center gap-1">
                     <span class="material-symbols-outlined text-[12px]">warning</span>
                     <span>Unassigned Zone</span>
                   </span>
@@ -188,7 +188,7 @@
                     <a href="https://www.google.com/maps/dir/?api=1&destination={{ acc.latitude }},{{ acc.longitude }}" 
                        target="_blank" 
                        rel="noopener noreferrer" 
-                       class="text-xs font-medium text-slate-700 hover:text-[#8C033B] inline-flex items-center gap-1 zm-gps-link">
+                       class="text-xs font-medium text-slate-700 hover:text-[#8C033B] inline-flex items-center gap-1">
                       <span>📍 View Map ↗</span>
                     </a>
                   </div>
@@ -200,7 +200,7 @@
               <!-- Assigned Supervisor -->
               <td class="px-4 py-3 align-middle zm-td">
                 {% if att.supervisor %}
-                  <div class="font-semibold text-emerald-700 flex items-center gap-1 zm-tag-assigned-sup">
+                  <div class="font-semibold text-emerald-700 flex items-center gap-1">
                     <span class="material-symbols-outlined text-[15px]">verified</span>
                     <span>{{ att.supervisor.full_name }}</span>
                   </div>
@@ -208,7 +208,7 @@
                     {{ att.supervisor.department or 'Faculty' }}
                   </div>
                 {% else %}
-                  <span class="bg-amber-50 text-amber-700 border border-amber-200 text-[10px] font-semibold px-2 py-0.5 rounded-full inline-flex items-center gap-1 zm-tag-unassigned">
+                  <span class="bg-amber-50 text-amber-700 border border-amber-200 text-[10px] font-semibold px-2 py-0.5 rounded-full inline-flex items-center gap-1">
                     <span class="material-symbols-outlined text-[12px]">warning</span>
                     <span>Unallocated</span>
                   </span>
@@ -225,63 +225,173 @@
         </tbody>
       </table>
     </div>
+
+    <!-- Mobile Stacked Cards (< 768px) -->
+    <div class="md:hidden space-y-3 p-3">
+      {% for att in attachments %}
+        {% set acc = att.latest_acceptance %}
+        <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm space-y-2.5 zm-mobile-card">
+          <!-- Top: Checkbox + Student Name + Index -->
+          <div class="flex items-start gap-3">
+            <input type="checkbox" 
+                   name="attachment_ids" 
+                   value="{{ att.id }}" 
+                   class="attachment-cb h-4 w-4 rounded border-slate-300 text-[#8C033B] focus:ring-[#8C033B] cursor-pointer mt-0.5" 
+                   onchange="syncCheckbox(this); updateFloatingBar()"/>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center justify-between gap-2 flex-wrap">
+                <span class="text-xs font-bold text-slate-900 truncate">{{ att.student.full_name }}</span>
+                <span class="font-mono text-[11px] text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded font-semibold">{{ att.student.index_number }}</span>
+              </div>
+              <div class="text-[11px] text-slate-500 mt-0.5">{{ att.student.programme }} &bull; Level {{ att.student.level }}</div>
+            </div>
+          </div>
+
+          <!-- Middle: Host Org + Mentor Info -->
+          <div class="pt-2 border-t border-slate-100">
+            <div class="text-xs font-semibold text-slate-800">{{ acc.company_name or att.target_organization or 'Placement Pending' }}</div>
+            {% if acc and acc.supervisor_name %}
+              <div class="text-[11px] text-slate-500 mt-0.5">
+                Mentor: {{ acc.supervisor_name }} ({{ acc.supervisor_phone or 'No Tel' }})
+              </div>
+            {% endif %}
+          </div>
+
+          <!-- Bottom: Zonal Tag + GPS status pill -->
+          <div class="pt-2 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2">
+            <div>
+              {% if acc and acc.region and 'Ashanti' in acc.region %}
+                <span class="bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-semibold px-2 py-0.5 rounded-full inline-flex items-center gap-1">
+                  <span class="material-symbols-outlined text-[12px]">location_on</span>
+                  <span>{{ acc.region }}</span>
+                </span>
+              {% elif acc and acc.region %}
+                <span class="bg-slate-100 text-slate-700 border border-slate-200 text-[10px] font-semibold px-2 py-0.5 rounded-full inline-flex items-center gap-1">
+                  <span class="material-symbols-outlined text-[12px]">location_on</span>
+                  <span>{{ acc.region }}</span>
+                </span>
+              {% else %}
+                <span class="bg-amber-50 text-amber-700 border border-amber-200 text-[10px] font-semibold px-2 py-0.5 rounded-full inline-flex items-center gap-1">
+                  <span class="material-symbols-outlined text-[12px]">warning</span>
+                  <span>Unassigned</span>
+                </span>
+              {% endif %}
+              {% if acc and acc.district_town %}
+                <span class="text-[10px] text-slate-500 ml-1">({{ acc.district_town }})</span>
+              {% endif %}
+            </div>
+
+            <div>
+              {% if acc and acc.gps_address %}
+                <span class="font-mono text-[10px] text-slate-700 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">
+                  {{ acc.gps_address }}
+                </span>
+              {% elif acc and acc.latitude and acc.longitude %}
+                <a href="https://www.google.com/maps/dir/?api=1&destination={{ acc.latitude }},{{ acc.longitude }}" 
+                   target="_blank" 
+                   rel="noopener noreferrer" 
+                   class="text-[10px] font-medium text-slate-700 hover:text-[#8C033B] inline-flex items-center gap-0.5">
+                  <span>📍 GPS Pin ↗</span>
+                </a>
+              {% else %}
+                <span class="text-[10px] text-slate-400 italic">No GPS</span>
+              {% endif %}
+            </div>
+          </div>
+
+          <!-- Supervisor Status -->
+          <div class="pt-1 flex items-center justify-between text-[11px]">
+            <span class="text-slate-400">Supervisor:</span>
+            {% if att.supervisor %}
+              <span class="font-semibold text-emerald-700 flex items-center gap-1">
+                <span class="material-symbols-outlined text-[14px]">verified</span>
+                <span>{{ att.supervisor.full_name }}</span>
+              </span>
+            {% else %}
+              <span class="bg-amber-50 text-amber-700 border border-amber-200 text-[10px] font-semibold px-2 py-0.5 rounded-full inline-flex items-center gap-1">
+                <span class="material-symbols-outlined text-[12px]">warning</span>
+                <span>Unallocated</span>
+              </span>
+            {% endif %}
+          </div>
+        </div>
+      {% else %}
+        <div class="p-6 text-center text-slate-400 text-xs">
+          No placement records found for the selected zone.
+        </div>
+      {% endfor %}
+    </div>
   </div>
 
-  <!-- 4. Floating Bulk Assignment Bar (Ref: Image 5 image_ff47ce.png) -->
+  <!-- 4. Floating Batch Allocation Bar (Fixed Positioning & Mobile Responsive) -->
   <div id="floatingBulkBar" 
-       class="fixed bottom-8 left-1/2 -translate-x-1/2 z-40 bg-slate-900 text-white px-4 py-2.5 rounded-2xl shadow-xl flex items-center gap-3 border border-slate-800 animate-in fade-in slide-in-from-bottom-4 zm-floating-bar" 
+       class="fixed bottom-4 sm:bottom-6 left-4 right-4 sm:left-1/2 sm:-translate-x-1/2 sm:w-auto z-40 bg-slate-950/95 text-white border border-slate-800 backdrop-blur-md rounded-2xl shadow-2xl p-3 sm:px-5 sm:py-2.5 flex flex-col sm:flex-row sm:items-center gap-3 max-w-xl mx-auto transition-all zm-floating-bar" 
        style="display: none;">
-    <!-- Selection Counter -->
-    <span id="selectionCount" class="text-xs font-semibold text-slate-200 pr-2 border-r border-slate-700 whitespace-nowrap zm-floating-counter">
-      0 Placements Selected
-    </span>
+    <!-- Left Indicator -->
+    <div id="selectionCount" class="text-xs font-semibold text-slate-200 whitespace-nowrap flex items-center gap-2 zm-floating-counter">
+      <span class="h-2 w-2 rounded-full bg-emerald-400 animate-pulse"></span>
+      <span id="selectionCountText">0 Placements Selected</span>
+    </div>
 
-    <!-- Inline Select Dropdown -->
+    <!-- Center (Supervisor Selector Dropdown) -->
     <select id="supervisorSelect" 
             name="supervisor_id" 
-            class="h-8 bg-slate-800 border border-slate-700 rounded-lg text-xs text-white px-2.5 focus:ring-1 focus:ring-[#8C033B] outline-none zm-floating-select">
+            class="w-full sm:w-64 h-9 bg-slate-900 border border-slate-700 text-xs text-slate-100 rounded-lg px-2.5 focus:border-[#8C033B] focus:ring-1 focus:ring-[#8C033B] outline-none zm-floating-select">
       <option value="" disabled selected>-- Choose Visiting Supervisor --</option>
       {% for sup in lecturers %}
         <option value="{{ sup.id }}">Assign to {{ sup.full_name }} ({{ sup.department or 'Faculty' }})</option>
       {% endfor %}
     </select>
 
-    <!-- Primary Action Button -->
-    <button type="submit" 
-            id="confirmAllocBtn"
-            class="h-8 px-3.5 bg-[#8C033B] hover:bg-[#6B022D] text-white text-xs font-bold rounded-lg transition-colors zm-floating-btn">
-      Confirm Allocation
-    </button>
+    <!-- Right (Actions) -->
+    <div class="flex items-center gap-2 w-full sm:w-auto zm-floating-actions">
+      <button type="submit" 
+              id="confirmAllocBtn"
+              class="flex-1 sm:flex-none h-9 px-4 bg-[#8C033B] hover:bg-[#6B022D] active:scale-95 text-white font-bold text-xs rounded-lg shadow-sm transition-all whitespace-nowrap zm-floating-btn">
+        Confirm Allocation
+      </button>
 
-    <!-- Deselect Trigger -->
-    <button type="button" 
-            onclick="deselectAll()" 
-            class="text-slate-400 hover:text-white text-sm cursor-pointer p-1 transition-colors zm-floating-deselect" 
-            title="Clear selections">
-      ✕
-    </button>
+      <button type="button" 
+              onclick="deselectAll()" 
+              class="h-9 w-9 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg flex items-center justify-center font-bold text-xs transition-colors zm-floating-deselect" 
+              title="Clear selections">
+        ✕
+      </button>
+    </div>
   </div>
 </form>
 
 <script>
+function syncCheckbox(source) {
+  const val = source.value;
+  const matches = document.querySelectorAll(`.attachment-cb[value="${val}"]`);
+  matches.forEach(cb => cb.checked = source.checked);
+}
+
 function updateFloatingBar() {
-  const checkboxes = document.querySelectorAll('.attachment-cb');
   const checked = document.querySelectorAll('.attachment-cb:checked');
+  const uniqueValues = new Set();
+  checked.forEach(cb => uniqueValues.add(cb.value));
+  const count = uniqueValues.size;
+
   const bar = document.getElementById('floatingBulkBar');
-  const counter = document.getElementById('selectionCount');
+  const textElem = document.getElementById('selectionCountText');
   const masterCb = document.getElementById('selectAllHeader');
 
-  const count = checked.length;
   if (count > 0) {
     bar.style.display = 'flex';
-    counter.textContent = count + (count === 1 ? ' Placement Selected' : ' Placements Selected');
+    if (textElem) {
+      textElem.textContent = count + (count === 1 ? ' Placement Selected' : ' Placements Selected');
+    }
   } else {
     bar.style.display = 'none';
   }
 
   if (masterCb) {
-    masterCb.checked = (checkboxes.length > 0 && checked.length === checkboxes.length);
-    masterCb.indeterminate = (count > 0 && count < checkboxes.length);
+    const allUnique = new Set();
+    document.querySelectorAll('.attachment-cb').forEach(cb => allUnique.add(cb.value));
+    masterCb.checked = (allUnique.size > 0 && count === allUnique.size);
+    masterCb.indeterminate = (count > 0 && count < allUnique.size);
   }
 }
 
@@ -289,7 +399,9 @@ function toggleSelectAll(masterCb) {
   const checkboxes = document.querySelectorAll('.attachment-cb');
   checkboxes.forEach(cb => {
     const tr = cb.closest('tr');
-    if (!tr || tr.style.display !== 'none') {
+    const card = cb.closest('.zm-mobile-card');
+    const isVisible = (tr && tr.style.display !== 'none') || (card && card.style.display !== 'none');
+    if (isVisible) {
       cb.checked = masterCb.checked;
     }
   });
@@ -307,13 +419,18 @@ function deselectAll() {
   updateFloatingBar();
 }
 
-// Client-side search filtering
+// Client-side search filtering (filters both desktop table rows and mobile cards)
 document.getElementById('tableSearchInput')?.addEventListener('input', function(e) {
   const query = e.target.value.toLowerCase().trim();
   const rows = document.querySelectorAll('tbody tr.zm-row');
   rows.forEach(row => {
     const text = row.textContent.toLowerCase();
     row.style.display = text.includes(query) ? '' : 'none';
+  });
+  const mobileCards = document.querySelectorAll('.zm-mobile-card');
+  mobileCards.forEach(card => {
+    const text = card.textContent.toLowerCase();
+    card.style.display = text.includes(query) ? '' : 'none';
   });
 });
 

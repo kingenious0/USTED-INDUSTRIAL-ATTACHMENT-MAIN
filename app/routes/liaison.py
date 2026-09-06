@@ -481,8 +481,8 @@ def zonal_mapping():
                 att.academic_supervisor_id = supervisor.id
                 allocated_count += 1
 
-        db.session.commit()
-        flash(f"Successfully allocated {allocated_count} attachment(s) to Supervisor {supervisor.full_name}.", "success")
+        clean_sup_name = supervisor.full_name.replace('(Academic Supervisor)', '').strip()
+        flash(f"Successfully allocated {allocated_count} placement(s) to Supervisor {clean_sup_name}.", "success")
         return redirect(url_for('liaison.zonal_mapping'))
 
     # Filter by region

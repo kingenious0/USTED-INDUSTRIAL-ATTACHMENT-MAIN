@@ -7196,41 +7196,45 @@ textarea.form-control {
    ZONAL MAPPING & SUPERVISOR ALLOCATION (UI OVERHAUL)
    ========================================================================== */
 
-/* 1. Full-Width Metric Strip */
+/* 1. Compact 3-Column Metric Strip */
 .zm-metric-grid {
   display: grid;
-  grid-template-columns: repeat(1, minmax(0, 1fr));
-  gap: 1rem; /* gap-4 */
-  margin-bottom: 1.5rem; /* mb-6 */
-}
-
-@media (min-width: 640px) {
-  .zm-metric-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr)); /* sm:grid-cols-3 */
-  }
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
 }
 
 .zm-metric-card {
   background-color: #FFFFFF;
-  border: 1px solid #E2E8F0; /* border-slate-200 */
-  border-radius: 0.75rem; /* rounded-xl */
-  padding: 1rem; /* p-4 */
-  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); /* shadow-sm */
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
+  border: 1px solid #E2E8F0;
+  border-radius: 0.75rem;
+  padding: 0.75rem 1rem;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  text-align: center;
+}
+
+@media (min-width: 640px) {
+  .zm-metric-card {
+    text-align: left;
+    padding: 1rem;
+  }
 }
 
 .zm-metric-label {
-  font-size: 11px; /* text-[11px] */
-  font-weight: 700; /* font-bold */
-  letter-spacing: 0.05em; /* tracking-wider */
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
-  margin-bottom: 0.5rem;
+}
+
+@media (min-width: 640px) {
+  .zm-metric-label {
+    font-size: 0.75rem;
+  }
 }
 
 .zm-metric-label-amber {
-  color: #B45309; /* text-amber-700 */
+  color: #D97706; /* text-amber-600 */
 }
 
 .zm-metric-label-slate {
@@ -7238,34 +7242,42 @@ textarea.form-control {
 }
 
 .zm-metric-val {
-  font-size: 1.75rem; /* Large bold font */
+  font-size: 1.25rem;
   font-weight: 700;
-  color: #0F172A; /* text-slate-900 */
-  line-height: 1.1;
+  color: #0F172A;
+  margin-top: 0.125rem;
+  line-height: 1.2;
+}
+
+@media (min-width: 640px) {
+  .zm-metric-val {
+    font-size: 1.5rem;
+  }
 }
 
 /* 2. Integrated Filter & Search Toolbar */
 .zm-card-container {
   background-color: #FFFFFF;
-  border: 1px solid #E2E8F0; /* border-slate-200 */
-  border-radius: 0.75rem; /* rounded-xl */
-  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); /* shadow-sm */
+  border: 1px solid #E2E8F0;
+  border-radius: 0.75rem;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
   overflow: hidden;
+  margin-bottom: 1.5rem;
 }
 
 .zm-toolbar {
-  padding: 1rem; /* p-4 */
-  border-bottom: 1px solid #F1F5F9; /* border-slate-100 */
+  padding: 0.75rem;
+  border-bottom: 1px solid #F1F5F9;
   display: flex;
   flex-direction: column;
-  gap: 0.75rem; /* gap-3 */
+  gap: 0.75rem;
   justify-content: space-between;
 }
 
 @media (min-width: 768px) {
   .zm-toolbar {
-    flex-direction: row; /* md:flex-row */
-    align-items: center; /* md:items-center */
+    flex-direction: row;
+    align-items: center;
   }
 }
 
@@ -7273,38 +7285,45 @@ textarea.form-control {
   display: flex;
   align-items: center;
   gap: 0.375rem;
-  flex-wrap: wrap;
-  flex: 1 1 auto;
+  overflow-x: auto;
+  padding-bottom: 0.25rem;
+}
+
+@media (min-width: 768px) {
+  .zm-pills-container {
+    padding-bottom: 0;
+  }
 }
 
 .zm-pill-active {
-  background-color: #0F172A; /* bg-slate-900 */
-  color: #FFFFFF; /* text-white */
-  font-size: 0.75rem; /* text-xs */
-  font-weight: 600; /* font-semibold */
-  padding: 0.375rem 0.75rem; /* px-3 py-1.5 */
-  border-radius: 0.5rem; /* rounded-lg */
+  background-color: #0F172A;
+  color: #FFFFFF;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.375rem 0.75rem;
+  border-radius: 0.5rem;
   text-decoration: none;
+  white-space: nowrap;
   display: inline-flex;
   align-items: center;
-  transition: background-color 0.15s ease;
 }
 
 .zm-pill-inactive {
-  color: #475569; /* text-slate-600 */
-  background-color: transparent;
-  font-size: 0.75rem; /* text-xs */
-  font-weight: 500; /* font-medium */
-  padding: 0.375rem 0.75rem; /* px-3 py-1.5 */
-  border-radius: 0.5rem; /* rounded-lg */
+  background-color: #F1F5F9;
+  color: #475569;
+  font-size: 0.75rem;
+  font-weight: 500;
+  padding: 0.375rem 0.75rem;
+  border-radius: 0.5rem;
   text-decoration: none;
+  white-space: nowrap;
   display: inline-flex;
   align-items: center;
   transition: background-color 0.15s ease, color 0.15s ease;
 }
 
 .zm-pill-inactive:hover {
-  background-color: #F1F5F9; /* hover:bg-slate-100 */
+  background-color: #E2E8F0;
   color: #0F172A;
 }
 
@@ -7315,7 +7334,7 @@ textarea.form-control {
 
 @media (min-width: 768px) {
   .zm-search-lockup {
-    width: 16rem !important; /* w-64 */
+    width: 16rem !important;
     max-width: 16rem !important;
     flex-shrink: 0 !important;
   }
@@ -7323,42 +7342,43 @@ textarea.form-control {
 
 .zm-search-icon {
   position: absolute;
-  left: 0.625rem; /* left-2.5 */
+  left: 0.625rem;
   top: 50%;
   transform: translateY(-50%);
-  color: #94A3B8; /* text-slate-400 */
+  color: #94A3B8;
   pointer-events: none;
   font-size: 1rem;
   line-height: 1;
 }
 
 .zm-search-input {
-  height: 2.25rem; /* h-9 */
+  height: 2.25rem;
   width: 100%;
-  padding-left: 2rem; /* pl-8 */
-  padding-right: 0.75rem; /* px-3 */
-  font-size: 0.75rem; /* text-xs */
+  padding-left: 2rem;
+  padding-right: 0.75rem;
+  font-size: 0.75rem;
   background-color: #FFFFFF;
-  border: 1px solid #E2E8F0; /* border-slate-200 */
-  border-radius: 0.5rem; /* rounded-lg */
+  border: 1px solid #E2E8F0;
+  border-radius: 0.5rem;
   color: #0F172A;
   outline: none;
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  box-sizing: border-box;
 }
 
 .zm-search-input::placeholder {
-  color: #94A3B8; /* placeholder:text-slate-400 */
+  color: #94A3B8;
 }
 
 .zm-search-input:focus {
-  border-color: #8C033B; /* focus:border-[#8C033B] */
-  box-shadow: 0 0 0 1px #8C033B; /* focus:ring-1 focus:ring-[#8C033B] */
+  border-color: #8C033B;
+  box-shadow: 0 0 0 1px #8C033B;
 }
 
 /* 3. Data Table Structure & Overflow Fix */
 .zm-table-wrapper {
-  width: 100%; /* w-full */
-  overflow-x: auto; /* overflow-x-auto */
+  width: 100%;
+  overflow-x: auto;
   -webkit-overflow-scrolling: touch;
 }
 
@@ -7369,13 +7389,13 @@ textarea.form-control {
 }
 
 .zm-table-head {
-  background-color: #F8FAFC; /* bg-slate-50 */
-  border-bottom: 1px solid #E2E8F0; /* border-slate-200 */
-  font-size: 11px; /* text-[11px] */
-  font-weight: 700; /* font-bold */
+  background-color: #F8FAFC;
+  border-bottom: 1px solid #E2E8F0;
+  font-size: 11px;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.05em; /* tracking-wider */
-  color: #64748B; /* text-slate-500 */
+  letter-spacing: 0.05em;
+  color: #64748B;
 }
 
 .zm-th {
@@ -7385,15 +7405,15 @@ textarea.form-control {
 }
 
 .zm-th-checkbox {
-  width: 2.5rem; /* w-10 */
+  width: 2.5rem;
   padding: 0.75rem 1rem;
   text-align: center;
 }
 
 .zm-row {
-  height: 3.5rem; /* h-14 */
-  border-bottom: 1px solid #F1F5F9; /* border-slate-100 */
-  font-size: 0.75rem; /* text-xs */
+  height: 3.5rem;
+  border-bottom: 1px solid #F1F5F9;
+  font-size: 0.75rem;
   transition: background-color 0.15s ease;
 }
 
@@ -7402,7 +7422,7 @@ textarea.form-control {
 }
 
 .zm-row:hover {
-  background-color: rgba(248, 250, 252, 0.6); /* hover:bg-slate-50/60 */
+  background-color: rgba(248, 250, 252, 0.6);
 }
 
 .zm-td {
@@ -7417,118 +7437,95 @@ textarea.form-control {
   vertical-align: middle;
 }
 
-.zm-tag-ashanti {
-  background-color: #ECFDF5; /* bg-emerald-50 */
-  color: #047857; /* text-emerald-700 */
-  border: 1px solid #A7F3D0; /* border-emerald-200 */
-  font-size: 10px; /* text-[10px] */
-  font-weight: 600; /* font-semibold */
-  padding: 0.125rem 0.5rem; /* px-2 py-0.5 */
-  border-radius: 9999px; /* rounded-full */
-  display: inline-flex;
-  align-items: center;
-  gap: 0.25rem;
-  white-space: nowrap;
-}
-
-.zm-tag-unassigned {
-  background-color: #FFFBEB; /* bg-amber-50 */
-  color: #B45309; /* text-amber-700 */
-  border: 1px solid #FDE68A; /* border-amber-200 */
-  font-size: 10px; /* text-[10px] */
-  font-weight: 600; /* font-semibold */
-  padding: 0.125rem 0.5rem; /* px-2 py-0.5 */
-  border-radius: 9999px; /* rounded-full */
-  display: inline-flex;
-  align-items: center;
-  gap: 0.25rem;
-  white-space: nowrap;
-}
-
-.zm-tag-assigned-sup {
-  color: #047857; /* text-emerald-700 */
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  gap: 0.375rem;
-}
-
-.zm-gps-link {
-  font-size: 0.75rem; /* text-xs */
-  font-weight: 500; /* font-medium */
-  color: #334155; /* text-slate-700 */
-  text-decoration: none;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.25rem;
-  transition: color 0.15s ease;
-}
-
-.zm-gps-link:hover {
-  color: #8C033B; /* hover:text-[#8C033B] */
-}
-
-/* 4. Floating Bulk Assignment Bar */
-@keyframes zmSlideInBottom {
-  from {
-    transform: translate(-50%, 20px);
-    opacity: 0;
-  }
-  to {
-    transform: translate(-50%, 0);
-    opacity: 1;
-  }
-}
-
+/* 4. Floating Batch Allocation Bar (Responsive Mobile & Desktop) */
 .zm-floating-bar {
   position: fixed;
-  bottom: 2rem; /* bottom-8 */
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 40; /* z-40 */
-  background-color: #0F172A; /* bg-slate-900 */
-  color: #FFFFFF; /* text-white */
-  padding: 0.625rem 1rem; /* px-4 py-2.5 */
-  border-radius: 1rem; /* rounded-2xl */
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.25), 0 8px 10px -6px rgba(0, 0, 0, 0.25); /* shadow-xl */
-  display: none; /* hidden until 1+ checked */
-  align-items: center;
-  gap: 0.75rem; /* gap-3 */
+  bottom: 1rem; /* bottom-4 */
+  left: 1rem; /* left-4 */
+  right: 1rem; /* right-4 */
+  z-index: 40;
+  background-color: rgba(2, 6, 23, 0.95); /* bg-slate-950/95 */
+  color: #FFFFFF;
   border: 1px solid #1E293B; /* border-slate-800 */
-  animation: zmSlideInBottom 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  max-width: 92vw;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-radius: 1rem; /* rounded-2xl */
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35); /* shadow-2xl */
+  padding: 0.75rem; /* p-3 */
+  display: none;
+  flex-direction: column;
+  gap: 0.75rem;
+  max-width: 36rem; /* max-w-xl */
+  margin-left: auto;
+  margin-right: auto;
+  box-sizing: border-box;
+}
+
+@media (min-width: 640px) {
+  .zm-floating-bar {
+    bottom: 1.5rem; /* sm:bottom-6 */
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%);
+    width: auto;
+    flex-direction: row;
+    align-items: center;
+    padding: 0.625rem 1.25rem; /* sm:px-5 sm:py-2.5 */
+  }
 }
 
 .zm-floating-counter {
   font-size: 0.75rem; /* text-xs */
   font-weight: 600; /* font-semibold */
   color: #E2E8F0; /* text-slate-200 */
-  padding-right: 0.5rem; /* pr-2 */
-  border-right: 1px solid #334155; /* border-r border-slate-700 */
   white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .zm-floating-select {
-  height: 2rem; /* h-8 */
-  background-color: #1E293B; /* bg-slate-800 */
+  width: 100%;
+  height: 2.25rem; /* h-9 */
+  background-color: #0F172A; /* bg-slate-900 */
   border: 1px solid #334155; /* border-slate-700 */
   border-radius: 0.5rem; /* rounded-lg */
   font-size: 0.75rem; /* text-xs */
-  color: #FFFFFF; /* text-white */
+  color: #F1F5F9; /* text-slate-100 */
   padding: 0 0.625rem; /* px-2.5 */
   outline: none;
-  min-width: 220px;
+  box-sizing: border-box;
   cursor: pointer;
+}
+
+@media (min-width: 640px) {
+  .zm-floating-select {
+    width: 16rem; /* sm:w-64 */
+  }
 }
 
 .zm-floating-select:focus {
   border-color: #8C033B;
-  box-shadow: 0 0 0 1px #8C033B; /* focus:ring-1 focus:ring-[#8C033B] */
+  box-shadow: 0 0 0 1px #8C033B;
+}
+
+.zm-floating-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+@media (min-width: 640px) {
+  .zm-floating-actions {
+    width: auto;
+  }
 }
 
 .zm-floating-btn {
-  height: 2rem; /* h-8 */
-  padding: 0 0.875rem; /* px-3.5 */
+  flex: 1 1 auto;
+  height: 2.25rem; /* h-9 */
+  padding: 0 1rem; /* px-4 */
   background-color: #8C033B; /* bg-[#8C033B] */
   color: #FFFFFF;
   font-size: 0.75rem; /* text-xs */
@@ -7537,34 +7534,47 @@ textarea.form-control {
   border: none;
   cursor: pointer;
   white-space: nowrap;
-  transition: background-color 0.15s ease;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  transition: all 0.15s ease;
   display: inline-flex;
   align-items: center;
-  gap: 0.25rem;
+  justify-content: center;
+}
+
+@media (min-width: 640px) {
+  .zm-floating-btn {
+    flex: none;
+  }
 }
 
 .zm-floating-btn:hover {
   background-color: #6B022D; /* hover:bg-[#6B022D] */
 }
 
+.zm-floating-btn:active {
+  transform: scale(0.95); /* active:scale-95 */
+}
+
 .zm-floating-deselect {
+  height: 2.25rem; /* h-9 */
+  width: 2.25rem; /* w-9 */
   color: #94A3B8; /* text-slate-400 */
   background: transparent;
   border: none;
-  cursor: pointer;
-  padding: 0.25rem;
-  display: inline-flex;
+  border-radius: 0.5rem;
+  display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 0.375rem;
-  transition: color 0.15s ease, background-color 0.15s ease;
-  font-size: 1rem;
-  line-height: 1;
+  font-weight: 700;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+  flex-shrink: 0;
 }
 
 .zm-floating-deselect:hover {
   color: #FFFFFF;
-  background-color: #1E293B;
+  background-color: #1E293B; /* hover:bg-slate-800 */
 }
 
 
