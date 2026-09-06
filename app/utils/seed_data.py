@@ -82,21 +82,33 @@ def seed_database():
             'email': 'admin@usted.edu.gh',
             'full_name': 'Dr. Kwame Asante (Liaison Head)',
             'role': UserRole.LIAISON_HEAD,
-            'password': 'password123'
+            'password': 'password123',
+            'staff_id': 'USTED-ADM-001',
+            'department': 'Industrial Liaison Directorate',
+            'office_location': 'Central Administration, Block A, Room 102',
+            'phone': '0241112233'
         },
         {
             'username': 'liaison1',
             'email': 'liaison1@usted.edu.gh',
             'full_name': 'Mrs. Faustina Arthur',
             'role': UserRole.LIAISON_OFFICER,
-            'password': 'password123'
+            'password': 'password123',
+            'staff_id': 'USTED-LIA-0012',
+            'department': 'Industrial Liaison Directorate',
+            'office_location': 'Faculty of Technical Education, Block B, Room 204',
+            'phone': '0242223344'
         },
         {
             'username': 'supervisor1',
             'email': 'supervisor1@usted.edu.gh',
             'full_name': 'Ing. Dr. Peter Owusu',
             'role': UserRole.ACADEMIC_SUPERVISOR,
-            'password': 'password123'
+            'password': 'password123',
+            'staff_id': 'USTED-FAC-0142',
+            'department': 'Information Technology Education',
+            'office_location': 'Faculty of Applied Sciences, Block C, Room 305',
+            'phone': '0243334455'
         },
         {
             'username': 'student1',
@@ -104,6 +116,7 @@ def seed_database():
             'full_name': 'Kofi Mensah Boateng',
             'role': UserRole.STUDENT,
             'password': 'password123',
+            'phone': '0244123456',
             'student_master': created_students.get('USTED/2024/001')
         },
         {
@@ -112,6 +125,7 @@ def seed_database():
             'full_name': 'Abena Serwaa Osei',
             'role': UserRole.STUDENT,
             'password': 'password123',
+            'phone': '0208987654',
             'student_master': created_students.get('USTED/2024/002')
         },
         {
@@ -120,13 +134,14 @@ def seed_database():
             'full_name': 'Elliot Paakow Entsiwah',
             'role': UserRole.STUDENT,
             'password': 'password123',
+            'phone': '0240001122',
             'student_master': created_students.get('5230100452')
         }
     ]
 
     for u_data in users_to_seed:
-        existing_user = User.query.filter_by(username=u_data['username']).first()
-        if not existing_user:
+        user = User.query.filter_by(username=u_data['username']).first()
+        if not user:
             user = User(
                 username=u_data['username'],
                 email=u_data['email'],
@@ -137,6 +152,16 @@ def seed_database():
                 user.student_master = u_data['student_master']
             user.set_password(u_data['password'])
             db.session.add(user)
+
+        # Update particulars if not set
+        if 'staff_id' in u_data and not user.staff_id:
+            user.staff_id = u_data['staff_id']
+        if 'department' in u_data and not user.department:
+            user.department = u_data['department']
+        if 'office_location' in u_data and not user.office_location:
+            user.office_location = u_data['office_location']
+        if 'phone' in u_data and not user.phone:
+            user.phone = u_data['phone']
 
     db.session.commit()
     print("Database successfully initialized and seeded with demo accounts & student master data.")

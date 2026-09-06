@@ -1,0 +1,504 @@
+{% extends "base.html" %}
+
+{% block title %}Account Settings & Profile Governance — U-IAP{% endblock %}
+{% block page_breadcrumb %}Account / Profile Settings{% endblock %}
+
+{% block extra_head %}
+<style>
+  /* Strict overrides to eliminate raw browser styling and guarantee visible borders */
+  .profile-page-shell {
+    max-width: 56rem;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .tab-strip-btn {
+    background: transparent !important;
+    border-top: none !important;
+    border-left: none !important;
+    border-right: none !important;
+    box-shadow: none !important;
+    outline: none !important;
+    cursor: pointer;
+    font-size: 0.75rem !important;
+    font-weight: 600 !important;
+    padding-bottom: 0.625rem !important; /* pb-2.5 */
+    margin-bottom: -1px !important;
+    transition: color 0.15s ease-in-out, border-color 0.15s ease-in-out;
+  }
+  .tab-strip-btn.tab-active {
+    color: #8C033B !important;
+    border-bottom: 2px solid #8C033B !important;
+  }
+  .tab-strip-btn.tab-inactive {
+    color: #64748b !important;
+    border-bottom: 2px solid transparent !important;
+  }
+  .tab-strip-btn.tab-inactive:hover {
+    color: #0f172a !important;
+  }
+  .profile-input-field {
+    width: 100% !important;
+    height: 2.75rem !important; /* h-11 */
+    padding-left: 0.875rem !important;
+    padding-right: 0.875rem !important;
+    background-color: #ffffff !important;
+    border: 1px solid #cbd5e1 !important;
+    border-radius: 0.75rem !important; /* rounded-xl */
+    font-size: 0.75rem !important; /* text-xs */
+    color: #0f172a !important;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+    display: block !important;
+    box-sizing: border-box !important;
+  }
+  .profile-input-field:focus {
+    outline: none !important;
+    border-color: #8C033B !important;
+    box-shadow: 0 0 0 1px #8C033B !important;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="profile-page-shell w-full max-w-full px-4 py-5 sm:px-6 sm:py-8 space-y-6 overflow-x-hidden pb-24 sm:pb-8">
+
+  <!-- 1. PAGE HEADER & CLEAN UNDERLINE TABS (Ref: Helen H image_97050e.png) -->
+  <div class="border-b border-slate-200 pb-2">
+    <span class="text-[10px] font-bold uppercase tracking-widest text-slate-400 block mb-1">Account &amp; Settings</span>
+    <h1 class="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight leading-tight">Account Settings &amp; Profile Governance</h1>
+    <p class="text-xs text-slate-500 font-mono mt-1 leading-normal">Manage personal contact particulars, institutional identity, and security credentials.</p>
+    
+    <!-- 2. SCROLLABLE SUB-NAV TABS (Ref: Helen H image_97050e.png) -->
+    <div class="flex items-center gap-6 border-b border-slate-200 mt-4 mb-6 text-xs font-semibold overflow-x-auto no-scrollbar whitespace-nowrap -mx-4 px-4 sm:mx-0 sm:px-0" id="profileTabs">
+      <button type="button" onclick="switchTab('general')" id="tab-btn-general"
+        class="tab-strip-btn {% if active_tab == 'general' %}tab-active text-[#8C033B] border-b-2 border-[#8C033B]{% else %}tab-inactive text-slate-500 hover:text-slate-900{% endif %} pb-2.5 flex-shrink-0 bg-transparent whitespace-nowrap outline-none">
+        General Profile
+      </button>
+      <button type="button" onclick="switchTab('security')" id="tab-btn-security"
+        class="tab-strip-btn {% if active_tab == 'security' %}tab-active text-[#8C033B] border-b-2 border-[#8C033B]{% else %}tab-inactive text-slate-500 hover:text-slate-900{% endif %} pb-2.5 flex-shrink-0 bg-transparent transition-colors whitespace-nowrap outline-none">
+        Security &amp; Passwords
+      </button>
+      <button type="button" onclick="switchTab('session')" id="tab-btn-session"
+        class="tab-strip-btn {% if active_tab == 'session' %}tab-active text-[#8C033B] border-b-2 border-[#8C033B]{% else %}tab-inactive text-slate-500 hover:text-slate-900{% endif %} pb-2.5 flex-shrink-0 bg-transparent transition-colors whitespace-nowrap outline-none">
+        Session &amp; Telemetry
+      </button>
+    </div>
+  </div>
+
+  <!-- TAB PANE 1: GENERAL PROFILE -->
+  <div id="pane-general" class="{% if active_tab != 'general' %}hidden{% endif %}">
+    <form action="{{ url_for('main.profile') }}" method="POST" enctype="multipart/form-data" id="profileForm">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <input type="hidden" name="form_action" value="update_profile">
+      <input type="hidden" name="remove_avatar" id="remove_avatar_input" value="false">
+
+      <div class="max-w-3xl bg-white border border-slate-200 rounded-xl p-4 sm:p-6 shadow-sm space-y-6">
+
+        <!-- 3. AVATAR UPLOAD LOCKUP (Ref: Partiful image_97054a.png) -->
+        <div class="flex items-center gap-4 pb-5 border-b border-slate-100">
+          <!-- Avatar Disc with Upload Button -->
+          <div class="relative w-16 h-16 sm:w-20 sm:h-20 flex-shrink-0">
+            <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-slate-100 border-2 border-slate-200 relative flex-shrink-0 flex items-center justify-center text-lg sm:text-xl font-bold text-[#8C033B] select-none overflow-hidden" id="avatarContainer">
+              {% if user.avatar_url %}
+                <img src="{{ user.avatar_url }}" alt="{{ user.full_name }}" class="w-full h-full object-cover rounded-full" id="avatarImage">
+                <span class="hidden" id="avatarInitials">{{ user.initials }}</span>
+              {% else %}
+                <img src="" alt="{{ user.full_name }}" class="w-full h-full object-cover rounded-full hidden" id="avatarImage">
+                <span id="avatarInitials">{{ user.initials }}</span>
+              {% endif %}
+            </div>
+            <!-- Upload Button docked bottom-right -->
+            <label for="avatar-file-input" class="absolute bottom-0 right-0 w-6 h-6 rounded-full bg-[#8C033B] active:bg-[#6B022D] text-white flex items-center justify-center shadow-md border-2 border-white cursor-pointer transition-transform active:scale-95" title="Change Photo">
+              <svg class="w-3 h-3 fill-current" viewBox="0 0 20 20"><path d="M4 5a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V7a2 2 0 00-2-2h-1.586a1 1 0 01-.707-.293l-1.121-1.121A2 2 0 0011.172 3H8.828a2 2 0 00-1.414.586L6.293 4.707A1 1 0 015.586 5H4zm6 9a3 3 0 100-6 3 3 0 000 6z"/></svg>
+            </label>
+            <input id="avatar-file-input" name="avatar" type="file" accept="image/*" class="hidden" onchange="previewAvatar(event)" />
+          </div>
+
+          <!-- Avatar Text Block -->
+          <div class="space-y-0.5 flex-1 min-w-0">
+            <div class="flex items-center gap-2 flex-wrap">
+              <span class="text-xs font-bold text-slate-900">Profile Photo</span>
+              <span class="text-[9px] bg-emerald-50 text-emerald-700 border border-emerald-200 font-semibold px-1.5 py-0.5 rounded-full">Active Identity</span>
+            </div>
+            <p class="text-[11px] text-slate-500 leading-snug hidden sm:block mt-0.5">
+              Official headshot shown across supervisory rosters, field visit audits, and verification ledgers.
+            </p>
+            <div class="flex items-center gap-2.5 pt-1">
+              <label for="avatar-file-input" class="text-xs font-bold text-[#8C033B] active:underline cursor-pointer">
+                Upload New
+              </label>
+              <span class="text-slate-300 text-xs">•</span>
+              <button type="button" onclick="removePhoto()" class="text-xs font-medium text-slate-400 active:text-rose-600 bg-transparent border-0 p-0 cursor-pointer">
+                Remove
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4. PERSONAL PARTICULARS (FORM INPUTS) -->
+        <div>
+          <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-3">Personal Particulars</span>
+          
+          <div class="grid grid-cols-1 gap-3.5">
+            <!-- Field 1: Formal Display Name -->
+            <div>
+              <label for="full_name" class="block text-xs font-semibold text-slate-700 mb-1">
+                Formal Full Name &amp; Honorific *
+              </label>
+              <input type="text" id="full_name" name="full_name" required
+                value="{{ user.full_name }}"
+                placeholder="e.g. Ing. Dr. Peter Owusu or Elliot Paakow Entsiwah"
+                class="profile-input-field h-11 px-3.5 text-xs text-slate-900 bg-white border border-slate-300 rounded-xl focus:outline-none focus:border-[#8C033B] focus:ring-1 focus:ring-[#8C033B] w-full shadow-xs">
+              <span class="block text-[10px] text-slate-400 mt-1 font-mono leading-tight">e.g. Ing. Dr. Peter Owusu or Elliot Paakow Entsiwah</span>
+            </div>
+
+            <!-- Field 2: Official Phone Number -->
+            <div>
+              <label for="phone" class="block text-xs font-semibold text-slate-700 mb-1">
+                Direct Telephone / WhatsApp Channel *
+              </label>
+              <input type="text" id="phone" name="phone"
+                value="{{ user.display_phone }}"
+                placeholder="024XXXXXXX or +233XXXXXXXXX"
+                class="profile-input-field h-11 px-3.5 text-xs font-mono text-slate-900 bg-white border border-slate-300 rounded-xl focus:outline-none focus:border-[#8C033B] focus:ring-1 focus:ring-[#8C033B] w-full shadow-xs">
+              <span class="block text-[10px] text-slate-400 mt-1 font-mono leading-tight">Required for field inspection and student placement coordination.</span>
+            </div>
+
+            <!-- Field 3: Office Location / Workstation -->
+            <div>
+              <label for="office_location" class="block text-xs font-semibold text-slate-700 mb-1">
+                Campus Office / Department Workstation
+              </label>
+              <input type="text" id="office_location" name="office_location"
+                value="{{ user.office_location or '' }}"
+                placeholder="e.g. Faculty of Technical Education, Block B, Room 204"
+                class="profile-input-field h-11 px-3.5 text-xs text-slate-900 bg-white border border-slate-300 rounded-xl focus:outline-none focus:border-[#8C033B] focus:ring-1 focus:ring-[#8C033B] w-full shadow-xs">
+            </div>
+          </div>
+        </div>
+
+        <!-- 5. INSTITUTIONAL CREDENTIAL GOVERNANCE (READ-ONLY CARD) -->
+        <div class="bg-slate-50 border border-slate-200 rounded-xl p-3.5 sm:p-4 space-y-3">
+          <div class="flex items-center justify-between gap-2">
+            <span class="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+              <span class="material-symbols-outlined text-[16px] text-slate-600">verified_user</span>
+              Institutional Credential Governance
+            </span>
+            <span class="text-[10px] font-mono text-slate-500 bg-white border border-slate-200 px-2 py-0.5 rounded shadow-xs flex items-center gap-1 font-semibold">
+              <span>🔒</span> Directorate Locked
+            </span>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2.5 text-xs">
+            <!-- Staff ID / Index -->
+            <div>
+              <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Staff ID / Index</span>
+              <span class="font-mono font-semibold text-slate-800 block text-xs mt-0.5">{{ user.display_staff_id }}</span>
+            </div>
+
+            <!-- Institutional Role -->
+            <div>
+              <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">System Role</span>
+              <span class="inline-block bg-slate-200 text-slate-800 text-[10px] font-bold px-2 py-0.5 rounded mt-0.5 uppercase">
+                {{ user.role.replace('_', ' ') }}
+              </span>
+            </div>
+
+            <!-- Assigned Faculty / Unit (Full Width across 2 cols) -->
+            <div class="col-span-2 pt-1 border-t border-slate-200/60">
+              <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Faculty / Placement Unit</span>
+              <span class="text-slate-700 text-xs block font-medium mt-0.5" title="{{ user.display_department }}">
+                {{ user.display_department }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Advisory Note -->
+          <span class="text-[10px] text-slate-400 italic leading-tight block pt-1">
+            Role elevations, staff IDs, and faculty allocations can only be altered by the Directorate System Administrator.
+          </span>
+        </div>
+
+        <!-- 6. DESKTOP BOTTOM ACTIONS (sm:flex hidden) -->
+        <div class="sm:flex hidden items-center justify-end gap-3 pt-4 border-t border-slate-100">
+          <a href="{{ request.referrer or url_for('main.index') }}" class="text-xs font-semibold text-slate-600 hover:text-slate-900 px-4 py-2 transition-colors">
+            Cancel
+          </a>
+          <button type="submit" class="h-9 px-5 bg-[#8C033B] hover:bg-[#6B022D] text-white text-xs font-bold rounded-lg shadow-sm transition-colors flex items-center gap-1.5 cursor-pointer border-0">
+            <span class="material-symbols-outlined text-[16px]">save</span>
+            Save Profile Changes
+          </button>
+        </div>
+
+      </div>
+
+      <!-- 6. MOBILE STICKY BOTTOM EXECUTION BAR (< 640px) -->
+      <div class="fixed bottom-0 left-0 right-0 z-30 p-3 bg-white/95 backdrop-blur-md border-t border-slate-200 shadow-xl flex items-center gap-2.5 sm:hidden">
+        <a href="{{ request.referrer or url_for('main.index') }}" class="h-11 px-4 text-xs font-semibold text-slate-600 active:text-slate-900 flex items-center justify-center">
+          Cancel
+        </a>
+        <button type="submit" class="flex-1 h-11 bg-[#8C033B] active:bg-[#6B022D] text-white text-xs font-bold rounded-xl shadow-sm flex items-center justify-center gap-2 transition-transform active:scale-98 border-0 cursor-pointer">
+          <span class="material-symbols-outlined text-[18px]">save</span>
+          Save Profile Changes
+        </button>
+      </div>
+
+    </form>
+  </div>
+
+  <!-- TAB PANE 2: SECURITY & PASSWORDS (EXACT SPEC COMPLIANT) -->
+  <div id="pane-security" class="{% if active_tab != 'security' %}hidden{% endif %}">
+    <div class="max-w-3xl bg-white border border-slate-200 rounded-xl p-4 sm:p-6 shadow-sm space-y-4">
+      <div>
+        <h3 class="text-sm font-bold text-slate-900">Change Password</h3>
+        <p class="text-xs text-slate-500 mt-0.5">Ensure your account uses a secure password with a minimum of 8 characters.</p>
+      </div>
+
+      <form action="{{ url_for('main.profile') }}" method="POST" class="space-y-4">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="form_action" value="change_password">
+
+        <div class="space-y-3.5 max-w-md">
+          <!-- Current Password -->
+          <div>
+            <label for="current_password" class="block text-xs font-semibold text-slate-700 mb-1">Current Password *</label>
+            <div class="relative">
+              <input type="password" id="current_password" name="current_password" required placeholder="••••••••••••"
+                class="profile-input-field h-11 pl-3.5 pr-10 bg-white border border-slate-300 rounded-xl text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-[#8C033B] focus:ring-1 focus:ring-[#8C033B] shadow-xs" />
+              <button type="button" onclick="togglePasswordVisibility('current_password', this)" aria-label="Show password" title="Show password"
+                class="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 p-1 inline-flex items-center justify-center bg-transparent border-0 cursor-pointer focus:outline-none transition-colors z-10">
+                <span class="icon-eye-open inline-flex items-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path>
+                    <circle cx="12" cy="12" r="3"></circle>
+                  </svg>
+                </span>
+                <span class="icon-eye-closed inline-flex items-center" style="display: none;">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"></path>
+                    <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"></path>
+                    <path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"></path>
+                    <line x1="2" x2="22" y1="2" y2="22"></line>
+                  </svg>
+                </span>
+              </button>
+            </div>
+          </div>
+
+          <!-- New Password -->
+          <div>
+            <label for="new_password" class="block text-xs font-semibold text-slate-700 mb-1">New Password *</label>
+            <div class="relative">
+              <input type="password" id="new_password" name="new_password" required minlength="6" placeholder="••••••••••••"
+                class="profile-input-field h-11 pl-3.5 pr-10 bg-white border border-slate-300 rounded-xl text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-[#8C033B] focus:ring-1 focus:ring-[#8C033B] shadow-xs" />
+              <button type="button" onclick="togglePasswordVisibility('new_password', this)" aria-label="Show password" title="Show password"
+                class="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 p-1 inline-flex items-center justify-center bg-transparent border-0 cursor-pointer focus:outline-none transition-colors z-10">
+                <span class="icon-eye-open inline-flex items-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path>
+                    <circle cx="12" cy="12" r="3"></circle>
+                  </svg>
+                </span>
+                <span class="icon-eye-closed inline-flex items-center" style="display: none;">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"></path>
+                    <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"></path>
+                    <path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"></path>
+                    <line x1="2" x2="22" y1="2" y2="22"></line>
+                  </svg>
+                </span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Confirm New Password -->
+          <div>
+            <label for="confirm_password" class="block text-xs font-semibold text-slate-700 mb-1">Confirm New Password *</label>
+            <div class="relative">
+              <input type="password" id="confirm_password" name="confirm_password" required minlength="6" placeholder="••••••••••••"
+                class="profile-input-field h-11 pl-3.5 pr-10 bg-white border border-slate-300 rounded-xl text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-[#8C033B] focus:ring-1 focus:ring-[#8C033B] shadow-xs" />
+              <button type="button" onclick="togglePasswordVisibility('confirm_password', this)" aria-label="Show password" title="Show password"
+                class="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 p-1 inline-flex items-center justify-center bg-transparent border-0 cursor-pointer focus:outline-none transition-colors z-10">
+                <span class="icon-eye-open inline-flex items-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path>
+                    <circle cx="12" cy="12" r="3"></circle>
+                  </svg>
+                </span>
+                <span class="icon-eye-closed inline-flex items-center" style="display: none;">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"></path>
+                    <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"></path>
+                    <path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"></path>
+                    <line x1="2" x2="22" y1="2" y2="22"></line>
+                  </svg>
+                </span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="pt-3 border-t border-slate-100 flex justify-end">
+          <button type="submit" class="w-full sm:w-auto h-11 sm:h-9 px-4 bg-slate-900 hover:bg-slate-800 active:bg-slate-950 text-white text-xs font-bold rounded-xl sm:rounded-lg shadow-sm transition-colors border-0 cursor-pointer flex items-center justify-center gap-1.5">
+            <span class="material-symbols-outlined text-[15px]">key</span>
+            Update Password
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- TAB PANE 3: SESSION & TELEMETRY -->
+  <div id="pane-session" class="{% if active_tab != 'session' %}hidden{% endif %}">
+    <div class="max-w-3xl bg-white border border-slate-200 rounded-xl p-6 shadow-sm space-y-5">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900">Session Security &amp; Telemetry</h3>
+          <p class="text-xs text-slate-500 mt-0.5">Active institutional authentication session and audit telemetry.</p>
+        </div>
+        <span class="material-symbols-outlined text-slate-400 text-xl">devices</span>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+        <div class="bg-slate-50 border border-slate-200 rounded-xl p-3.5 space-y-1">
+          <span class="text-[10px] uppercase font-bold text-slate-400 block">Active Account Username</span>
+          <span class="font-mono font-bold text-slate-900 text-xs">{{ user.username }}</span>
+        </div>
+        <div class="bg-slate-50 border border-slate-200 rounded-xl p-3.5 space-y-1">
+          <span class="text-[10px] uppercase font-bold text-slate-400 block">Registered Email</span>
+          <span class="font-mono font-bold text-slate-900 text-xs">{{ user.email }}</span>
+        </div>
+        <div class="bg-slate-50 border border-slate-200 rounded-xl p-3.5 space-y-1">
+          <span class="text-[10px] uppercase font-bold text-slate-400 block">Practicum Academic Session</span>
+          <span class="font-semibold text-emerald-700 flex items-center gap-1.5">
+            <span class="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            2024/2025 Active Cohort
+          </span>
+        </div>
+        <div class="bg-slate-50 border border-slate-200 rounded-xl p-3.5 space-y-1">
+          <span class="text-[10px] uppercase font-bold text-slate-400 block">Account Status</span>
+          <span class="font-semibold text-emerald-700">
+            {% if user.is_active %}Active &amp; Accredited{% else %}Suspended{% endif %}
+          </span>
+        </div>
+      </div>
+
+      <div class="pt-4 border-t border-slate-100 flex items-center justify-between">
+        <span class="text-[11px] text-slate-400 font-mono">U-IAP Directorate Audit Protocol v4.0</span>
+        <a href="{{ url_for('auth.logout') }}" class="text-xs font-semibold text-rose-600 hover:text-rose-800 hover:underline inline-flex items-center gap-1">
+          <span class="material-symbols-outlined text-[15px]">logout</span>
+          Sign Out of This Session
+        </a>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Interactive Client Scripts for Avatar Preview & Tab Navigation -->
+<script>
+  function switchTab(tabName) {
+    var panes = ['general', 'security', 'session'];
+    panes.forEach(function(name) {
+      var pane = document.getElementById('pane-' + name);
+      var btn = document.getElementById('tab-btn-' + name);
+      if (pane) {
+        if (name === tabName) {
+          pane.classList.remove('hidden');
+        } else {
+          pane.classList.add('hidden');
+        }
+      }
+      if (btn) {
+        if (name === tabName) {
+          btn.className = 'tab-strip-btn tab-active text-[#8C033B] border-b-2 border-[#8C033B] pb-2.5 flex-shrink-0 bg-transparent whitespace-nowrap outline-none';
+        } else {
+          btn.className = 'tab-strip-btn tab-inactive text-slate-500 hover:text-slate-900 pb-2.5 flex-shrink-0 bg-transparent transition-colors whitespace-nowrap outline-none';
+        }
+      }
+    });
+
+    try {
+      var url = new URL(window.location);
+      url.searchParams.set('tab', tabName);
+      window.history.replaceState({}, '', url);
+    } catch (e) {}
+  }
+
+  function previewAvatar(event) {
+    var file = event.target.files[0];
+    if (!file) return;
+
+    if (file.size > 2 * 1024 * 1024) {
+      alert("Selected photo exceeds 2MB maximum size limit. Please choose a smaller image.");
+      event.target.value = '';
+      return;
+    }
+
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      var img = document.getElementById('avatarImage');
+      var initials = document.getElementById('avatarInitials');
+      if (img) {
+        img.src = e.target.result;
+        img.classList.remove('hidden');
+      }
+      if (initials) {
+        initials.classList.add('hidden');
+      }
+      var removeFlag = document.getElementById('remove_avatar_input');
+      if (removeFlag) removeFlag.value = 'false';
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function removePhoto() {
+    var img = document.getElementById('avatarImage');
+    var initials = document.getElementById('avatarInitials');
+    var fileInput = document.getElementById('avatar-file-input');
+    var removeFlag = document.getElementById('remove_avatar_input');
+
+    if (fileInput) fileInput.value = '';
+    if (img) {
+      img.src = '';
+      img.classList.add('hidden');
+    }
+    if (initials) {
+      initials.classList.remove('hidden');
+    }
+    if (removeFlag) {
+      removeFlag.value = 'true';
+    }
+  }
+
+  function togglePasswordVisibility(inputId, btn) {
+    var input = document.getElementById(inputId);
+    if (!input) return;
+    var eyeOpen = btn.querySelector('.icon-eye-open');
+    var eyeClosed = btn.querySelector('.icon-eye-closed');
+    var matIcon = btn.querySelector('.material-symbols-outlined');
+
+    if (input.type === 'password') {
+      input.type = 'text';
+      btn.setAttribute('aria-label', 'Hide password');
+      btn.setAttribute('title', 'Hide password');
+      if (eyeOpen) eyeOpen.style.display = 'none';
+      if (eyeClosed) eyeClosed.style.display = 'inline-flex';
+      if (matIcon) matIcon.textContent = 'visibility_off';
+    } else {
+      input.type = 'password';
+      btn.setAttribute('aria-label', 'Show password');
+      btn.setAttribute('title', 'Show password');
+      if (eyeOpen) eyeOpen.style.display = 'inline-flex';
+      if (eyeClosed) eyeClosed.style.display = 'none';
+      if (matIcon) matIcon.textContent = 'visibility';
+    }
+  }
+</script>
+{% endblock %}

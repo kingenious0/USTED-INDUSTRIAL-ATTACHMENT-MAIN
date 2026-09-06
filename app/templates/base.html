@@ -12,6 +12,24 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/core@latest/dist/css/tabler.min.css">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      corePlugins: {
+        preflight: false,
+      },
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              maroon: '#8C033B',
+              wine: '#6B022D',
+            }
+          }
+        }
+      }
+    }
+  </script>
   {% block extra_head %}{% endblock %}
 </head>
 
@@ -134,6 +152,14 @@
           </a>
         {% endif %}
 
+        {% if current_user.is_authenticated %}
+          <div class="nav-section-label">ACCOUNT</div>
+          <a href="{{ url_for('main.profile') }}" class="sidebar-nav-item {% if request.endpoint == 'main.profile' %}active{% endif %}">
+            <span class="material-symbols-outlined nav-icon">manage_accounts</span>
+            <span>Profile &amp; Settings</span>
+          </a>
+        {% endif %}
+
       {% else %}
         <div class="nav-section-label">PORTAL</div>
         <a href="{{ url_for('main.index') }}" class="sidebar-nav-item {% if request.endpoint == 'main.index' %}active{% endif %}">
@@ -184,7 +210,11 @@
         {% if current_user.is_authenticated %}
           <div class="header-user-dropdown" style="position: relative;">
             <button type="button" class="header-user-lockup" id="userMenuBtn" onclick="toggleUserDropdown(event)" aria-expanded="false" aria-haspopup="true">
-              <span class="header-avatar">{{ current_user.full_name[:1] }}</span>
+              {% if current_user.avatar_url %}
+                <img src="{{ current_user.avatar_url }}" alt="{{ current_user.full_name }}" class="header-avatar" style="object-fit: cover; width: 28px; height: 28px; border-radius: 9999px; padding: 0;">
+              {% else %}
+                <span class="header-avatar">{{ current_user.initials }}</span>
+              {% endif %}
               <span class="header-user-name">{{ current_user.full_name }}</span>
               <span class="header-role-badge">{{ current_user.role.split('_')[0] }}</span>
               <span class="material-symbols-outlined header-chevron">expand_more</span>
@@ -198,6 +228,10 @@
                   <span>2024/2025 Active Session</span>
                 </div>
               </div>
+              <a href="{{ url_for('main.profile') }}" class="dropdown-logout-item" style="border-bottom: 1px solid #f1f5f9; color: #1e293b;">
+                <span class="material-symbols-outlined" style="font-size: 16px; color: #8C033B;">manage_accounts</span>
+                <span>Profile &amp; Settings</span>
+              </a>
               <a href="{{ url_for('auth.logout') }}" class="dropdown-logout-item">
                 <span class="material-symbols-outlined" style="font-size: 16px;">logout</span>
                 <span>Sign Out</span>

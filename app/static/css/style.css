@@ -1899,6 +1899,11 @@ textarea.form-control {
   padding-right: 2.75rem !important; /* far right clearance for eye toggle */
 }
 
+input::-ms-reveal,
+input::-ms-clear {
+  display: none !important;
+}
+
 .robin-eye-btn {
   position: absolute;
   right: 0.75rem;
@@ -1913,6 +1918,7 @@ textarea.form-control {
   justify-content: center;
   color: #64748B;
   transition: color 0.15s ease;
+  z-index: 5;
 }
 
 .robin-eye-btn:hover {

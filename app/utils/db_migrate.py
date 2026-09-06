@@ -37,6 +37,22 @@ def migrate_database_schema(app=None):
                         if col_name not in existing_cols:
                             logger.info(f"Adding missing column {col_name} to acceptance_records...")
                             conn.execute(text(f"ALTER TABLE acceptance_records ADD COLUMN {col_name} {col_type}"))
+
+                    # Inspect users columns
+                    result_users = conn.execute(text("PRAGMA table_info(users)"))
+                    existing_user_cols = {row[1] for row in result_users.fetchall()}
+                    user_cols_to_add = [
+                        ('phone', 'VARCHAR(50)'),
+                        ('office_location', 'VARCHAR(255)'),
+                        ('avatar_path', 'VARCHAR(255)'),
+                        ('staff_id', 'VARCHAR(50)'),
+                        ('department', 'VARCHAR(150)')
+                    ]
+                    for col_name, col_type in user_cols_to_add:
+                        if col_name not in existing_user_cols:
+                            logger.info(f"Adding missing column {col_name} to users...")
+                            conn.execute(text(f"ALTER TABLE users ADD COLUMN {col_name} {col_type}"))
+
                     conn.commit()
 
             elif dialect_name in ('postgresql', 'postgres'):
@@ -51,6 +67,17 @@ def migrate_database_schema(app=None):
                     ]
                     for col_name, col_type in columns_to_add:
                         conn.execute(text(f"ALTER TABLE acceptance_records ADD COLUMN IF NOT EXISTS {col_name} {col_type}"))
+
+                    user_cols_to_add = [
+                        ('phone', 'VARCHAR(50)'),
+                        ('office_location', 'VARCHAR(255)'),
+                        ('avatar_path', 'VARCHAR(255)'),
+                        ('staff_id', 'VARCHAR(50)'),
+                        ('department', 'VARCHAR(150)')
+                    ]
+                    for col_name, col_type in user_cols_to_add:
+                        conn.execute(text(f"ALTER TABLE users ADD COLUMN IF NOT EXISTS {col_name} {col_type}"))
+
                     conn.commit()
 
         except Exception as e:
