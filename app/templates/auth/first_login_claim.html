@@ -1,0 +1,295 @@
+{% extends "base.html" %}
+
+{% block title %}Activate Your Account — USTED Industrial Attachment Portal (U-IAP){% endblock %}
+
+{% block content %}
+<div style="min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 2.5rem 1rem; background: #F8FAFC;">
+  <div class="modern-card" style="width: 100%; max-width: 520px; padding: 2.5rem 2.25rem;">
+
+    <!-- Header -->
+    <div style="text-align: center; margin-bottom: 2rem;">
+      <div style="width: 64px; height: 64px; margin: 0 auto 1rem auto;">
+        <img src="{{ url_for('static', filename='img/crest.svg') }}" alt="USTED Crest" width="64" height="64"/>
+      </div>
+      <div style="display: inline-flex; align-items: center; gap: 6px; background: #FFF7ED; border: 1px solid #FED7AA; color: #9A3412; padding: 4px 12px; border-radius: 9999px; font-size: 11.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.75rem;">
+        <span class="material-symbols-outlined" style="font-size: 15px;">key</span>
+        <span>First-Time Account Activation</span>
+      </div>
+      <h1 style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 1.5rem; font-weight: 800; color: #0F172A; margin: 0 0 6px 0; letter-spacing: -0.015em;">
+        Claim Your Staff Account
+      </h1>
+      <p style="font-size: 0.88rem; color: #64748B; margin: 0 0 4px 0;">
+        You have been provisioned access to the USTED Industrial Attachment Portal.
+      </p>
+      <p style="font-size: 0.82rem; color: #94A3B8; margin: 0;">
+        Set a permanent password and register your contact number to activate your account.
+      </p>
+    </div>
+
+    <!-- Identity Card (Read-Only) -->
+    <div style="background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 10px; padding: 1rem 1.25rem; margin-bottom: 1.5rem;">
+      <div style="font-size: 0.72rem; font-weight: 700; color: #64748B; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.6rem; display: flex; align-items: center; gap: 5px;">
+        <span class="material-symbols-outlined" style="font-size: 13px;">badge</span>
+        Provisioned Identity
+      </div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; font-size: 0.85rem;">
+        <div>
+          <span style="color: #64748B; font-size: 0.78rem;">Full Name:</span><br/>
+          <strong style="color: #0F172A;">{{ current_user.display_title + ' ' if current_user.display_title }}{{ current_user.full_name }}</strong>
+        </div>
+        <div>
+          <span style="color: #64748B; font-size: 0.78rem;">Staff ID:</span><br/>
+          <code style="font-weight: 700; color: #7E002F; font-size: 0.9rem;">{{ current_user.staff_id or current_user.username }}</code>
+        </div>
+        <div style="grid-column: span 2; margin-top: 4px;">
+          <span style="color: #64748B; font-size: 0.78rem;">Institutional Role:</span><br/>
+          <span style="color: #334155; font-weight: 600;">{{ current_user.role.replace('_', ' ').title() }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div style="
+            background: {% if category == 'danger' %}#FEF2F2{% elif category == 'success' %}#F0FDF4{% else %}#EFF6FF{% endif %};
+            border: 1px solid {% if category == 'danger' %}#FECACA{% elif category == 'success' %}#A7F3D0{% else %}#BFDBFE{% endif %};
+            color: {% if category == 'danger' %}#991B1B{% elif category == 'success' %}#065F46{% else %}#1E40AF{% endif %};
+            border-radius: 8px; padding: 10px 14px; font-size: 0.84rem; font-weight: 500;
+            display: flex; align-items: flex-start; gap: 8px; margin-bottom: 1rem;
+          ">
+            <span class="material-symbols-outlined" style="font-size: 16px; margin-top: 1px; flex-shrink: 0;">
+              {% if category == 'danger' %}error{% elif category == 'success' %}check_circle{% else %}info{% endif %}
+            </span>
+            <span>{{ message }}</span>
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <!-- Claim Form -->
+    <form method="POST" action="{{ url_for('auth.first_login_claim') }}" id="claimForm" novalidate>
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+
+      <!-- Phone Number -->
+      <div class="form-group" style="margin-bottom: 1.25rem;">
+        <label for="phone" class="form-label">
+          Ghanaian Mobile Phone Number <span style="color: #BE123C;">*</span>
+        </label>
+        <span style="display: block; font-size: 0.78rem; color: #64748B; margin-bottom: 6px;">
+          Used for supervisory SMS alerts and zonal mapping (e.g. 0244123456 or +233244123456).
+        </span>
+        <input
+          type="tel"
+          id="phone"
+          name="phone"
+          class="form-control"
+          placeholder="e.g. 0244123456"
+          value="{{ request.form.get('phone', '') }}"
+          autocomplete="tel"
+          required
+        />
+      </div>
+
+      <!-- New Password -->
+      <div class="form-group" style="margin-bottom: 0.75rem;">
+        <label for="new_password" class="form-label">
+          New Permanent Password <span style="color: #BE123C;">*</span>
+        </label>
+        <div style="position: relative; width: 100%;">
+          <input
+            type="password"
+            id="new_password"
+            name="new_password"
+            class="form-control"
+            placeholder="Minimum 8 characters"
+            autocomplete="new-password"
+            required
+            oninput="evaluateStrength(this.value)"
+            style="padding-right: 42px;"
+          />
+          <button type="button" onclick="togglePasswordVisibility('new_password', this)" aria-label="Show password" title="Show password"
+            style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: transparent; border: none; cursor: pointer; color: #64748B; display: flex; align-items: center; justify-content: center; padding: 4px;">
+            <span class="icon-eye-open" style="display: flex; align-items: center;">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+            </span>
+            <span class="icon-eye-closed" style="display: none; align-items: center;">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"></path>
+                <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"></path>
+                <path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"></path>
+                <line x1="2" x2="22" y1="2" y2="22"></line>
+              </svg>
+            </span>
+          </button>
+        </div>
+
+        <!-- Strength Meter -->
+        <div style="margin-top: 8px;">
+          <div style="display: flex; gap: 4px; margin-bottom: 5px;">
+            <div id="bar1" style="height: 3px; flex: 1; border-radius: 9999px; background: #E2E8F0; transition: background 0.25s;"></div>
+            <div id="bar2" style="height: 3px; flex: 1; border-radius: 9999px; background: #E2E8F0; transition: background 0.25s;"></div>
+            <div id="bar3" style="height: 3px; flex: 1; border-radius: 9999px; background: #E2E8F0; transition: background 0.25s;"></div>
+            <div id="bar4" style="height: 3px; flex: 1; border-radius: 9999px; background: #E2E8F0; transition: background 0.25s;"></div>
+          </div>
+          <div id="strengthLabel" style="font-size: 0.75rem; color: #94A3B8;"></div>
+        </div>
+      </div>
+
+      <!-- Password Rules Checklist -->
+      <div style="background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 8px; padding: 0.75rem 1rem; margin-bottom: 1.25rem;">
+        <div style="font-size: 0.72rem; font-weight: 700; color: #64748B; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 6px;">Password requirements</div>
+        <ul style="list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 4px 12px;">
+          <li id="rule-len" style="display: flex; align-items: center; gap: 5px; font-size: 0.8rem; color: #94A3B8; transition: color 0.2s;">
+            <span class="rule-icon" style="font-size: 13px; font-weight: 900;">○</span> 8+ characters
+          </li>
+          <li id="rule-upper" style="display: flex; align-items: center; gap: 5px; font-size: 0.8rem; color: #94A3B8; transition: color 0.2s;">
+            <span class="rule-icon" style="font-size: 13px; font-weight: 900;">○</span> Uppercase letter
+          </li>
+          <li id="rule-num" style="display: flex; align-items: center; gap: 5px; font-size: 0.8rem; color: #94A3B8; transition: color 0.2s;">
+            <span class="rule-icon" style="font-size: 13px; font-weight: 900;">○</span> Number (0–9)
+          </li>
+          <li id="rule-special" style="display: flex; align-items: center; gap: 5px; font-size: 0.8rem; color: #94A3B8; transition: color 0.2s;">
+            <span class="rule-icon" style="font-size: 13px; font-weight: 900;">○</span> Special char
+          </li>
+        </ul>
+      </div>
+
+      <!-- Confirm Password -->
+      <div class="form-group" style="margin-bottom: 1.75rem;">
+        <label for="confirm_password" class="form-label">
+          Confirm New Password <span style="color: #BE123C;">*</span>
+        </label>
+        <div style="position: relative; width: 100%;">
+          <input
+            type="password"
+            id="confirm_password"
+            name="confirm_password"
+            class="form-control"
+            placeholder="••••••••••••"
+            autocomplete="new-password"
+            required
+            oninput="checkMatch()"
+            style="padding-right: 42px;"
+          />
+          <button type="button" onclick="togglePasswordVisibility('confirm_password', this)" aria-label="Show password" title="Show password"
+            style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: transparent; border: none; cursor: pointer; color: #64748B; display: flex; align-items: center; justify-content: center; padding: 4px;">
+            <span class="icon-eye-open" style="display: flex; align-items: center;">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+            </span>
+            <span class="icon-eye-closed" style="display: none; align-items: center;">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"></path>
+                <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"></path>
+                <path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"></path>
+                <line x1="2" x2="22" y1="2" y2="22"></line>
+              </svg>
+            </span>
+          </button>
+        </div>
+        <div id="matchMsg" style="font-size: 0.78rem; margin-top: 5px; min-height: 18px;"></div>
+      </div>
+
+      <!-- Submit -->
+      <button type="submit" id="submitBtn" class="btn-primary btn-block" style="min-height: 46px; font-size: 0.95rem; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 8px;">
+        <span class="material-symbols-outlined" style="font-size: 18px;">lock_open</span>
+        <span>Activate My Account</span>
+      </button>
+    </form>
+
+    <!-- Footer note -->
+    <div style="text-align: center; margin-top: 1.5rem; font-size: 0.78rem; color: #94A3B8; line-height: 1.5;">
+      By activating, you agree to the USTED Institutional ICT Acceptable Use Policy.<br/>
+      Credentials are strictly personal — do not share your password.
+    </div>
+
+  </div>
+</div>
+
+<script>
+// --- Password visibility toggle ---
+function togglePasswordVisibility(inputId, btn) {
+  const input = document.getElementById(inputId);
+  if (!input) return;
+  const eyeOpen   = btn.querySelector('.icon-eye-open');
+  const eyeClosed = btn.querySelector('.icon-eye-closed');
+  if (input.type === 'password') {
+    input.type = 'text';
+    btn.setAttribute('aria-label', 'Hide password');
+    btn.setAttribute('title', 'Hide password');
+    if (eyeOpen)   eyeOpen.style.display   = 'none';
+    if (eyeClosed) eyeClosed.style.display = 'flex';
+  } else {
+    input.type = 'password';
+    btn.setAttribute('aria-label', 'Show password');
+    btn.setAttribute('title', 'Show password');
+    if (eyeOpen)   eyeOpen.style.display   = 'flex';
+    if (eyeClosed) eyeClosed.style.display = 'none';
+  }
+}
+
+// --- Live password strength + rules checklist ---
+function evaluateStrength(value) {
+  const rules = {
+    len:     value.length >= 8,
+    upper:   /[A-Z]/.test(value),
+    num:     /[0-9]/.test(value),
+    special: /[^A-Za-z0-9]/.test(value)
+  };
+
+  // Update rule indicators
+  Object.entries(rules).forEach(([key, pass]) => {
+    const el = document.getElementById('rule-' + key);
+    if (!el) return;
+    const icon = el.querySelector('.rule-icon');
+    el.style.color    = pass ? '#16A34A' : '#94A3B8';
+    icon.textContent  = pass ? '✓' : '○';
+    icon.style.color  = pass ? '#16A34A' : '#94A3B8';
+  });
+
+  // Strength score
+  const score = Object.values(rules).filter(Boolean).length;
+  const bars  = [document.getElementById('bar1'), document.getElementById('bar2'), document.getElementById('bar3'), document.getElementById('bar4')];
+  const colors = { 1: '#EF4444', 2: '#F97316', 3: '#EAB308', 4: '#16A34A' };
+  const labels = { 0: '', 1: 'Weak', 2: 'Fair', 3: 'Good', 4: 'Strong' };
+  const labelColors = { 1: '#EF4444', 2: '#F97316', 3: '#CA8A04', 4: '#16A34A' };
+  const activeColor = colors[score] || '#E2E8F0';
+
+  bars.forEach((bar, i) => {
+    bar.style.background = i < score ? activeColor : '#E2E8F0';
+  });
+
+  const lbl = document.getElementById('strengthLabel');
+  if (value.length > 0 && score > 0) {
+    lbl.textContent = labels[score];
+    lbl.style.color = labelColors[score];
+    lbl.style.fontWeight = '600';
+  } else {
+    lbl.textContent = '';
+  }
+
+  // Re-check match if confirm field has value
+  checkMatch();
+}
+
+// --- Live match check ---
+function checkMatch() {
+  const pw  = document.getElementById('new_password').value;
+  const cpw = document.getElementById('confirm_password').value;
+  const msg = document.getElementById('matchMsg');
+  if (!cpw) { msg.textContent = ''; return; }
+  if (pw === cpw) {
+    msg.innerHTML = '<span style="color:#16A34A; font-weight:600;">✓ Passwords match</span>';
+  } else {
+    msg.innerHTML = '<span style="color:#EF4444; font-weight:600;">✗ Passwords do not match</span>';
+  }
+}
+</script>
+{% endblock %}

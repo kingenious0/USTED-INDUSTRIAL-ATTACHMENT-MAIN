@@ -10,6 +10,10 @@
     <p class="page-subtitle">Real-time system telemetry, immutable institutional audit events, and operational governance</p>
   </div>
   <div style="display: flex; gap: 0.6rem; flex-wrap: wrap;">
+    <a href="{{ url_for('admin.staff_directory') }}" class="btn btn-secondary btn-sm" style="display: inline-flex; align-items: center; gap: 6px;">
+      <span class="material-symbols-outlined" style="font-size: 16px;">manage_accounts</span>
+      <span>Staff Directory</span>
+    </a>
     <a href="{{ url_for('admin.audit_logs') }}" class="btn btn-secondary btn-sm" style="display: inline-flex; align-items: center; gap: 6px;">
       <span class="material-symbols-outlined" style="font-size: 16px;">receipt_long</span>
       <span>Full Audit Logs</span>

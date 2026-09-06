@@ -1,0 +1,501 @@
+{% extends "base.html" %}
+
+{% block title %}Staff Directory & Provisioning Console — U-IAP{% endblock %}
+{% block page_breadcrumb %}Administration / Staff Directory{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Staff Directory &amp; Provisioning Console</h1>
+    <p class="page-subtitle">Manage institutional portal accounts, provision new staff, and monitor account status</p>
+  </div>
+  <div style="display: flex; gap: 0.6rem; flex-wrap: wrap; align-items: center;">
+    <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary btn-sm" style="display: inline-flex; align-items: center; gap: 6px;">
+      <span class="material-symbols-outlined" style="font-size: 16px;">arrow_back</span>
+      <span>Dashboard</span>
+    </a>
+    <button id="openProvisionModal" class="btn btn-primary btn-sm" style="display: inline-flex; align-items: center; gap: 6px;">
+      <span class="material-symbols-outlined" style="font-size: 16px;">person_add</span>
+      <span>Provision New Staff</span>
+    </button>
+  </div>
+</div>
+
+<!-- KPI Strip -->
+<div class="metrics-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
+  <div class="modern-kpi-card" style="border-top: 3px solid var(--color-primary);">
+    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+      <div>
+        <div class="kpi-label">Total Staff Accounts</div>
+        <div class="kpi-value">{{ total_staff }}</div>
+        <div class="kpi-sub">All provisioned non-student users</div>
+      </div>
+      <div style="width: 40px; height: 40px; border-radius: 8px; background: var(--color-surface); display: flex; align-items: center; justify-content: center; color: var(--color-primary);">
+        <span class="material-symbols-outlined" style="font-size: 22px;">group</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="modern-kpi-card" style="border-top: 3px solid var(--color-accent-gold);">
+    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+      <div>
+        <div class="kpi-label">Pending First-Login Claim</div>
+        <div class="kpi-value">{{ pending_claim }}</div>
+        <div class="kpi-sub">Provisioned but not yet claimed</div>
+      </div>
+      <div style="width: 40px; height: 40px; border-radius: 8px; background: var(--color-surface); display: flex; align-items: center; justify-content: center; color: var(--color-accent-gold);">
+        <span class="material-symbols-outlined" style="font-size: 22px;">hourglass_empty</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="modern-kpi-card" style="border-top: 3px solid var(--color-danger);">
+    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+      <div>
+        <div class="kpi-label">Suspended Accounts</div>
+        <div class="kpi-value">{{ suspended }}</div>
+        <div class="kpi-sub">Currently access-revoked staff</div>
+      </div>
+      <div style="width: 40px; height: 40px; border-radius: 8px; background: var(--color-surface); display: flex; align-items: center; justify-content: center; color: var(--color-danger);">
+        <span class="material-symbols-outlined" style="font-size: 22px;">block</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Search & Filter Bar -->
+<div class="modern-card" style="margin-bottom: 1.2rem;">
+  <form method="get" action="{{ url_for('admin.staff_directory') }}" style="display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: flex-end;">
+    <div style="flex: 1 1 220px;">
+      <label style="font-size: 0.78rem; font-weight: 600; color: var(--color-text-muted); display: block; margin-bottom: 4px;">Search</label>
+      <div style="position: relative;">
+        <span class="material-symbols-outlined" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); font-size: 18px; color: var(--color-text-muted); pointer-events: none;">search</span>
+        <input type="text" name="q" value="{{ search }}" placeholder="Name, email, or staff ID…"
+               style="width: 100%; padding: 0.5rem 0.75rem 0.5rem 2.2rem; border: 1px solid var(--color-border); border-radius: 8px; font-size: 0.9rem; background: var(--color-surface); color: var(--color-text-main);">
+      </div>
+    </div>
+    <div style="flex: 0 1 180px;">
+      <label style="font-size: 0.78rem; font-weight: 600; color: var(--color-text-muted); display: block; margin-bottom: 4px;">Role</label>
+      <select name="role" style="width: 100%; padding: 0.5rem 0.75rem; border: 1px solid var(--color-border); border-radius: 8px; font-size: 0.9rem; background: var(--color-surface); color: var(--color-text-main);">
+        <option value="">All Roles</option>
+        {% for r in staff_roles %}
+          <option value="{{ r }}" {% if role_filter == r %}selected{% endif %}>{{ role_labels.get(r, r) }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div style="flex: 0 1 160px;">
+      <label style="font-size: 0.78rem; font-weight: 600; color: var(--color-text-muted); display: block; margin-bottom: 4px;">Status</label>
+      <select name="status" style="width: 100%; padding: 0.5rem 0.75rem; border: 1px solid var(--color-border); border-radius: 8px; font-size: 0.9rem; background: var(--color-surface); color: var(--color-text-main);">
+        <option value="">All Statuses</option>
+        <option value="active" {% if status_filter == 'active' %}selected{% endif %}>Active</option>
+        <option value="pending_claim" {% if status_filter == 'pending_claim' %}selected{% endif %}>Pending Claim</option>
+        <option value="suspended" {% if status_filter == 'suspended' %}selected{% endif %}>Suspended</option>
+      </select>
+    </div>
+    <div style="display: flex; gap: 0.5rem; align-items: flex-end; padding-bottom: 0;">
+      <button type="submit" class="btn btn-primary btn-sm" style="height: 38px; padding: 0 1rem;">
+        <span class="material-symbols-outlined" style="font-size: 16px; vertical-align: middle;">filter_list</span>
+        Filter
+      </button>
+      {% if search or role_filter or status_filter %}
+        <a href="{{ url_for('admin.staff_directory') }}" class="btn btn-secondary btn-sm" style="height: 38px; padding: 0 1rem; display: inline-flex; align-items: center;">Clear</a>
+      {% endif %}
+    </div>
+  </form>
+</div>
+
+<!-- Staff Table -->
+<div class="modern-card">
+  <div class="table-responsive">
+    <table class="table modern-table" style="margin-bottom: 0;">
+      <thead>
+        <tr>
+          <th style="min-width: 220px;">Staff Member</th>
+          <th>Staff ID</th>
+          <th>Role</th>
+          <th>Status</th>
+          <th>Department</th>
+          <th>Provisioned</th>
+          <th style="text-align: right;">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for user in staff %}
+          <tr>
+            <!-- Avatar + Name -->
+            <td>
+              <div style="display: flex; align-items: center; gap: 0.75rem;">
+                {% if user.avatar_url %}
+                  <img src="{{ user.avatar_url }}" alt="{{ user.initials }}"
+                       style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover; flex-shrink: 0;">
+                {% else %}
+                  <div style="width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, var(--color-primary), var(--color-accent-gold)); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.8rem; color: #fff; flex-shrink: 0; letter-spacing: 0.02em;">
+                    {{ user.initials }}
+                  </div>
+                {% endif %}
+                <div>
+                  <div style="font-weight: 600; font-size: 0.9rem; color: var(--color-text-main);">
+                    {{ user.display_name }}
+                  </div>
+                  <div style="font-size: 0.78rem; color: var(--color-text-muted);">{{ user.email }}</div>
+                </div>
+              </div>
+            </td>
+            <!-- Staff ID -->
+            <td>
+              <code style="font-size: 0.8rem; color: var(--color-text-muted); font-family: var(--font-mono, monospace);">
+                {{ user.display_staff_id }}
+              </code>
+            </td>
+            <!-- Role -->
+            <td>
+              <span class="badge {% if user.role in ['liaison_head', 'system_admin'] %}badge-danger{% elif user.role == 'liaison_officer' %}badge-primary{% elif user.role == 'academic_supervisor' %}badge-success{% else %}badge-secondary{% endif %}" style="font-size: 0.72rem;">
+                {{ user.role_label }}
+              </span>
+            </td>
+            <!-- Status -->
+            <td>
+              {% if user.account_status == 'active' %}
+                <span style="display: inline-flex; align-items: center; gap: 4px; font-size: 0.8rem; color: var(--color-success); font-weight: 600;">
+                  <span class="material-symbols-outlined" style="font-size: 14px;">check_circle</span> Active
+                </span>
+              {% elif user.account_status == 'pending_claim' %}
+                <span style="display: inline-flex; align-items: center; gap: 4px; font-size: 0.8rem; color: var(--color-accent-gold); font-weight: 600;">
+                  <span class="material-symbols-outlined" style="font-size: 14px;">hourglass_empty</span> Pending Claim
+                </span>
+              {% else %}
+                <span style="display: inline-flex; align-items: center; gap: 4px; font-size: 0.8rem; color: var(--color-danger); font-weight: 600;">
+                  <span class="material-symbols-outlined" style="font-size: 14px;">block</span> Suspended
+                </span>
+              {% endif %}
+            </td>
+            <!-- Department -->
+            <td>
+              <span style="font-size: 0.84rem; color: var(--color-text-muted);">{{ user.display_department }}</span>
+            </td>
+            <!-- Provisioned date -->
+            <td>
+              <span style="font-size: 0.8rem; color: var(--color-text-muted); font-family: var(--font-mono, monospace);">
+                {% if user.provisioned_at %}
+                  {{ user.provisioned_at.strftime('%Y-%m-%d') }}
+                {% else %}
+                  <span style="color: #CBD5E1;">—</span>
+                {% endif %}
+              </span>
+            </td>
+            <!-- Actions -->
+            <td style="text-align: right;">
+              <div style="display: flex; gap: 0.4rem; justify-content: flex-end; flex-wrap: wrap;">
+                <!-- Reset password -->
+                <button
+                  class="btn btn-secondary btn-sm reset-btn"
+                  data-user-id="{{ user.id }}"
+                  data-user-name="{{ user.display_name }}"
+                  style="font-size: 0.78rem; padding: 4px 10px; display: inline-flex; align-items: center; gap: 4px;"
+                  title="Reset temporary password">
+                  <span class="material-symbols-outlined" style="font-size: 14px;">lock_reset</span>
+                  Reset
+                </button>
+                <!-- Suspend / Activate -->
+                <form method="POST" action="{{ url_for('admin.suspend_staff', user_id=user.id) }}"
+                      onsubmit="return confirm('{{ 'Reactivate' if user.account_status == 'suspended' else 'Suspend' }} account for {{ user.full_name }}?');"
+                      style="display: inline;">
+                  <button type="submit"
+                    class="btn btn-sm {% if user.account_status == 'suspended' %}btn-success{% else %}btn-danger{% endif %}"
+                    style="font-size: 0.78rem; padding: 4px 10px; display: inline-flex; align-items: center; gap: 4px;">
+                    <span class="material-symbols-outlined" style="font-size: 14px;">
+                      {% if user.account_status == 'suspended' %}check_circle{% else %}block{% endif %}
+                    </span>
+                    {{ 'Activate' if user.account_status == 'suspended' else 'Suspend' }}
+                  </button>
+                </form>
+              </div>
+            </td>
+          </tr>
+        {% else %}
+          <tr>
+            <td colspan="7" style="text-align: center; padding: 3rem 1rem; color: var(--color-text-muted);">
+              <span class="material-symbols-outlined" style="font-size: 40px; color: #CBD5E1; display: block; margin-bottom: 0.75rem;">manage_accounts</span>
+              <p style="margin: 0; font-size: 0.9rem;">No staff accounts found matching your filters.</p>
+              <a href="{{ url_for('admin.staff_directory') }}" style="font-size: 0.85rem; color: var(--color-primary); margin-top: 0.5rem; display: inline-block;">Clear filters</a>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+
+<!-- ============================================================ -->
+<!--  PROVISION MODAL                                             -->
+<!-- ============================================================ -->
+<div id="provisionModal" style="display: none; position: fixed; inset: 0; z-index: 9000; background: rgba(0,0,0,0.55); backdrop-filter: blur(3px); align-items: center; justify-content: center;">
+  <div style="background: var(--color-surface-elevated, #fff); border-radius: 16px; padding: 2rem; width: 100%; max-width: 520px; margin: 1rem; box-shadow: 0 24px 60px rgba(0,0,0,0.22); animation: slideUp 0.22s ease;">
+    <!-- Header -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+      <div>
+        <h2 style="font-size: 1.15rem; font-weight: 700; margin: 0; color: var(--color-text-main);">Provision New Staff Account</h2>
+        <p style="font-size: 0.8rem; color: var(--color-text-muted); margin: 4px 0 0 0;">A temporary credential will be generated — share it securely with the staff member.</p>
+      </div>
+      <button id="closeProvisionModal" style="background: none; border: none; cursor: pointer; color: var(--color-text-muted); padding: 4px;" title="Close">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+
+    <!-- Form -->
+    <form id="provisionForm" autocomplete="off">
+      <div style="display: flex; flex-direction: column; gap: 1rem;">
+
+        <div>
+          <label style="font-size: 0.8rem; font-weight: 600; color: var(--color-text-muted); display: block; margin-bottom: 5px;">Full Name <span style="color: var(--color-danger);">*</span></label>
+          <input type="text" name="full_name" required placeholder="e.g. Kwame Asante-Agyeman"
+                 style="width: 100%; padding: 0.55rem 0.85rem; border: 1px solid var(--color-border); border-radius: 8px; font-size: 0.9rem; background: var(--color-surface); color: var(--color-text-main); box-sizing: border-box;">
+        </div>
+
+        <div style="display: flex; gap: 0.75rem;">
+          <div style="flex: 0 1 160px;">
+            <label style="font-size: 0.8rem; font-weight: 600; color: var(--color-text-muted); display: block; margin-bottom: 5px;">Title</label>
+            <select name="display_title" style="width: 100%; padding: 0.55rem 0.75rem; border: 1px solid var(--color-border); border-radius: 8px; font-size: 0.9rem; background: var(--color-surface); color: var(--color-text-main);">
+              <option value="">None</option>
+              <option>Mr.</option>
+              <option>Mrs.</option>
+              <option>Ms.</option>
+              <option>Miss</option>
+              <option>Dr.</option>
+              <option>Prof.</option>
+              <option>Ing. Dr.</option>
+              <option>Rev.</option>
+            </select>
+          </div>
+          <div style="flex: 1;">
+            <label style="font-size: 0.8rem; font-weight: 600; color: var(--color-text-muted); display: block; margin-bottom: 5px;">Staff ID</label>
+            <input type="text" name="staff_id" placeholder="e.g. USTED-LIA-0012"
+                   style="width: 100%; padding: 0.55rem 0.85rem; border: 1px solid var(--color-border); border-radius: 8px; font-size: 0.9rem; background: var(--color-surface); color: var(--color-text-main); box-sizing: border-box;">
+          </div>
+        </div>
+
+        <div>
+          <label style="font-size: 0.8rem; font-weight: 600; color: var(--color-text-muted); display: block; margin-bottom: 5px;">Institutional Email <span style="color: var(--color-danger);">*</span></label>
+          <input type="email" name="email" required placeholder="officer@usted.edu.gh"
+                 style="width: 100%; padding: 0.55rem 0.85rem; border: 1px solid var(--color-border); border-radius: 8px; font-size: 0.9rem; background: var(--color-surface); color: var(--color-text-main); box-sizing: border-box;">
+          <span style="font-size: 0.74rem; color: var(--color-text-muted); margin-top: 3px; display: block;">Must be @usted.edu.gh</span>
+        </div>
+
+        <div style="display: flex; gap: 0.75rem;">
+          <div style="flex: 1;">
+            <label style="font-size: 0.8rem; font-weight: 600; color: var(--color-text-muted); display: block; margin-bottom: 5px;">Role <span style="color: var(--color-danger);">*</span></label>
+            <select name="role" required style="width: 100%; padding: 0.55rem 0.75rem; border: 1px solid var(--color-border); border-radius: 8px; font-size: 0.9rem; background: var(--color-surface); color: var(--color-text-main);">
+              <option value="">Select role…</option>
+              {% for r in staff_roles %}
+                <option value="{{ r }}">{{ role_labels.get(r, r) }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div style="flex: 1;">
+            <label style="font-size: 0.8rem; font-weight: 600; color: var(--color-text-muted); display: block; margin-bottom: 5px;">Department</label>
+            <input type="text" name="department" placeholder="e.g. IT Education"
+                   style="width: 100%; padding: 0.55rem 0.85rem; border: 1px solid var(--color-border); border-radius: 8px; font-size: 0.9rem; background: var(--color-surface); color: var(--color-text-main); box-sizing: border-box;">
+          </div>
+        </div>
+
+        <!-- Error container -->
+        <div id="provisionErrors" style="display: none; background: #FEF2F2; border: 1px solid #FECACA; border-radius: 8px; padding: 0.75rem; font-size: 0.84rem; color: #DC2626;"></div>
+
+        <button type="submit" id="provisionSubmitBtn" class="btn btn-primary" style="width: 100%; justify-content: center; gap: 8px; display: flex; align-items: center;">
+          <span class="material-symbols-outlined" style="font-size: 18px;">person_add</span>
+          Generate &amp; Create Account
+        </button>
+      </div>
+    </form>
+
+    <!-- Success panel (hidden until provision succeeds) -->
+    <div id="provisionSuccess" style="display: none; margin-top: 1.25rem; border: 1px solid var(--color-success); border-radius: 12px; padding: 1.2rem; background: #F0FDF4; animation: fadeIn 0.3s ease;">
+      <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 0.75rem;">
+        <span class="material-symbols-outlined" style="color: var(--color-success); font-size: 22px;">check_circle</span>
+        <strong style="color: #166534; font-size: 0.95rem;">Account Provisioned Successfully</strong>
+      </div>
+      <div id="provisionSuccessDetails" style="font-size: 0.85rem; color: #166534; margin-bottom: 1rem;"></div>
+      <div style="background: #DCFCE7; border-radius: 8px; padding: 0.85rem; display: flex; align-items: center; justify-content: space-between;">
+        <div>
+          <div style="font-size: 0.72rem; font-weight: 700; color: #166534; letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 3px;">Temporary Password</div>
+          <code id="tempPasswordDisplay" style="font-size: 1.1rem; font-weight: 700; color: #14532D; font-family: var(--font-mono, monospace); letter-spacing: 0.08em;"></code>
+        </div>
+        <button id="copyTempPwBtn" onclick="copyTempPassword()" title="Copy to clipboard"
+                style="background: #166534; color: #fff; border: none; border-radius: 8px; padding: 8px 12px; cursor: pointer; display: flex; align-items: center; gap: 5px; font-size: 0.8rem;">
+          <span class="material-symbols-outlined" style="font-size: 15px;">content_copy</span>
+          Copy
+        </button>
+      </div>
+      <p style="font-size: 0.76rem; color: #166534; margin: 0.6rem 0 0 0; display: flex; align-items: center; gap: 5px;">
+        <span class="material-symbols-outlined" style="font-size: 14px;">warning</span>
+        Share this password securely. It will not be shown again after closing this dialog.
+      </p>
+    </div>
+  </div>
+</div>
+
+
+<!-- ============================================================ -->
+<!--  RESET PASSWORD MODAL                                        -->
+<!-- ============================================================ -->
+<div id="resetModal" style="display: none; position: fixed; inset: 0; z-index: 9000; background: rgba(0,0,0,0.55); backdrop-filter: blur(3px); align-items: center; justify-content: center;">
+  <div style="background: var(--color-surface-elevated, #fff); border-radius: 16px; padding: 2rem; width: 100%; max-width: 440px; margin: 1rem; box-shadow: 0 24px 60px rgba(0,0,0,0.22); animation: slideUp 0.22s ease;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+      <h2 style="font-size: 1.1rem; font-weight: 700; margin: 0; color: var(--color-text-main);">Reset Account Password</h2>
+      <button id="closeResetModal" style="background: none; border: none; cursor: pointer; color: var(--color-text-muted);">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+    <p id="resetModalSubtext" style="font-size: 0.85rem; color: var(--color-text-muted); margin: 0 0 1.25rem 0;"></p>
+
+    <!-- New temp pw display -->
+    <div id="resetSuccessPanel" style="display: none;">
+      <div style="background: #F0FDF4; border: 1px solid var(--color-success); border-radius: 12px; padding: 1rem; margin-bottom: 1rem;">
+        <div style="font-size: 0.72rem; font-weight: 700; color: #166534; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 5px;">New Temporary Password</div>
+        <div style="display: flex; align-items: center; justify-content: space-between;">
+          <code id="resetTempPwDisplay" style="font-size: 1.1rem; font-weight: 700; color: #14532D; font-family: var(--font-mono, monospace); letter-spacing: 0.08em;"></code>
+          <button onclick="copyResetPassword()" style="background: #166534; color: #fff; border: none; border-radius: 8px; padding: 6px 10px; cursor: pointer; display: flex; align-items: center; gap: 4px; font-size: 0.78rem;">
+            <span class="material-symbols-outlined" style="font-size: 14px;">content_copy</span> Copy
+          </button>
+        </div>
+      </div>
+      <p style="font-size: 0.76rem; color: var(--color-text-muted);">The account has been flagged for first-login claim. Share this credential securely.</p>
+    </div>
+    <div id="resetActionPanel" style="display: flex; gap: 0.75rem;">
+      <button id="confirmResetBtn" class="btn btn-primary" style="flex: 1; justify-content: center;">
+        <span class="material-symbols-outlined" style="font-size: 16px; vertical-align: middle;">lock_reset</span>
+        Confirm Reset
+      </button>
+      <button id="closeResetModal2" class="btn btn-secondary" style="flex: 0 0 auto;">Cancel</button>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<style>
+  @keyframes slideUp {
+    from { transform: translateY(24px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  #provisionModal[style*="flex"] { display: flex !important; }
+  #resetModal[style*="flex"] { display: flex !important; }
+</style>
+<script>
+  // ── Provision Modal ─────────────────────────────────────────
+  const provisionModal    = document.getElementById('provisionModal');
+  const openProvisionBtn  = document.getElementById('openProvisionModal');
+  const closeProvisionBtn = document.getElementById('closeProvisionModal');
+  const provisionForm     = document.getElementById('provisionForm');
+  const provisionErrors   = document.getElementById('provisionErrors');
+  const provisionSuccess  = document.getElementById('provisionSuccess');
+  const provisionSubmitBtn= document.getElementById('provisionSubmitBtn');
+
+  openProvisionBtn.addEventListener('click', () => {
+    provisionModal.style.display = 'flex';
+    provisionErrors.style.display = 'none';
+    provisionSuccess.style.display = 'none';
+    provisionForm.reset();
+    provisionForm.style.display = '';
+  });
+  closeProvisionBtn.addEventListener('click', () => {
+    provisionModal.style.display = 'none';
+    location.reload();
+  });
+  provisionModal.addEventListener('click', (e) => {
+    if (e.target === provisionModal) {
+      provisionModal.style.display = 'none';
+      location.reload();
+    }
+  });
+
+  provisionForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    provisionErrors.style.display = 'none';
+    provisionSubmitBtn.disabled = true;
+    provisionSubmitBtn.textContent = 'Creating…';
+
+    const fd = new FormData(provisionForm);
+    try {
+      const resp = await fetch('{{ url_for("admin.provision_staff") }}', { method: 'POST', body: fd });
+      const data = await resp.json();
+      if (data.success) {
+        provisionForm.style.display = 'none';
+        document.getElementById('tempPasswordDisplay').textContent = data.temp_password;
+        document.getElementById('provisionSuccessDetails').innerHTML =
+          `<strong>${data.user.full_name}</strong> (${data.user.email}) provisioned as <em>${data.user.role}</em>.` +
+          `<br>Username: <code style="font-family:monospace;">${data.user.username}</code>`;
+        provisionSuccess.style.display = '';
+      } else {
+        provisionErrors.innerHTML = data.errors.map(e => `<div>• ${e}</div>`).join('');
+        provisionErrors.style.display = '';
+      }
+    } catch {
+      provisionErrors.innerHTML = '<div>• A server error occurred. Please try again.</div>';
+      provisionErrors.style.display = '';
+    }
+    provisionSubmitBtn.disabled = false;
+    provisionSubmitBtn.innerHTML = '<span class="material-symbols-outlined" style="font-size:18px;">person_add</span> Generate &amp; Create Account';
+  });
+
+  function copyTempPassword() {
+    const pw = document.getElementById('tempPasswordDisplay').textContent;
+    navigator.clipboard.writeText(pw).then(() => {
+      const btn = document.getElementById('copyTempPwBtn');
+      btn.innerHTML = '<span class="material-symbols-outlined" style="font-size:15px;">check</span> Copied!';
+      setTimeout(() => { btn.innerHTML = '<span class="material-symbols-outlined" style="font-size:15px;">content_copy</span> Copy'; }, 1800);
+    });
+  }
+
+  // ── Reset Password Modal ──────────────────────────────────────
+  const resetModal      = document.getElementById('resetModal');
+  const resetModalSub   = document.getElementById('resetModalSubtext');
+  const resetSuccessPanel = document.getElementById('resetSuccessPanel');
+  const resetActionPanel  = document.getElementById('resetActionPanel');
+  const confirmResetBtn   = document.getElementById('confirmResetBtn');
+  let   currentResetId    = null;
+
+  document.querySelectorAll('.reset-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      currentResetId = btn.dataset.userId;
+      const name     = btn.dataset.userName;
+      resetModalSub.textContent = `A new temporary password will be generated for ${name}. They will be required to claim their account again on next login.`;
+      resetSuccessPanel.style.display = 'none';
+      resetActionPanel.style.display = 'flex';
+      resetModal.style.display = 'flex';
+    });
+  });
+
+  document.getElementById('closeResetModal').addEventListener('click',  () => { resetModal.style.display = 'none'; });
+  document.getElementById('closeResetModal2').addEventListener('click', () => { resetModal.style.display = 'none'; });
+  resetModal.addEventListener('click', (e) => { if (e.target === resetModal) resetModal.style.display = 'none'; });
+
+  confirmResetBtn.addEventListener('click', async () => {
+    if (!currentResetId) return;
+    confirmResetBtn.disabled = true;
+    confirmResetBtn.textContent = 'Resetting…';
+
+    const resp = await fetch(`/admin/staff/${currentResetId}/reset`, { method: 'POST' });
+    const data = await resp.json();
+    if (data.success) {
+      document.getElementById('resetTempPwDisplay').textContent = data.temp_password;
+      resetSuccessPanel.style.display = '';
+      resetActionPanel.style.display = 'none';
+    }
+    confirmResetBtn.disabled = false;
+    confirmResetBtn.innerHTML = '<span class="material-symbols-outlined" style="font-size:16px;vertical-align:middle;">lock_reset</span> Confirm Reset';
+  });
+
+  function copyResetPassword() {
+    const pw = document.getElementById('resetTempPwDisplay').textContent;
+    navigator.clipboard.writeText(pw);
+  }
+</script>
+{% endblock %}

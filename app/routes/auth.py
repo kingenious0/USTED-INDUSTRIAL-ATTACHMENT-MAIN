@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, redirect, url_for, flash, request, current_app
 from flask_login import login_user, logout_user, login_required, current_user
 from app.extensions import db
-from app.models.user import User, UserRole
+from app.models.user import User, UserRole, AccountStatus
 from app.models.student_master import StudentMaster
 from app.models.audit import AuditAction
 from app.services.audit_service import AuditService
@@ -207,6 +207,14 @@ def login():
                 details={'username': user.username, 'role': user.role}
             )
 
+            # --- First-login intercept: redirect provisioned staff to claim screen ---
+            if user.is_first_login:
+                flash(
+                    f'Welcome, {user.full_name}! Please set your permanent password to activate your account.',
+                    'info'
+                )
+                return redirect(url_for('auth.first_login_claim'))
+
             flash(f'Welcome, {user.full_name}!', 'success')
             next_page = request.args.get('next')
             if next_page and next_page.startswith('/'):
@@ -283,12 +291,74 @@ def logout():
     return redirect(url_for('auth.login'))
 
 
+@auth_bp.route('/first-login-claim', methods=['GET', 'POST'])
+@login_required
+def first_login_claim():
+    """
+    One-time account claim for provisioned staff.
+    Forces password change and phone registration before accessing the portal.
+    """
+    # If claim already completed, boot to the correct dashboard
+    if not current_user.is_first_login:
+        return redirect_by_role(current_user)
+
+    if request.method == 'POST':
+        phone        = request.form.get('phone', '').strip()
+        new_password = request.form.get('new_password', '')
+        confirm_pw   = request.form.get('confirm_password', '')
+
+        errors = []
+
+        # Phone validation
+        valid_phone, normalized_phone, phone_err = validate_and_normalize_ghana_phone(phone)
+        if not valid_phone:
+            errors.append(phone_err)
+
+        # Password strength
+        import re
+        if len(new_password) < 8:
+            errors.append("Password must be at least 8 characters.")
+        if not re.search(r'[A-Z]', new_password):
+            errors.append("Password must contain at least one uppercase letter.")
+        if not re.search(r'[0-9]', new_password):
+            errors.append("Password must contain at least one number.")
+        if new_password != confirm_pw:
+            errors.append("Passwords do not match.")
+
+        if errors:
+            for err in errors:
+                flash(err, 'danger')
+            return render_template('auth/first_login_claim.html')
+
+        # Commit claim
+        current_user.set_password(new_password)
+        current_user.temp_password_hash = None
+        current_user.is_first_login = False
+        current_user.account_status = AccountStatus.ACTIVE
+        current_user.phone = normalized_phone
+        db.session.commit()
+
+        AuditService.log(
+            action=AuditAction.USER_LOGIN,
+            target_type='User',
+            target_id=current_user.id,
+            details={'event': 'first_login_claim_completed', 'username': current_user.username}
+        )
+
+        flash(f'Account activated! Welcome to U-IAP, {current_user.full_name}.', 'success')
+        return redirect_by_role(current_user)
+
+    return render_template('auth/first_login_claim.html')
+
+
 def redirect_by_role(user: User):
     """Redirects authenticated users to their designated role dashboard."""
     if user.role == UserRole.STUDENT:
         return redirect(url_for('student.dashboard'))
-    elif user.role in (UserRole.LIAISON_OFFICER, UserRole.LIAISON_HEAD):
+    elif user.role in (UserRole.LIAISON_SECRETARY, UserRole.LIAISON_OFFICER, UserRole.LIAISON_HEAD):
         return redirect(url_for('liaison.dashboard'))
     elif user.role == UserRole.ACADEMIC_SUPERVISOR:
         return redirect(url_for('supervisor.dashboard'))
+    elif user.role in UserRole.ADMIN_ROLES:
+        return redirect(url_for('admin.dashboard'))
     return redirect(url_for('main.index'))
