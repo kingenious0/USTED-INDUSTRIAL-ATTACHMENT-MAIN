@@ -211,8 +211,8 @@ def provision_staff():
         errors.append("Full name is required.")
     if not email:
         errors.append("Institutional email is required.")
-    elif not (email.endswith('@usted.edu.gh') or email.endswith('@st.usted.edu.gh')):
-        errors.append("Email must be an institutional address (@usted.edu.gh).")
+    elif '@' not in email or '.' not in email.split('@')[-1]:
+        errors.append("Please enter a valid email address.")
     if role not in UserRole.STAFF_ROLES:
         errors.append("Invalid role selected.")
     if User.query.filter_by(email=email).first():

@@ -1,5 +1,6 @@
 import os
-from flask import Flask, render_template
+from flask import Flask, render_template, request, jsonify
+from flask_wtf.csrf import CSRFError
 from app.config import config_by_name
 from app.extensions import db, login_manager, csrf, migrate
 from app.models.user import User
@@ -150,6 +151,25 @@ def create_app(config_name: str = None) -> Flask:
     app.register_blueprint(activities_bp, url_prefix='/activities')
 
     # Register Error Handlers
+    @app.errorhandler(CSRFError)
+    def handle_csrf_error(error):
+        if (
+            request.is_json or
+            request.headers.get('X-Requested-With') == 'XMLHttpRequest' or
+            request.path.startswith('/api/') or
+            request.path.endswith('/provision') or
+            request.path.endswith('/reset')
+        ):
+            return jsonify({
+                'success': False,
+                'errors': ['Session or security token expired. Please refresh the page and try again.']
+            }), 400
+        return render_template(
+            'errors/403.html',
+            custom_title="Security Verification Failed",
+            custom_message="Your CSRF token is invalid or has expired. Please refresh the page and try again."
+        ), 400
+
     @app.errorhandler(403)
     def forbidden(error):
         return render_template('errors/403.html'), 403

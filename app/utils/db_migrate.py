@@ -46,7 +46,14 @@ def migrate_database_schema(app=None):
                         ('office_location', 'VARCHAR(255)'),
                         ('avatar_path', 'VARCHAR(255)'),
                         ('staff_id', 'VARCHAR(50)'),
-                        ('department', 'VARCHAR(150)')
+                        ('department', 'VARCHAR(150)'),
+                        ('display_title', 'VARCHAR(50)'),
+                        ('account_status', "VARCHAR(20) NOT NULL DEFAULT 'active'"),
+                        ('is_first_login', 'BOOLEAN NOT NULL DEFAULT 0'),
+                        ('temp_password_hash', 'VARCHAR(255)'),
+                        ('provisioned_by_id', 'INTEGER'),
+                        ('provisioned_at', 'DATETIME'),
+                        ('student_master_id', 'INTEGER'),
                     ]
                     for col_name, col_type in user_cols_to_add:
                         if col_name not in existing_user_cols:
@@ -73,7 +80,14 @@ def migrate_database_schema(app=None):
                         ('office_location', 'VARCHAR(255)'),
                         ('avatar_path', 'VARCHAR(255)'),
                         ('staff_id', 'VARCHAR(50)'),
-                        ('department', 'VARCHAR(150)')
+                        ('department', 'VARCHAR(150)'),
+                        ('display_title', 'VARCHAR(50)'),
+                        ('account_status', "VARCHAR(20) NOT NULL DEFAULT 'active'"),
+                        ('is_first_login', 'BOOLEAN NOT NULL DEFAULT FALSE'),
+                        ('temp_password_hash', 'VARCHAR(255)'),
+                        ('provisioned_by_id', 'INTEGER'),
+                        ('provisioned_at', 'TIMESTAMP WITH TIME ZONE'),
+                        ('student_master_id', 'INTEGER'),
                     ]
                     for col_name, col_type in user_cols_to_add:
                         conn.execute(text(f"ALTER TABLE users ADD COLUMN IF NOT EXISTS {col_name} {col_type}"))

@@ -245,6 +245,7 @@
 
     <!-- Form -->
     <form id="provisionForm" autocomplete="off">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
       <div style="display: flex; flex-direction: column; gap: 1rem;">
 
         <div>
@@ -279,7 +280,7 @@
           <label style="font-size: 0.8rem; font-weight: 600; color: var(--color-text-muted); display: block; margin-bottom: 5px;">Institutional Email <span style="color: var(--color-danger);">*</span></label>
           <input type="email" name="email" required placeholder="officer@usted.edu.gh"
                  style="width: 100%; padding: 0.55rem 0.85rem; border: 1px solid var(--color-border); border-radius: 8px; font-size: 0.9rem; background: var(--color-surface); color: var(--color-text-main); box-sizing: border-box;">
-          <span style="font-size: 0.74rem; color: var(--color-text-muted); margin-top: 3px; display: block;">Must be @usted.edu.gh</span>
+          <span style="font-size: 0.74rem; color: var(--color-text-muted); margin-top: 3px; display: block;">Institutional address (e.g. name@usted.edu.gh)</span>
         </div>
 
         <div style="display: flex; gap: 0.75rem;">
@@ -374,8 +375,8 @@
 
 {% endblock %}
 
-{% block scripts %}
-{{ super() }}
+{% block extra_scripts %}
+
 <style>
   @keyframes slideUp {
     from { transform: translateY(24px); opacity: 0; }
@@ -385,8 +386,8 @@
     from { opacity: 0; }
     to { opacity: 1; }
   }
-  #provisionModal[style*="flex"] { display: flex !important; }
-  #resetModal[style*="flex"] { display: flex !important; }
+  #provisionModal { display: none; }
+  #resetModal { display: none; }
 </style>
 <script>
   // ── Provision Modal ─────────────────────────────────────────
@@ -424,9 +425,21 @@
 
     const fd = new FormData(provisionForm);
     try {
-      const resp = await fetch('{{ url_for("admin.provision_staff") }}', { method: 'POST', body: fd });
-      const data = await resp.json();
-      if (data.success) {
+      const resp = await fetch('{{ url_for("admin.provision_staff") }}', {
+        method: 'POST',
+        body: fd,
+        headers: {
+          'X-CSRFToken': '{{ csrf_token() }}',
+          'X-Requested-With': 'XMLHttpRequest'
+        }
+      });
+      let data;
+      try {
+        data = await resp.json();
+      } catch {
+        data = null;
+      }
+      if (resp.ok && data && data.success) {
         provisionForm.style.display = 'none';
         document.getElementById('tempPasswordDisplay').textContent = data.temp_password;
         document.getElementById('provisionSuccessDetails').innerHTML =
@@ -434,11 +447,15 @@
           `<br>Username: <code style="font-family:monospace;">${data.user.username}</code>`;
         provisionSuccess.style.display = '';
       } else {
-        provisionErrors.innerHTML = data.errors.map(e => `<div>• ${e}</div>`).join('');
+        const errorList = (data && data.errors && data.errors.length)
+          ? data.errors
+          : (data && data.message ? [data.message] : [`Request rejected by server (HTTP ${resp.status}). Please refresh and try again.`]);
+        provisionErrors.innerHTML = errorList.map(e => `<div>• ${e}</div>`).join('');
         provisionErrors.style.display = '';
       }
-    } catch {
-      provisionErrors.innerHTML = '<div>• A server error occurred. Please try again.</div>';
+    } catch (err) {
+      console.error(err);
+      provisionErrors.innerHTML = '<div>• Network or connection error occurred. Please try again.</div>';
       provisionErrors.style.display = '';
     }
     provisionSubmitBtn.disabled = false;
@@ -482,7 +499,10 @@
     confirmResetBtn.disabled = true;
     confirmResetBtn.textContent = 'Resetting…';
 
-    const resp = await fetch(`/admin/staff/${currentResetId}/reset`, { method: 'POST' });
+    const resp = await fetch(`/admin/staff/${currentResetId}/reset`, {
+      method: 'POST',
+      headers: { 'X-CSRFToken': '{{ csrf_token() }}' }
+    });
     const data = await resp.json();
     if (data.success) {
       document.getElementById('resetTempPwDisplay').textContent = data.temp_password;
@@ -498,4 +518,4 @@
     navigator.clipboard.writeText(pw);
   }
 </script>
-{% endblock %}
+{% endblock extra_scripts %}

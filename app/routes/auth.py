@@ -192,7 +192,9 @@ def login():
         password = request.form.get('password', '')
         remember = bool(request.form.get('remember'))
 
-        user = User.query.filter_by(username=username).first()
+        user = User.query.filter(
+            db.or_(User.username == username, User.email == username.lower())
+        ).first()
 
         if user and user.check_password(password):
             if not user.is_active:
